@@ -1,0 +1,235 @@
+title Cathartic Colours
+author Ronan Tumelty
+homepage https://github.com/rtumelty/
+
+key_repeat_interval 0.4
+
+========
+OBJECTS
+========
+
+Background
+Grey darkgray
+11111
+10001
+10001
+10001
+11111
+
+SmallRed
+Red
+.....
+.....
+..0..
+.....
+.....
+
+MediumRed
+Red
+.....
+.000.
+.000.
+.000.
+.....
+
+LargeRed
+Red
+00000
+00000
+00000
+00000
+00000
+
+SmallGreen
+Green
+.....
+.....
+..0..
+.....
+.....
+
+MediumGreen
+Green
+.....
+.000.
+.000.
+.000.
+.....
+
+LargeGreen
+Green
+00000
+00000
+00000
+00000
+00000
+
+SmallBlue
+Blue
+.....
+.....
+..0..
+.....
+.....
+
+MediumBlue
+Blue
+.....
+.000.
+.000.
+.000.
+.....
+
+LargeBlue
+Blue
+00000
+00000
+00000
+00000
+00000
+
+
+NoColours 
+white
+.....
+.....
+.....
+.....
+.....
+
+
+AllColours 
+white
+.....
+.....
+.....
+.....
+.....
+
+=======
+LEGEND
+=======
+
+. = Background
+r = SmallRed
+g = SmallGreen
+b = SmallBlue
+t = MediumRed
+h = MediumGreen
+n = MediumBlue
+y = LargeRed
+j = LargeGreen
+m = LargeBlue
+
+Small = SmallRed or SmallGreen or SmallBlue 
+Medium = MediumRed or MediumGreen or MediumBlue 
+Large = LargeRed or LargeGreen or LargeBlue
+Colours = Small or Medium or Large
+
+Player = Colours
+
+=======
+SOUNDS
+=======
+
+SFX0 42128307 (spawn tile)
+SFX1 19148306 (combine small tile)
+SFX2 49256100 (combine med tile)
+SFX3 70003902 (clear large tile)
+EndLevel 38603908 ()
+Restart 28666708 
+CloseMessage 44855507
+
+================
+COLLISIONLAYERS
+================
+
+Background
+NoColours
+AllColours
+Colours
+
+======
+RULES
+======
+
+[ > Colours | no Colours ] -> [ | Colours ]
+[ > SmallRed | SmallRed ] -> [ | MediumRed ] SFX1
+[ > SmallGreen | SmallGreen ] -> [ | MediumGreen ] SFX1
+[ > SmallBlue | SmallBlue ] -> [ | MediumBlue ] SFX1
+
+[ > MediumRed | MediumRed ] -> [ | LargeRed ] SFX2
+[ > MediumGreen | MediumGreen ] -> [ | LargeGreen ] SFX2
+[ > MediumBlue | MediumBlue ] -> [ | LargeBlue ] SFX2
+
+[ > LargeRed | LargeRed ] -> [ | NoColours ]  SFX3
+[ > LargeGreen | LargeGreen ] -> [ | NoColours ]  SFX3
+[ > LargeBlue | LargeBlue ] -> [ | NoColours ]  SFX3
+
+[ NoColours] [ Colours ] -> [ no NoColours ] [ Colours ]
+[ NoColours ] -> Win
+
+random [ ] -> [ AllColours ]
+[ no Colours ] [ AllColours ] -> [ ] [ no AllColours ]
+[ AllColours ] -> Win
+
+late random [ no Colours ] -> [Background random Small] SFX0
+
+
+==============
+WINCONDITIONS
+==============
+
+=======
+LEVELS
+=======
+
+message Swipe or use arrow keys to combine matching tiles!
+YY
+JJ
+MM
+
+message Small tiles combine to become medium, medium to become large, large disappear! 
+message Swipe Right! Press Z to undo, and R to reset the level.
+rrty
+gghj
+bbnm
+
+message A random small tile appears each time you move. There is no end goal but catharsis - play until you reach gridlock!
+Ytr.
+.tr.
+....
+....
+
+message How about a bit more room to breathe...
+......
+......
+..r...
+......
+......
+......
+
+message Now for a big fun grid!
+.........
+.........
+.........
+.........
+...g.....
+.........
+.........
+.........
+.........
+
+message Ok, last one
+............
+............
+............
+............
+............
+............
+....b.......
+............
+............
+............
+............
+............
