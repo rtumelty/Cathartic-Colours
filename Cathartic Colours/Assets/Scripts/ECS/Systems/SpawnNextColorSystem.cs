@@ -48,7 +48,6 @@ namespace ECS.Systems
             if (spawnPos.x == -1)
             {
                 // Grid is full
-                gameState.ValueRW.GameOver = true;
                 gameState.ValueRW.WaitingForInput = true;
                 return;
             }
