@@ -145,7 +145,7 @@ SOUNDS
 SFX0 42128307 (spawn tile)
 SFX1 19148306 (combine small tile)
 SFX2 49256100 (combine med tile)
-SFX3 70003902 (clear large tile)
+SFX3 91663300 (clear large tile)
 EndLevel 38603908 ()
 Restart 28666708 
 CloseMessage 44855507
