@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 using ECS.Components;
 using Unity.Burst;
 using Unity.Collections;
@@ -27,13 +27,36 @@ namespace ECS.Systems
                 occupancyMap[block.ValueRO.GridPosition] = entity;
             }
 
-            // Process all moving blocks 
-            foreach (var (block, entity) in 
-                SystemAPI.Query<RefRW<BlockComponent>>()
-                .WithAll<MovingBlockTag>() // Only queries ENABLED MovingBlockTag
+            // Track blocks that have been merged into (can't merge again)
+            var mergedIntoBlocks = new NativeHashSet<Entity>(100, Allocator.Temp);
+            
+            // Track blocks that are being destroyed this pass
+            var destroyedBlocks = new NativeHashSet<Entity>(100, Allocator.Temp);
+
+            // Collect blocks into a NativeList
+            var blocks = new NativeList<(BlockComponent, Entity)>(Allocator.Temp);
+            foreach (var (block, entity) in SystemAPI.Query<RefRO<BlockComponent>>()
+                .WithAll<MovingBlockTag>()
                 .WithEntityAccess())
             {
-                int2 currentPos = block.ValueRO.GridPosition;
+                blocks.Add((block.ValueRO, entity));
+            }
+
+            // Sort blocks based on move direction (opposite order for merge evaluation)
+            blocks.Sort(new BlockComparer(moveDirection.Direction));
+
+            // Process all moving blocks
+            for (int i = 0; i < blocks.Length; i++)
+            {
+                var (blockData, entity) = blocks[i];
+                
+                // Skip if this block was destroyed in a merge
+                if (destroyedBlocks.Contains(entity))
+                {
+                    continue;
+                }
+
+                int2 currentPos = blockData.GridPosition;
                 int2 targetPos = currentPos + moveDirection.Direction;
 
                 // Check bounds
@@ -47,34 +70,105 @@ namespace ECS.Systems
                 // Check if target cell is occupied
                 if (occupancyMap.TryGetValue(targetPos, out Entity targetEntity))
                 {
-                    var targetBlock = state.EntityManager.GetComponentData<BlockComponent>(targetEntity);
-                    
-                    // Check if can merge
-                    if (block.ValueRO.Color == targetBlock.Color && 
-                        block.ValueRO.Size == targetBlock.Size &&
-                        !block.ValueRO.IsNextColorIndicator &&
-                        !targetBlock.IsNextColorIndicator)
+                    // Skip if target was destroyed
+                    if (destroyedBlocks.Contains(targetEntity))
                     {
-                        // Enable merge tag and set data
-                        var mergeTag = new PendingMergeTag { TargetBlock = targetEntity };
-                        ecb.SetComponent(entity, mergeTag);
-                        ecb.SetComponentEnabled<PendingMergeTag>(entity, true);
+                        // Target was destroyed, move into the space
+                        occupancyMap.Remove(currentPos);
+                        occupancyMap[targetPos] = entity;
+                        
+                        var updatedBlock = blockData;
+                        updatedBlock.GridPosition = targetPos;
+                        ecb.SetComponent(entity, updatedBlock);
+                        ecb.SetComponentEnabled<MovingBlockTag>(entity, false);
+                        continue;
                     }
-                    
-                    ecb.SetComponentEnabled<MovingBlockTag>(entity, false);
+
+                    var targetBlock = state.EntityManager.GetComponentData<BlockComponent>(targetEntity);
+
+                    // Check if can merge (and target hasn't already been merged into)
+                    if (blockData.Color == targetBlock.Color &&
+                        blockData.Size == targetBlock.Size &&
+                        !blockData.IsNextColorIndicator &&
+                        !targetBlock.IsNextColorIndicator &&
+                        !mergedIntoBlocks.Contains(targetEntity))
+                    {
+                        // Perform merge immediately
+                        if (blockData.Size == BlockSize.Large)
+                        {
+                            // Both blocks destroyed
+                            ecb.DestroyEntity(entity);
+                            ecb.DestroyEntity(targetEntity);
+                            
+                            destroyedBlocks.Add(entity);
+                            destroyedBlocks.Add(targetEntity);
+                            
+                            // Remove from occupancy map
+                            occupancyMap.Remove(currentPos);
+                            occupancyMap.Remove(targetPos);
+                        }
+                        else
+                        {
+                            // Upgrade target block
+                            var newBlock = targetBlock;
+                            newBlock.Size = (BlockSize)((int)targetBlock.Size + 1);
+                            ecb.SetComponent(targetEntity, newBlock);
+                            
+                            // Destroy moving block
+                            ecb.DestroyEntity(entity);
+                            destroyedBlocks.Add(entity);
+                            
+                            // Remove moving block from occupancy
+                            occupancyMap.Remove(currentPos);
+                            
+                            // Mark target as merged into
+                            mergedIntoBlocks.Add(targetEntity);
+                        }
+                    }
+                    else
+                    {
+                        // Can't merge, can't move
+                        ecb.SetComponentEnabled<MovingBlockTag>(entity, false);
+                    }
                 }
                 else
                 {
                     // Move to empty cell
-                    block.ValueRW.GridPosition = targetPos;
-                    occupancyMap[targetPos] = entity;
                     occupancyMap.Remove(currentPos);
+                    occupancyMap[targetPos] = entity;
+                    
+                    var updatedBlock = blockData;
+                    updatedBlock.GridPosition = targetPos;
+                    ecb.SetComponent(entity, updatedBlock);
                     ecb.SetComponentEnabled<MovingBlockTag>(entity, false);
                 }
             }
 
             ecb.Playback(state.EntityManager);
+            ecb.Dispose();
             occupancyMap.Dispose();
+            mergedIntoBlocks.Dispose();
+            destroyedBlocks.Dispose();
+            blocks.Dispose();
+        }
+
+        // Custom comparer for sorting blocks based on move direction
+        private struct BlockComparer : IComparer<(BlockComponent, Entity)>
+        {
+            private int2 moveDirection;
+
+            public BlockComparer(int2 moveDirection)
+            {
+                this.moveDirection = moveDirection;
+            }
+
+            public int Compare((BlockComponent, Entity) a, (BlockComponent, Entity) b)
+            {
+                int2 posA = a.Item1.GridPosition;
+                int2 posB = b.Item1.GridPosition;
+                // Sort in opposite direction (blocks furthest in move direction process first)
+                return math.dot(posB - posA, moveDirection);
+            }
         }
     }
 }

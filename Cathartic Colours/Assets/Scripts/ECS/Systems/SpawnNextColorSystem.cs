@@ -6,7 +6,7 @@ using Unity.Mathematics;
 namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateAfter(typeof(BlockMergeSystem))]
+    [UpdateAfter(typeof(BlockMovementSystem))]
     public partial struct SpawnNextColorSystem : ISystem
     {
         public void OnUpdate(ref SystemState state)
