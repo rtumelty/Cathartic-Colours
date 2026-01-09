@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ECS.Audio;
 using ECS.Components;
 using Unity.Burst;
 using Unity.Collections;
@@ -19,6 +20,8 @@ namespace ECS.Systems
 
             var gridConfig = SystemAPI.GetSingleton<GridConfigComponent>();
             var ecb = new EntityCommandBuffer(Allocator.Temp);
+            
+            CreateAudioEventEntity(ecb, FMODEventPaths.BlockMove);
 
             // Build occupancy map
             var occupancyMap = new NativeHashMap<int2, Entity>(100, Allocator.Temp);
@@ -106,11 +109,17 @@ namespace ECS.Systems
                             // Remove from occupancy map
                             occupancyMap.Remove(currentPos);
                             occupancyMap.Remove(targetPos);
+                            
+                            CreateAudioEventEntity(ecb, FMODEventPaths.BlockMergeLarge);
                         }
                         else
                         {
                             // Upgrade target block
                             var newBlock = targetBlock;
+
+                            CreateAudioEventEntity(ecb, targetBlock.Size == BlockSize.Small ? 
+                                FMODEventPaths.BlockMergeSmall : FMODEventPaths.BlockMergeMedium);
+                            
                             newBlock.Size = (BlockSize)((int)targetBlock.Size + 1);
                             ecb.SetComponent(targetEntity, newBlock);
                             
@@ -150,6 +159,15 @@ namespace ECS.Systems
             mergedIntoBlocks.Dispose();
             destroyedBlocks.Dispose();
             blocks.Dispose();
+        }
+        
+        private void CreateAudioEventEntity(EntityCommandBuffer ecb, FixedString64Bytes eventPath) {
+            var audioEntity = ecb.CreateEntity();
+            ecb.AddComponent(audioEntity, new AudioEventComponent
+            {
+                EventPath = eventPath
+            });
+            
         }
 
         // Custom comparer for sorting blocks based on move direction

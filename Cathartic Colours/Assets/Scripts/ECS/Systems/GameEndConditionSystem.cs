@@ -1,3 +1,4 @@
+using ECS.Audio;
 using ECS.Components;
 using Unity.Collections;
 using Unity.Entities;
@@ -12,6 +13,9 @@ namespace ECS.Systems
         public void OnUpdate(ref SystemState state)
         {
             var gameState = SystemAPI.GetSingletonRW<GameStateComponent>();
+            
+            if (gameState.ValueRW.GameOver) return;
+            
             var gridConfig = SystemAPI.GetSingleton<GridConfigComponent>();
 
             // Build occupancy map
@@ -85,6 +89,12 @@ namespace ECS.Systems
             {
                 gameState.ValueRW.GameOver = true;
                 gameState.ValueRW.WaitingForInput = true;
+
+                var audioEntity = state.EntityManager.CreateEntity();
+                state.EntityManager.AddComponentData(audioEntity, new AudioEventComponent
+                {
+                    EventPath = FMODEventPaths.GameOver
+                });
             }
             else
             {
