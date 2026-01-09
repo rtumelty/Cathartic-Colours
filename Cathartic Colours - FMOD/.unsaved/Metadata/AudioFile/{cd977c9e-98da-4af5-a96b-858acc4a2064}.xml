@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{cd977c9e-98da-4af5-a96b-858acc4a2064}">
+		<property name="assetPath">
+			<value>levelcomplete_01.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>2.282471655328798</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{7d0f2480-90e1-4124-a023-2a6804fab0ac}</destination>
+		</relationship>
+	</object>
+</objects>
