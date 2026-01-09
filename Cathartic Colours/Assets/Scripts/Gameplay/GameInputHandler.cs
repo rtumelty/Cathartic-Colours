@@ -91,6 +91,13 @@ namespace Gameplay
 
             var entityManager = world.EntityManager;
             
+            // Check if a MoveDirectionComponent entity already exists
+            var query = entityManager.CreateEntityQuery(typeof(MoveDirectionComponent));
+            if (!query.IsEmpty)
+            {
+                return; // Do not create a new entity if a move is already pending
+            }
+            
             // Create move direction entity
             var entity = entityManager.CreateEntity();
             entityManager.AddComponentData(entity, new MoveDirectionComponent
