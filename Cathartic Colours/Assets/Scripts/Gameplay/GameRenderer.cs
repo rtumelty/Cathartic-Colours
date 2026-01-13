@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Unity.Entities;
@@ -27,8 +28,10 @@ namespace CatharticColours
         [SerializeField] private Color whiteColor = Color.white;
         [SerializeField] private Color backgroundColor = Color.gray;
 
-        [Header("UI Toolkit")]
+        [Header("UI and presentation")]
         [SerializeField] private UIDocument uiDocument;
+
+        [SerializeField] private Vector4 gridMarginInPixels = new(20, 20, 20, 20);
 
         // UI Elements
         private Label moveCountLabel;
@@ -41,11 +44,27 @@ namespace CatharticColours
         private Dictionary<Entity, GameObject> blockVisuals = new Dictionary<Entity, GameObject>();
         private GameObject[,] gridCells;
         private EntityManager entityManager;
+        
+        private Camera mainCamera;
+        private LayoutObserver layoutObserver;
 
-        private void Start()
+        private void Awake()
         {
+            mainCamera = Camera.main;
+            layoutObserver = new LayoutObserver(uiDocument);
+            
             SetupUI();
             InitializeGame();
+        }
+
+        private void OnEnable()
+        {
+            layoutObserver.OnLayoutRecalculated += UpdateCamera;
+        }
+
+        private void OnDisable()
+        {
+            layoutObserver.OnLayoutRecalculated -= UpdateCamera;
         }
 
         private void SetupUI()
@@ -161,14 +180,6 @@ namespace CatharticColours
                     gridCells[x, y] = cell;
                 }
             }
-
-            // Center camera
-            Vector3 gridCenter = new Vector3(
-                (gridWidth - 1) * (cellSize + cellSpacing) / 2f,
-                (gridHeight - 1) * (cellSize + cellSpacing) / 2f,
-                -10
-            );
-            Camera.main.transform.position = gridCenter;
         }
 
         private void SpawnInitialBlock()
@@ -355,6 +366,52 @@ namespace CatharticColours
             {
                 nextLevelButton.clicked -= OnNextLevel;
             }
+        }
+
+        private void UpdateCamera(float headerHeight, float footerHeight)
+        {
+            float actualGridWidth = (gridWidth - 1) * (cellSize + cellSpacing) + cellSize;
+            float actualGridHeight = (gridHeight - 1) * (cellSize + cellSpacing) + cellSize;
+            
+            float effectiveScreenWidth = Screen.width - gridMarginInPixels.x - gridMarginInPixels.z;
+            float effectiveScreenHeight = Screen.height - headerHeight - footerHeight 
+                                          - gridMarginInPixels.y - gridMarginInPixels.w;
+            
+            float effectiveAspectRatio = effectiveScreenWidth / effectiveScreenHeight;
+            float gridAspectRatio = actualGridWidth / actualGridHeight;
+            bool verticallyConstrained = gridAspectRatio < effectiveAspectRatio;
+            
+            if (verticallyConstrained)
+            {
+                mainCamera.orthographicSize = (actualGridHeight * Screen.height) / (2 * effectiveScreenHeight);
+            }
+            else
+            {
+                mainCamera.orthographicSize = (actualGridWidth * Screen.height) / (2 * effectiveScreenWidth);
+            }
+
+            float worldUnitsPerPixel = (mainCamera.orthographicSize * 2) / Screen.height;
+    
+            // Calculate vertical offset to center grid in available space
+            // The offset is the difference between space below and above the screen center
+            float spaceBelow = footerHeight + gridMarginInPixels.w;
+            float spaceAbove = headerHeight + gridMarginInPixels.y;
+            float verticalShiftInPixels = (spaceBelow - spaceAbove) / 2f;
+            float verticalShiftInWorldUnits = verticalShiftInPixels * worldUnitsPerPixel;
+            
+            // Center camera
+            Vector3 gridCenter = new Vector3(
+                (gridWidth - 1) * (cellSize + cellSpacing) / 2f,
+                (gridHeight - 1) * (cellSize + cellSpacing) / 2f,
+                -10
+            );
+
+            Debug.Log(verticallyConstrained);
+            Debug.Log(gridCenter);
+            Debug.Log(verticalShiftInWorldUnits);
+            
+            mainCamera.transform.position = gridCenter + new Vector3(0, verticalShiftInWorldUnits, 0);
+            
         }
     }
 }
