@@ -330,15 +330,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-    "com.unity.platformtoolkit": {
-      "version": "1.0.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.modules.jsonserialize": "1.0.0"
-      },
-      "url": "https://packages.unity.com"
-    },
     "com.unity.profiling.core": {
       "version": "1.0.3",
       "depth": 1,

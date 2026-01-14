@@ -5,13 +5,6 @@
             <ui:Label text="Cathartic Colours" name="title" class="title"/>
             <ui:Label text="Moves: 0" name="move-count" class="move-count"/>
         </ui:VisualElement>
-        <ui:VisualElement name="status-bar" class="status-bar">
-            <ui:Label text="Your turn..." name="status-label" class="status-label"/>
-        </ui:VisualElement>
-        <ui:VisualElement name="controls-hint" class="controls-hint">
-            <ui:Label text="Arrow Keys / WASD to Move" class="hint-text"/>
-            <ui:Label text="R to Restart • Z to Undo" class="hint-text small"/>
-        </ui:VisualElement>
         <ui:VisualElement name="game-over-panel" class="modal-panel">
             <ui:VisualElement class="modal-content">
                 <ui:Label text="Grid Full!" class="modal-title"/>
@@ -29,8 +22,15 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="footer" class="footer">
-            <ui:Label text="Merge matching tiles: Small → Medium → Large → Clear" class="instruction-text"/>
+        <ui:VisualElement style="flex-grow: 0;">
+            <ui:VisualElement name="footer" class="footer" style="flex-grow: 1;">
+                <ui:VisualElement name="footer" class="controls-hint">
+                    <ui:Label text="Merge matching tiles: Small → Medium → Large → Clear" class="instruction-text"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="controls-hint" class="controls-hint" style="bottom: auto; position: relative; align-self: auto; align-content: auto; top: auto;">
+                    <ui:Label text="Swipe / Arrow Keys / WASD to Move" class="hint-text"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
