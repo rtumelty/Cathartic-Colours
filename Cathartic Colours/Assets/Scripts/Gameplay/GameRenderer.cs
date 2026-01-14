@@ -11,6 +11,21 @@ namespace CatharticColours
 {
     public class GameRenderer : MonoBehaviour
     {
+        // Structure to cache all visual components
+        private struct BlockVisual
+        {
+            public GameObject GameObject;
+            public Block Block;
+            public SpriteRenderer Renderer;
+
+            public BlockVisual(GameObject gameObject, Block block, SpriteRenderer renderer)
+            {
+                GameObject = gameObject;
+                Block = block;
+                Renderer = renderer;
+            }
+        }
+
         [Header("Grid Settings")]
         [SerializeField] private int gridWidth = 6;
         [SerializeField] private int gridHeight = 6;
@@ -41,7 +56,7 @@ namespace CatharticColours
         private Button restartButton;
         private Button nextLevelButton;
 
-        private Dictionary<Entity, GameObject> blockVisuals = new Dictionary<Entity, GameObject>();
+        private Dictionary<Entity, BlockVisual> blockVisuals = new Dictionary<Entity, BlockVisual>();
         private GameObject[,] gridCells;
         private EntityManager entityManager;
         
@@ -214,9 +229,28 @@ namespace CatharticColours
                 BlockComponent block = blocks[i];
                 existingEntities.Add(entity);
 
-                if (!blockVisuals.TryGetValue(entity, out GameObject visual))
+                if (!blockVisuals.TryGetValue(entity, out BlockVisual visual))
                 {
-                    visual = Instantiate(blockPrefab, transform);
+                    // Create new visual and cache all components
+                    GameObject gameObject = Instantiate(blockPrefab, transform);
+                    Block blockComponent = gameObject.GetComponent<Block>();
+                    SpriteRenderer renderer = gameObject.GetComponent<SpriteRenderer>();
+                    
+                    if (blockComponent == null)
+                    {
+                        Debug.LogError("Block component not found on blockPrefab!");
+                        Destroy(gameObject);
+                        continue;
+                    }
+
+                    if (renderer == null)
+                    {
+                        Debug.LogError("SpriteRenderer component not found on blockPrefab!");
+                        Destroy(gameObject);
+                        continue;
+                    }
+                    
+                    visual = new BlockVisual(gameObject, blockComponent, renderer);
                     blockVisuals[entity] = visual;
                 }
 
@@ -225,7 +259,7 @@ namespace CatharticColours
                     block.GridPosition.y * (cellSize + cellSpacing),
                     -1
                 );
-                visual.transform.position = position;
+                visual.GameObject.transform.position = position;
 
                 UpdateBlockVisual(visual, block);
             }
@@ -235,13 +269,8 @@ namespace CatharticColours
             {
                 if (!existingEntities.Contains(kvp.Key))
                 {
-                    var block = kvp.Value.GetComponent<Block>();
-                    try
-                    {
-                        block.Disappear();
-                    } catch{}
+                    kvp.Value.Block.Disappear();
 
-                    // Destroy(kvp.Value);
                     toRemove.Add(kvp.Key);
                 }
             }
@@ -254,14 +283,9 @@ namespace CatharticColours
             blocks.Dispose();
         }
 
-        private void UpdateBlockVisual(GameObject visual, BlockComponent blockComponent)
+        private void UpdateBlockVisual(BlockVisual visual, BlockComponent blockComponent)
         {
-            var renderer = visual.GetComponent<SpriteRenderer>();
-            var block = visual.GetComponent<Block>();
-            
-            if (renderer == null) return;
-
-            renderer.color = blockComponent.Color switch
+            visual.Renderer.color = blockComponent.Color switch
             {
                 BlockColor.Red => redColor,
                 BlockColor.Green => greenColor,
@@ -269,18 +293,8 @@ namespace CatharticColours
                 BlockColor.White => whiteColor,
                 _ => Color.white
             };
-            
-            if (block == null) return;
 
-            block.Size = (int)blockComponent.Size;
-            /*float scale = blockComponent.Size switch
-            {
-                BlockSize.Small => 0.3f,
-                BlockSize.Medium => 0.6f,
-                BlockSize.Large => 1.0f,
-                _ => 0.3f
-            };
-            visual.transform.localScale = Vector3.one * scale * cellSize;*/
+            visual.Block.Size = (int)blockComponent.Size;
         }
 
         private void UpdateUI()
@@ -351,7 +365,10 @@ namespace CatharticColours
             // Clean up visuals
             foreach (var visual in blockVisuals.Values)
             {
-                Destroy(visual);
+                if (visual.GameObject != null)
+                {
+                    Destroy(visual.GameObject);
+                }
             }
             blockVisuals.Clear();
 
@@ -421,7 +438,7 @@ namespace CatharticColours
             Debug.Log(gridCenter);
             Debug.Log(verticalShiftInWorldUnits);
             
-            mainCamera.transform.position = gridCenter + new Vector3(0, verticalShiftInWorldUnits, 0);
+            mainCamera.transform.position = gridCenter + new Vector3(0, -verticalShiftInWorldUnits, 0);
             
         }
     }
