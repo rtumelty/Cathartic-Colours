@@ -235,7 +235,13 @@ namespace CatharticColours
             {
                 if (!existingEntities.Contains(kvp.Key))
                 {
-                    Destroy(kvp.Value);
+                    var block = kvp.Value.GetComponent<Block>();
+                    try
+                    {
+                        block.Disappear();
+                    } catch{}
+
+                    // Destroy(kvp.Value);
                     toRemove.Add(kvp.Key);
                 }
             }
@@ -248,12 +254,14 @@ namespace CatharticColours
             blocks.Dispose();
         }
 
-        private void UpdateBlockVisual(GameObject visual, BlockComponent block)
+        private void UpdateBlockVisual(GameObject visual, BlockComponent blockComponent)
         {
             var renderer = visual.GetComponent<SpriteRenderer>();
+            var block = visual.GetComponent<Block>();
+            
             if (renderer == null) return;
 
-            renderer.color = block.Color switch
+            renderer.color = blockComponent.Color switch
             {
                 BlockColor.Red => redColor,
                 BlockColor.Green => greenColor,
@@ -261,15 +269,18 @@ namespace CatharticColours
                 BlockColor.White => whiteColor,
                 _ => Color.white
             };
+            
+            if (block == null) return;
 
-            float scale = block.Size switch
+            block.Size = (int)blockComponent.Size;
+            /*float scale = blockComponent.Size switch
             {
                 BlockSize.Small => 0.3f,
                 BlockSize.Medium => 0.6f,
                 BlockSize.Large => 1.0f,
                 _ => 0.3f
             };
-            visual.transform.localScale = Vector3.one * scale * cellSize;
+            visual.transform.localScale = Vector3.one * scale * cellSize;*/
         }
 
         private void UpdateUI()
