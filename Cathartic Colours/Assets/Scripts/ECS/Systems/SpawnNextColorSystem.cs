@@ -64,22 +64,6 @@ namespace ECS.Systems
 
             gameState.ValueRW.WaitingForInput = true;
 
-            // Check win condition
-            bool hasColoredBlocks = false;
-            foreach (var block in SystemAPI.Query<RefRO<BlockComponent>>())
-            {
-                if (!block.ValueRO.IsNextColorIndicator)
-                {
-                    hasColoredBlocks = true;
-                    break;
-                }
-            }
-
-            if (!hasColoredBlocks)
-            {
-                gameState.ValueRW.LevelComplete = true;
-            }
-
             ecb.Playback(state.EntityManager);
             ecb.Dispose();
         }
