@@ -1,4 +1,3 @@
-using ECS.Utilities;
 using ECS.Components;
 using ECS.Utilities;
 using Unity.Collections;
@@ -10,6 +9,7 @@ namespace ECS.Systems
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     [UpdateAfter(typeof(BlockMovementSystem))]
     [UpdateAfter(typeof(ColorMergeBlockMovementSystem))]
+    [UpdateAfter(typeof(AdvancedColorMergeBlockMovementSystem))]
     [UpdateAfter(typeof(SpawnColorSystem))]
     public partial struct GameEndConditionSystem : ISystem
     {
@@ -22,9 +22,10 @@ namespace ECS.Systems
             // Determine which merge mode is active
             bool isColorMergeMode = SystemAPI.HasSingleton<ColorMergeSystemTag>();
             bool isStandardMode = SystemAPI.HasSingleton<StandardMergeSystemTag>();
+            bool isAdvancedColorMergeMode = SystemAPI.HasSingleton<AdvancedColorMergeSystemTag>();
             
             // If no mode is active, skip (shouldn't happen, but safety check)
-            if (!isColorMergeMode && !isStandardMode)
+            if (!isColorMergeMode && !isStandardMode && !isAdvancedColorMergeMode)
             {
                 return;
             }
@@ -60,7 +61,8 @@ namespace ECS.Systems
                 ref state, 
                 ref occupancyMap, 
                 gridConfig, 
-                isColorMergeMode
+                isColorMergeMode,
+                isAdvancedColorMergeMode
             );
 
             occupancyMap.Dispose();
@@ -87,7 +89,8 @@ namespace ECS.Systems
             ref SystemState state,
             ref NativeHashMap<int2, Entity> occupancyMap,
             GridConfigComponent gridConfig,
-            bool isColorMergeMode)
+            bool isColorMergeMode,
+            bool isAdvancedColorMergeMode)
         {
             // Reusable directions array
             var directions = new NativeArray<int2>(4, Allocator.Temp);
@@ -122,9 +125,19 @@ namespace ECS.Systems
                         continue;
 
                     // Check if blocks can merge based on game mode
-                    bool canMerge = isColorMergeMode 
-                        ? ColorMergeUtility.CanMerge(block.ValueRO.Color, neighborBlock.Color)
-                        : CanMergeStandard(block.ValueRO, neighborBlock);
+                    bool canMerge;
+                    if (isAdvancedColorMergeMode)
+                    {
+                        canMerge = AdvancedColorMergeUtility.CanMerge(block.ValueRO, neighborBlock);
+                    }
+                    else if (isColorMergeMode)
+                    {
+                        canMerge = ColorMergeUtility.CanMerge(block.ValueRO.Color, neighborBlock.Color);
+                    }
+                    else // Standard mode
+                    {
+                        canMerge = CanMergeStandard(block.ValueRO, neighborBlock);
+                    }
 
                     if (canMerge)
                     {

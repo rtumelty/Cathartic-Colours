@@ -6,5 +6,7 @@ namespace ECS.Components
     
     public struct ColorMergeSystemTag : IComponentData { }
     
+    public struct AdvancedColorMergeSystemTag : IComponentData { }
+    
     public struct SpawnColorSystemTag : IComponentData { }
 }

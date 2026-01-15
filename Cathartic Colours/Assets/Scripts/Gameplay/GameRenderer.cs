@@ -165,14 +165,21 @@ namespace CatharticColours
             });
 
             // Set game mode
-            if (activeGameConfiguration.standardMergeSystem)
+            switch (activeGameConfiguration.gameMode)
             {
-                entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
-            } 
-            else if (activeGameConfiguration.colorMergeSystem)
-            {
-                entityManager.AddComponent<ColorMergeSystemTag>(gameStateEntity);
-            } 
+                case GameConfiguration.GameMode.Standard:
+                    entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
+                    break;
+                case GameConfiguration.GameMode.ColorMerge:
+                    entityManager.AddComponent<ColorMergeSystemTag>(gameStateEntity);
+                    break;
+                case GameConfiguration.GameMode.AdvancedColorMerge:
+                    entityManager.AddComponent<AdvancedColorMergeSystemTag>(gameStateEntity);
+                    break;
+                default:
+                    entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
+                    break;
+            }
 
             // Enable colour spawning
             if (activeGameConfiguration.spawnNextColourSystem)
