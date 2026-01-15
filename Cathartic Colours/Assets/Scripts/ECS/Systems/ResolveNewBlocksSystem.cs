@@ -6,7 +6,7 @@ namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     [UpdateAfter(typeof(BlockMovementSystem))]
-    [UpdateBefore(typeof(SpawnNextColorSystem))]
+    [UpdateBefore(typeof(SpawnColorSystem))]
     public partial struct ResolveNewBlocksSystem : ISystem
     {
         public void OnCreate(ref SystemState state)

@@ -5,7 +5,7 @@ namespace ECS.Systems
 {
     // System to clear move direction after processing
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateAfter(typeof(SpawnNextColorSystem))]
+    [UpdateAfter(typeof(SpawnColorSystem))]
     public partial struct ClearMoveDirectionSystem : ISystem
     {
         public void OnUpdate(ref SystemState state)

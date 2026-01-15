@@ -7,7 +7,7 @@ using Unity.Mathematics;
 namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateAfter(typeof(SpawnNextColorSystem))]
+    [UpdateAfter(typeof(SpawnColorSystem))]
     public partial struct GameEndConditionSystem : ISystem
     {
         public void OnUpdate(ref SystemState state)

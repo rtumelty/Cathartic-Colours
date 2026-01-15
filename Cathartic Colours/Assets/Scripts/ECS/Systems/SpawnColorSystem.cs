@@ -7,8 +7,14 @@ namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     [UpdateAfter(typeof(BlockMovementSystem))]
-    public partial struct SpawnNextColorSystem : ISystem
+    public partial struct SpawnColorSystem : ISystem
     {
+        public void OnCreate(ref SystemState state)
+        {
+            state.RequireForUpdate<GameStateComponent>();
+            state.RequireForUpdate<SpawnColorSystemTag>();
+        }
+        
         public void OnUpdate(ref SystemState state)
         {
             var gameState = SystemAPI.GetSingletonRW<GameStateComponent>();
@@ -61,8 +67,6 @@ namespace ECS.Systems
                 GridPosition = spawnPos,
                 IsNextColorIndicator = true
             });
-
-            gameState.ValueRW.WaitingForInput = true;
 
             ecb.Playback(state.EntityManager);
             ecb.Dispose();

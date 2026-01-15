@@ -164,6 +164,12 @@ namespace CatharticColours
                 Random = new Unity.Mathematics.Random((uint)System.DateTime.Now.Ticks)
             });
 
+            // Enable colour spawning
+            if (activeGameConfiguration.spawnNextColourSystem)
+            {
+                entityManager.AddComponent<SpawnColorSystemTag>(gameStateEntity);
+            }
+
             // Create visual grid
             CreateVisualGrid();
 
@@ -438,10 +444,6 @@ namespace CatharticColours
                 (gridHeight - 1) * (cellSize + cellSpacing) / 2f,
                 -10
             );
-
-            Debug.Log(verticallyConstrained);
-            Debug.Log(gridCenter);
-            Debug.Log(verticalShiftInWorldUnits);
             
             mainCamera.transform.position = gridCenter + new Vector3(0, -verticalShiftInWorldUnits, 0);
             
