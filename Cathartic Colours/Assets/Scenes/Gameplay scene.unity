@@ -432,7 +432,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52e68f2814a00044c841fe2f22def272, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.GameRenderer
-  activeGameConfiguration: {fileID: 11400000, guid: baae6a145213e6242a6a3fd5eab5e4b4, type: 2}
+  fallbackConfiguration: {fileID: 11400000, guid: fb21b3db59f34db4bb68ddb06cdd1843, type: 2}
+  mainMenuSceneName: MainMenu
   cellPrefab: {fileID: 6376311976494174261, guid: b8d7b8b19f464494c9e4dd00e9bf0b93, type: 3}
   blockPrefab: {fileID: 6376311976494174261, guid: 9e3f7f3cb45ea73498faa70cf7a83bc3, type: 3}
   redColor: {r: 1, g: 0, b: 0, a: 1}

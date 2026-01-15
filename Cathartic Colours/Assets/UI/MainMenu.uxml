@@ -1,0 +1,38 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/GameUI.uss?fileID=7433441132597879392&amp;guid=fb18ae0b875ac7d4e9042cc2ab245d54&amp;type=3#GameUI"/>
+    <ui:VisualElement name="root" class="root-container menu-root">
+        <ui:VisualElement name="header" class="header">
+            <ui:Label text="Cathartic Colours" name="title" class="title"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="menu-content" class="menu-content">
+            <ui:Label text="Game Configuration" class="section-title"/>
+            <ui:VisualElement class="menu-section">
+                <ui:Label text="Load Preset:" class="menu-label"/>
+                <ui:DropdownField name="preset-dropdown" class="menu-dropdown"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-section">
+                <ui:Label text="Game Mode:" class="menu-label"/>
+                <ui:DropdownField name="gamemode-dropdown" class="menu-dropdown"/>
+                <ui:Label name="gamemode-description" text="Match color and size to merge" class="menu-description"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-section">
+                <ui:Label text="Grid Width:" class="menu-label"/>
+                <ui:VisualElement class="slider-container">
+                    <ui:SliderInt name="width-slider" low-value="4" high-value="10" class="menu-slider"/>
+                    <ui:Label name="width-value" text="6" class="slider-value"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="menu-section">
+                <ui:Label text="Grid Height:" class="menu-label"/>
+                <ui:VisualElement class="slider-container">
+                    <ui:SliderInt name="height-slider" low-value="4" high-value="10" class="menu-slider"/>
+                    <ui:Label name="height-value" text="6" class="slider-value"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button text="Start Game" name="start-button" class="modal-button primary-button menu-start-button"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="footer" class="footer">
+            <ui:Label text="Configure your game settings and press Start" class="hint-text"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

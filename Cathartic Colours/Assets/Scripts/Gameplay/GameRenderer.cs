@@ -7,6 +7,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using System.Collections.Generic;
 using ECS.Components;
+using Gameplay;
 
 namespace CatharticColours
 {
@@ -26,8 +27,13 @@ namespace CatharticColours
                 Renderer = renderer;
             }
         }
-
-        [SerializeField] private GameConfiguration activeGameConfiguration;
+        
+        [Header("Configuration")]
+        [Tooltip("Fallback configuration - only used if GameConfigurationManager is not initialized")]
+        [SerializeField] private GameConfiguration fallbackConfiguration;
+        
+        [Header("Scene Management")]
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
 
         [Header("Prefabs")]
         [SerializeField] private GameObject cellPrefab;
@@ -48,6 +54,7 @@ namespace CatharticColours
         [SerializeField] public float cellSize = 1f;
         [SerializeField] public float cellSpacing = 0.1f;
         [SerializeField] private Vector4 gridMarginInPixels = new(20, 20, 20, 20);
+        private Button footerMainMenuButton;
 
         // UI Elements
         private Label moveCountLabel;
@@ -104,7 +111,7 @@ namespace CatharticColours
             // Query UI elements
             moveCountLabel = root.Q<Label>("move-count");
             statusLabel = root.Q<Label>("status-label");
-            instructionLabel = root.Query<Label>(className: "instruction-text").First();  // ADD THIS
+            instructionLabel = root.Query<Label>(className: "instruction-text").First();
             gameOverPanel = root.Q<VisualElement>("game-over-panel");
             levelCompletePanel = root.Q<VisualElement>("level-complete-panel");
             
@@ -128,6 +135,26 @@ namespace CatharticColours
                 nextLevelButton.clicked += OnNextLevel;
             }
 
+            // Main menu buttons in modals
+            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
+            if (gameOverMainMenuButton != null)
+            {
+                gameOverMainMenuButton.clicked += ReturnToMainMenu;
+            }
+
+            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
+            if (levelCompleteMainMenuButton != null)
+            {
+                levelCompleteMainMenuButton.clicked += ReturnToMainMenu;
+            }
+
+            // ADD THIS: Footer main menu button
+            footerMainMenuButton = root.Q<Button>("footer-main-menu-button");
+            if (footerMainMenuButton != null)
+            {
+                footerMainMenuButton.clicked += ReturnToMainMenu;
+            }
+
             // Hide panels initially
             if (gameOverPanel != null)
             {
@@ -145,8 +172,25 @@ namespace CatharticColours
             var world = World.DefaultGameObjectInjectionWorld;
             entityManager = world.EntityManager;
 
-            gridWidth = activeGameConfiguration.gridWidth;
-            gridHeight = activeGameConfiguration.gridHeight;
+            // Get configuration from static manager
+            GameConfiguration config = GameConfigurationManager.ActiveConfiguration;
+            
+            // Fallback to serialized config if manager isn't initialized (shouldn't happen in normal flow)
+            if (config == null && fallbackConfiguration != null)
+            {
+                Debug.LogWarning("GameConfigurationManager not initialized, using fallback configuration");
+                GameConfigurationManager.Initialize(fallbackConfiguration);
+                config = GameConfigurationManager.ActiveConfiguration;
+            }
+
+            if (config == null)
+            {
+                Debug.LogError("No configuration available!");
+                return;
+            }
+
+            gridWidth = config.gridWidth;
+            gridHeight = config.gridHeight;
 
             // Create grid config
             var gridConfigEntity = entityManager.CreateEntity();
@@ -170,11 +214,11 @@ namespace CatharticColours
             var gameModeEntity = entityManager.CreateEntity();
             entityManager.AddComponentData(gameModeEntity, new ECS.Components.GameModeComponent
             {
-                Mode = activeGameConfiguration.gameMode
+                Mode = config.gameMode
             });
 
             // Set game mode tags (optional - for systems that still use tags)
-            switch (activeGameConfiguration.gameMode)
+            switch (config.gameMode)
             {
                 case ECS.Components.GameMode.Standard:
                     entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
@@ -188,13 +232,13 @@ namespace CatharticColours
             }
 
             // Enable colour spawning
-            if (activeGameConfiguration.spawnNextColourSystem)
+            if (config.spawnNextColourSystem)
             {
                 entityManager.AddComponent<SpawnColorSystemTag>(gameStateEntity);
             }
 
             // Update instruction text based on game mode
-            UpdateInstructionText(activeGameConfiguration.gameMode);  
+            UpdateInstructionText(config.gameMode);
 
             // Create visual grid
             CreateVisualGrid();
@@ -464,6 +508,24 @@ namespace CatharticColours
             {
                 nextLevelButton.clicked -= OnNextLevel;
             }
+
+            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
+            if (gameOverMainMenuButton != null)
+            {
+                gameOverMainMenuButton.clicked -= ReturnToMainMenu;
+            }
+
+            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
+            if (levelCompleteMainMenuButton != null)
+            {
+                levelCompleteMainMenuButton.clicked -= ReturnToMainMenu;
+            }
+
+            // ADD THIS: Unhook footer button
+            if (footerMainMenuButton != null)
+            {
+                footerMainMenuButton.clicked -= ReturnToMainMenu;
+            }
         }
 
         private void UpdateCamera(float headerHeight, float footerHeight)
@@ -506,6 +568,11 @@ namespace CatharticColours
             
             mainCamera.transform.position = gridCenter + new Vector3(0, -verticalShiftInWorldUnits, 0);
             
+        }
+        
+        private void ReturnToMainMenu()
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(mainMenuSceneName);
         }
     }
 }

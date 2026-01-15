@@ -2,14 +2,17 @@
     <Style src="project://database/Assets/UI/GameUI.uss?fileID=7433441132597879392&amp;guid=fb18ae0b875ac7d4e9042cc2ab245d54&amp;type=3#GameUI"/>
     <ui:VisualElement name="root" class="root-container">
         <ui:VisualElement name="header" class="header">
-            <ui:Label text="Cathartic Colours" name="title" class="title" style="font-size: 96px;"/>
-            <ui:Label text="Moves: 0" name="move-count" class="move-count" style="font-size: 42px;"/>
+            <ui:Label text="Cathartic Colours" name="title" class="title"/>
+            <ui:Label text="Moves: 0" name="move-count" class="move-count"/>
         </ui:VisualElement>
         <ui:VisualElement name="game-over-panel" class="modal-panel">
             <ui:VisualElement class="modal-content">
                 <ui:Label text="Grid Full!" class="modal-title"/>
                 <ui:Label text="No more moves available" class="modal-message"/>
-                <ui:Button text="Restart" name="restart-button" class="modal-button primary-button"/>
+                <ui:VisualElement class="button-row">
+                    <ui:Button text="Restart" name="restart-button" class="modal-button primary-button"/>
+                    <ui:Button text="Main Menu" name="main-menu-button" class="modal-button tertiary-button"/>
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="level-complete-panel" class="modal-panel">
@@ -19,17 +22,19 @@
                 <ui:VisualElement class="button-row">
                     <ui:Button text="Next Level" name="next-level-button" class="modal-button primary-button"/>
                     <ui:Button text="Restart" name="restart-button" class="modal-button secondary-button"/>
+                    <ui:Button text="Main Menu" name="main-menu-button" class="modal-button tertiary-button"/>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement style="flex-grow: 0;">
             <ui:VisualElement name="footer" class="footer" style="flex-grow: 1;">
                 <ui:VisualElement name="instruction-text" class="controls-hint">
-                    <ui:Label text="Merge matching tiles: Small → Medium → Large → Clear" name="" class="instruction-text" style="font-size: 42px;"/>
+                    <ui:Label text="Merge matching tiles: Small → Medium → Large → Clear" class="instruction-text"/>
                 </ui:VisualElement>
-                <ui:VisualElement name="controls-hint" class="controls-hint" style="bottom: auto; position: relative; align-self: auto; align-content: auto; top: auto; font-size: 42px;">
-                    <ui:Label text="Swipe / Arrow Keys / WASD to Move" class="hint-text" style="font-size: 42px;"/>
+                <ui:VisualElement name="controls-hint" class="controls-hint" style="bottom: auto; position: relative; align-self: auto; align-content: auto; top: auto;">
+                    <ui:Label text="Swipe / Arrow Keys / WASD to Move" class="hint-text"/>
                 </ui:VisualElement>
+                <ui:Button text="Main Menu" name="footer-main-menu-button" class="footer-button"/>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
