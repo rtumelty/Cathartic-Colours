@@ -8,8 +8,11 @@ namespace ECS.Components
         None = 0,
         Red = 1,
         Green = 2,
-        Blue = 3,
-        White = 4  // Next color indicator
+        Blue = 4,
+        Yellow = 3,
+        Magenta = 5,
+        Cyan = 7,
+        White = 8  // Next color indicator
     }
 
     public enum BlockSize : byte
