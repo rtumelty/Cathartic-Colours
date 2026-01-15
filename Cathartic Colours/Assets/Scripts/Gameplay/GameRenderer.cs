@@ -1,3 +1,4 @@
+// Assets/Scripts/GameRenderer.cs
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -51,6 +52,7 @@ namespace CatharticColours
         // UI Elements
         private Label moveCountLabel;
         private Label statusLabel;
+        private Label instructionLabel;  
         private VisualElement gameOverPanel;
         private VisualElement levelCompletePanel;
         private Button restartButton;
@@ -102,6 +104,7 @@ namespace CatharticColours
             // Query UI elements
             moveCountLabel = root.Q<Label>("move-count");
             statusLabel = root.Q<Label>("status-label");
+            instructionLabel = root.Query<Label>(className: "instruction-text").First();  // ADD THIS
             gameOverPanel = root.Q<VisualElement>("game-over-panel");
             levelCompletePanel = root.Q<VisualElement>("level-complete-panel");
             
@@ -190,6 +193,9 @@ namespace CatharticColours
                 entityManager.AddComponent<SpawnColorSystemTag>(gameStateEntity);
             }
 
+            // Update instruction text based on game mode
+            UpdateInstructionText(activeGameConfiguration.gameMode);  
+
             // Create visual grid
             CreateVisualGrid();
 
@@ -198,6 +204,32 @@ namespace CatharticColours
 
             // Reset UI
             UpdateUI();
+        }
+
+        private void UpdateInstructionText(GameMode mode)
+        {
+            if (instructionLabel == null) return;
+
+            string instructionText = mode switch
+            {
+                GameMode.Standard => 
+                    "Merge matching tiles: Small → Medium → Large → Clear",
+                
+                GameMode.ColorMerge => 
+                    "Combine primary colors\n" +
+                    "(R+G=Yellow, R+B=Magenta, G+B=Cyan) \n" +
+                    "Secondary + missing primary = White (clears)",
+                
+                GameMode.AdvancedColorMerge => 
+                    "Small same color → Medium\n" +
+                    "Medium primary colors → Large secondary \n" +
+                    "Large secondary + missing medium primary -> White\n" +
+                    "White + White → Clear",
+                
+                _ => "Merge matching tiles"
+            };
+
+            instructionLabel.text = instructionText;
         }
 
         private void CreateVisualGrid()
