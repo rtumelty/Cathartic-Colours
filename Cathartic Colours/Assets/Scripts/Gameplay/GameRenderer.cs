@@ -164,6 +164,16 @@ namespace CatharticColours
                 Random = new Unity.Mathematics.Random((uint)System.DateTime.Now.Ticks)
             });
 
+            // Set game mode
+            if (activeGameConfiguration.standardMergeSystem)
+            {
+                entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
+            } 
+            else if (activeGameConfiguration.colorMergeSystem)
+            {
+                entityManager.AddComponent<ColorMergeSystemTag>(gameStateEntity);
+            } 
+
             // Enable colour spawning
             if (activeGameConfiguration.spawnNextColourSystem)
             {
@@ -301,6 +311,9 @@ namespace CatharticColours
                 BlockColor.Red => redColor,
                 BlockColor.Green => greenColor,
                 BlockColor.Blue => blueColor,
+                BlockColor.Yellow => yellowColor,
+                BlockColor.Cyan => cyanColor,
+                BlockColor.Magenta => magentaColor,
                 BlockColor.White => whiteColor,
                 _ => Color.white
             };

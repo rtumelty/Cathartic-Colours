@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ECS.Utilities;
 using ECS.Components;
 using Unity.Burst;
@@ -10,11 +10,12 @@ namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     [BurstCompile]
-    public partial struct BlockMovementSystem : ISystem
+    public partial struct ColorMergeBlockMovementSystem : ISystem
     {
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<StandardMergeSystemTag>();
+            state.RequireForUpdate<ColorMergeSystemTag>();
         }
 
         [BurstCompile]
@@ -50,7 +51,7 @@ namespace ECS.Systems
                 blocks.Add((block.ValueRO, entity));
             }
 
-            // Sort blocks based on move direction (opposite order for merge evaluation)
+            // Sort blocks based on move direction
             blocks.Sort(new BlockComparer(moveDirection.Direction));
 
             // Process all moving blocks
@@ -94,17 +95,18 @@ namespace ECS.Systems
 
                     var targetBlock = state.EntityManager.GetComponentData<BlockComponent>(targetEntity);
 
-                    // Check if can merge (and target hasn't already been merged into)
-                    if (blockData.Color == targetBlock.Color &&
-                        blockData.Size == targetBlock.Size &&
-                        !blockData.IsNextColorIndicator &&
+                    // Check if can merge using color combination rules
+                    if (!blockData.IsNextColorIndicator &&
                         !targetBlock.IsNextColorIndicator &&
-                        !mergedIntoBlocks.Contains(targetEntity))
+                        !mergedIntoBlocks.Contains(targetEntity) &&
+                        ColorMergeUtility.CanMerge(blockData.Color, targetBlock.Color))
                     {
-                        // Perform merge immediately
-                        if (blockData.Size == BlockSize.Large)
+                        // Perform color merge
+                        BlockColor mergedColor = ColorMergeUtility.MergeColors(blockData.Color, targetBlock.Color);
+                        
+                        if (mergedColor == BlockColor.White)
                         {
-                            // Both blocks destroyed
+                            // Both blocks destroyed (white blocks clear)
                             ecb.DestroyEntity(entity);
                             ecb.DestroyEntity(targetEntity);
                             
@@ -119,13 +121,15 @@ namespace ECS.Systems
                         }
                         else
                         {
-                            // Upgrade target block
+                            // Update target block with new color
                             var newBlock = targetBlock;
-
-                            CreateAudioEventEntity(ecb, targetBlock.Size == BlockSize.Small ? 
+                            newBlock.Color = mergedColor;
+                            
+                            // Audio based on whether we're creating a secondary or combining to white
+                            bool isPrimaryMerge = IsPrimaryColor(blockData.Color) && IsPrimaryColor(targetBlock.Color);
+                            CreateAudioEventEntity(ecb, isPrimaryMerge ? 
                                 FMODEventPaths.BlockMergeSmall : FMODEventPaths.BlockMergeMedium);
                             
-                            newBlock.Size = (BlockSize)((int)targetBlock.Size + 1);
                             ecb.SetComponent(targetEntity, newBlock);
                             
                             // Destroy moving block
@@ -166,13 +170,19 @@ namespace ECS.Systems
             blocks.Dispose();
         }
         
-        private void CreateAudioEventEntity(EntityCommandBuffer ecb, FixedString64Bytes eventPath) {
+        private static bool IsPrimaryColor(BlockColor color)
+        {
+            byte c = (byte)color;
+            return c == 1 || c == 2 || c == 4;
+        }
+        
+        private void CreateAudioEventEntity(EntityCommandBuffer ecb, FixedString64Bytes eventPath)
+        {
             var audioEntity = ecb.CreateEntity();
             ecb.AddComponent(audioEntity, new AudioEventComponent
             {
                 EventPath = eventPath
             });
-            
         }
 
         // Custom comparer for sorting blocks based on move direction
@@ -189,7 +199,6 @@ namespace ECS.Systems
             {
                 int2 posA = a.Item1.GridPosition;
                 int2 posB = b.Item1.GridPosition;
-                // Sort in opposite direction (blocks furthest in move direction process first)
                 return math.dot(posB - posA, moveDirection);
             }
         }

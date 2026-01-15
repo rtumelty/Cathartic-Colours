@@ -9,6 +9,8 @@ public class GameConfiguration : ScriptableObject
     [SerializeField] public int gridHeight = 6;
 
     [Header("Active systems")] [SerializeField]
+    public bool standardMergeSystem = true;
+    public bool colorMergeSystem = false;
     public bool spawnNextColourSystem = true;
 
 }

@@ -1,6 +1,6 @@
 using Unity.Collections;
 
-namespace ECS.Audio
+namespace ECS.Utilities
 {
     public static class FMODEventPaths
     {

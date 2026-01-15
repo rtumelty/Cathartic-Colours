@@ -1,5 +1,6 @@
-using ECS.Audio;
+using ECS.Utilities;
 using ECS.Components;
+using ECS.Utilities;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -7,6 +8,8 @@ using Unity.Mathematics;
 namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateAfter(typeof(BlockMovementSystem))]
+    [UpdateAfter(typeof(ColorMergeBlockMovementSystem))]
     [UpdateAfter(typeof(SpawnColorSystem))]
     public partial struct GameEndConditionSystem : ISystem
     {
@@ -15,6 +18,16 @@ namespace ECS.Systems
             var gameState = SystemAPI.GetSingletonRW<GameStateComponent>();
             
             if (gameState.ValueRW.GameOver) return;
+            
+            // Determine which merge mode is active
+            bool isColorMergeMode = SystemAPI.HasSingleton<ColorMergeSystemTag>();
+            bool isStandardMode = SystemAPI.HasSingleton<StandardMergeSystemTag>();
+            
+            // If no mode is active, skip (shouldn't happen, but safety check)
+            if (!isColorMergeMode && !isStandardMode)
+            {
+                return;
+            }
             
             var gridConfig = SystemAPI.GetSingleton<GridConfigComponent>();
 
@@ -42,45 +55,13 @@ namespace ECS.Systems
                     break;
             }
 
-            // Check if there are valid merges
-            bool hasValidMerge = false;
-            foreach (var (block, entity) in SystemAPI.Query<RefRO<BlockComponent>>().WithEntityAccess())
-            {
-                int2 currentPos = block.ValueRO.GridPosition;
-
-                // Check adjacent cells for potential merges
-                int2[] directions = new int2[]
-                {
-                    new int2(1, 0),  // Right
-                    new int2(-1, 0), // Left
-                    new int2(0, 1),  // Up
-                    new int2(0, -1)  // Down
-                };
-
-                foreach (var direction in directions)
-                {
-                    int2 neighborPos = currentPos + direction;
-                    if (neighborPos.x >= 0 && neighborPos.x < gridConfig.Width &&
-                        neighborPos.y >= 0 && neighborPos.y < gridConfig.Height &&
-                        occupancyMap.TryGetValue(neighborPos, out Entity neighborEntity))
-                    {
-                        var neighborBlock = state.EntityManager.GetComponentData<BlockComponent>(neighborEntity);
-
-                        // Check if blocks can merge
-                        if (block.ValueRO.Color == neighborBlock.Color &&
-                            block.ValueRO.Size == neighborBlock.Size &&
-                            !block.ValueRO.IsNextColorIndicator &&
-                            !neighborBlock.IsNextColorIndicator)
-                        {
-                            hasValidMerge = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (hasValidMerge)
-                    break;
-            }
+            // Check if there are valid merges based on active game mode
+            bool hasValidMerge = CheckForValidMerges(
+                ref state, 
+                ref occupancyMap, 
+                gridConfig, 
+                isColorMergeMode
+            );
 
             occupancyMap.Dispose();
 
@@ -100,6 +81,71 @@ namespace ECS.Systems
             {
                 gameState.ValueRW.GameOver = false;
             }
+        }
+
+        private bool CheckForValidMerges(
+            ref SystemState state,
+            ref NativeHashMap<int2, Entity> occupancyMap,
+            GridConfigComponent gridConfig,
+            bool isColorMergeMode)
+        {
+            // Reusable directions array
+            var directions = new NativeArray<int2>(4, Allocator.Temp);
+            directions[0] = new int2(1, 0);   // Right
+            directions[1] = new int2(-1, 0);  // Left
+            directions[2] = new int2(0, 1);   // Up
+            directions[3] = new int2(0, -1);  // Down
+
+            bool hasValidMerge = false;
+
+            foreach (var (block, entity) in SystemAPI.Query<RefRO<BlockComponent>>().WithEntityAccess())
+            {
+                int2 currentPos = block.ValueRO.GridPosition;
+
+                // Check adjacent cells for potential merges
+                for (int i = 0; i < directions.Length; i++)
+                {
+                    int2 neighborPos = currentPos + directions[i];
+                    
+                    // Check bounds
+                    if (neighborPos.x < 0 || neighborPos.x >= gridConfig.Width ||
+                        neighborPos.y < 0 || neighborPos.y >= gridConfig.Height)
+                        continue;
+
+                    if (!occupancyMap.TryGetValue(neighborPos, out Entity neighborEntity))
+                        continue;
+
+                    var neighborBlock = state.EntityManager.GetComponentData<BlockComponent>(neighborEntity);
+
+                    // Skip indicator blocks
+                    if (block.ValueRO.IsNextColorIndicator || neighborBlock.IsNextColorIndicator)
+                        continue;
+
+                    // Check if blocks can merge based on game mode
+                    bool canMerge = isColorMergeMode 
+                        ? ColorMergeUtility.CanMerge(block.ValueRO.Color, neighborBlock.Color)
+                        : CanMergeStandard(block.ValueRO, neighborBlock);
+
+                    if (canMerge)
+                    {
+                        hasValidMerge = true;
+                        break;
+                    }
+                }
+
+                if (hasValidMerge)
+                    break;
+            }
+
+            directions.Dispose();
+            return hasValidMerge;
+        }
+
+        // Standard merge logic: same color and same size
+        private bool CanMergeStandard(BlockComponent block1, BlockComponent block2)
+        {
+            return block1.Color == block2.Color && 
+                   block1.Size == block2.Size;
         }
     }
 }

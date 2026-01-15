@@ -2,7 +2,9 @@ using Unity.Entities;
 
 namespace ECS.Components
 {
-    public struct SpawnColorSystemTag : IComponentData
-    {
-    }
+    public struct StandardMergeSystemTag : IComponentData { }
+    
+    public struct ColorMergeSystemTag : IComponentData { }
+    
+    public struct SpawnColorSystemTag : IComponentData { }
 }

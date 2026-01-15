@@ -432,18 +432,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52e68f2814a00044c841fe2f22def272, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.GameRenderer
-  gridWidth: 7
-  gridHeight: 7
-  cellSize: 1
-  cellSpacing: 0.1
+  activeGameConfiguration: {fileID: 11400000, guid: baae6a145213e6242a6a3fd5eab5e4b4, type: 2}
   cellPrefab: {fileID: 6376311976494174261, guid: b8d7b8b19f464494c9e4dd00e9bf0b93, type: 3}
   blockPrefab: {fileID: 6376311976494174261, guid: 9e3f7f3cb45ea73498faa70cf7a83bc3, type: 3}
   redColor: {r: 1, g: 0, b: 0, a: 1}
   greenColor: {r: 0, g: 1, b: 0, a: 1}
   blueColor: {r: 0, g: 0, b: 1, a: 1}
   whiteColor: {r: 1, g: 1, b: 1, a: 1}
+  yellowColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  cyanColor: {r: 0, g: 1, b: 1, a: 1}
+  magentaColor: {r: 1, g: 0, b: 1, a: 1}
   backgroundColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   uiDocument: {fileID: 456116780}
+  cellSize: 1
+  cellSpacing: 0.1
   gridMarginInPixels: {x: 20, y: 20, z: 20, w: 20}
 --- !u!114 &1161546157
 MonoBehaviour:
