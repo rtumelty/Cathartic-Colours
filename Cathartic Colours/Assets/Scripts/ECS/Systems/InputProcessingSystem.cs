@@ -36,38 +36,10 @@ namespace ECS.Systems
             {
                 state.EntityManager.SetComponentEnabled<MovingBlockTag>(entity, true);
             }
-            
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
-            
-            // Convert white blocks to random colored blocks - new blocks should not move in same frame
-            foreach (var (block, entity) in SystemAPI.Query<RefRW<BlockComponent>>().WithEntityAccess())
-            {
-                if (block.ValueRO.IsNextColorIndicator)
-                {
-                    block.ValueRW.IsNextColorIndicator = false;
-                    block.ValueRW.Color = GetRandomColor(ref gameState.Random);
-                    block.ValueRW.Size = BlockSize.Small;
-                    
-                    ecb.AddComponent<MovingBlockTag>(entity);
-                    ecb.SetComponentEnabled<MovingBlockTag>(entity, false);
-                    
-                    ecb.AddComponent<PendingMergeTag>(entity);
-                    ecb.SetComponentEnabled<PendingMergeTag>(entity, false);
-                }
-            }
-            
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
 
             gameState.WaitingForInput = false;
             gameState.MoveCount++;
             state.EntityManager.SetComponentData(gameStateEntity, gameState);
-        }
-
-        private BlockColor GetRandomColor(ref Unity.Mathematics.Random random)
-        {
-            int colorIndex = random.NextInt(1, 4);
-            return (BlockColor)colorIndex;
         }
     }
 }
