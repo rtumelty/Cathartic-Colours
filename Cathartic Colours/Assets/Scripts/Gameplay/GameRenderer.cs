@@ -164,20 +164,23 @@ namespace CatharticColours
                 Random = new Unity.Mathematics.Random((uint)System.DateTime.Now.Ticks)
             });
 
-            // Set game mode
+            var gameModeEntity = entityManager.CreateEntity();
+            entityManager.AddComponentData(gameModeEntity, new ECS.Components.GameModeComponent
+            {
+                Mode = activeGameConfiguration.gameMode
+            });
+
+            // Set game mode tags (optional - for systems that still use tags)
             switch (activeGameConfiguration.gameMode)
             {
-                case GameConfiguration.GameMode.Standard:
+                case ECS.Components.GameMode.Standard:
                     entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
                     break;
-                case GameConfiguration.GameMode.ColorMerge:
+                case ECS.Components.GameMode.ColorMerge:
                     entityManager.AddComponent<ColorMergeSystemTag>(gameStateEntity);
                     break;
-                case GameConfiguration.GameMode.AdvancedColorMerge:
+                case ECS.Components.GameMode.AdvancedColorMerge:
                     entityManager.AddComponent<AdvancedColorMergeSystemTag>(gameStateEntity);
-                    break;
-                default:
-                    entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
                     break;
             }
 
@@ -391,6 +394,10 @@ namespace CatharticColours
             entityManager.DestroyEntity(query);
 
             query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
+            entityManager.DestroyEntity(query);
+
+            // Clean up game mode component
+            query = entityManager.CreateEntityQuery(typeof(ECS.Components.GameModeComponent));
             entityManager.DestroyEntity(query);
 
             // Clean up visuals

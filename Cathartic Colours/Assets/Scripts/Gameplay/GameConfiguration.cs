@@ -3,14 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameConfiguration", menuName = "Scriptable Objects/GameConfiguration")]
 public class GameConfiguration : ScriptableObject
 {
-    public enum GameMode : byte
-    {
-        Standard,
-        ColorMerge,
-        AdvancedColorMerge
-    }
-
-    [Header("Gameplay Settings")] public GameMode gameMode = GameMode.Standard;
+    [Header("Gameplay Settings")] 
+    public ECS.Components.GameMode gameMode = ECS.Components.GameMode.Standard;
 
     [Header("Grid Settings")]
     [SerializeField] public int gridWidth = 6;
@@ -18,5 +12,4 @@ public class GameConfiguration : ScriptableObject
 
     [Header("Active systems")] 
     public bool spawnNextColourSystem = true;
-
 }

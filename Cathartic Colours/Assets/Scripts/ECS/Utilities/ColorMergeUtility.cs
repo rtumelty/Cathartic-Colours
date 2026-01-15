@@ -2,20 +2,20 @@
 
 namespace ECS.Utilities
 {
-    public static class ColorMergeUtility
+    public struct ColorMergeUtility : IMergeUtility
     {
-        // Check if two colors can merge
-        public static bool CanMerge(BlockColor color1, BlockColor color2)
+        public bool CanMerge(BlockComponent block1, BlockComponent block2)
         {
             // Can't merge with self
-            if (color1 == color2) return false;
+            if (block1.Color == block2.Color) return false;
             
-            // Can't merge white or none
-            if (color1 == BlockColor.White || color2 == BlockColor.White) return false;
-            if (color1 == BlockColor.None || color2 == BlockColor.None) return false;
+            // Can't merge white, none, or indicators
+            if (block1.Color == BlockColor.White || block2.Color == BlockColor.White) return false;
+            if (block1.Color == BlockColor.None || block2.Color == BlockColor.None) return false;
+            if (block1.IsNextColorIndicator || block2.IsNextColorIndicator) return false;
             
-            byte c1 = (byte)color1;
-            byte c2 = (byte)color2;
+            byte c1 = (byte)block1.Color;
+            byte c2 = (byte)block2.Color;
             
             // Check if both are primary colors (single bit set)
             bool c1IsPrimary = IsPrimaryColor(c1);
@@ -35,31 +35,27 @@ namespace ECS.Utilities
             // Two secondary colors cannot merge
             return false;
         }
-        
-        // Get the result of merging two colors
-        public static BlockColor MergeColors(BlockColor color1, BlockColor color2)
+
+        public MergeResult MergeBlocks(BlockComponent block1, BlockComponent block2)
         {
-            byte result = (byte)((byte)color1 | (byte)color2);
+            byte result = (byte)((byte)block1.Color | (byte)block2.Color);
             
-            // If all three primary colors are present, it becomes white
+            // If all three primary colors are present, it becomes white (and destroys)
             if (result == 7) // Red | Green | Blue = 1 | 2 | 4 = 7
-                return BlockColor.White;
+            {
+                return new MergeResult(BlockColor.White, block1.Size, shouldDestroy: true);
+            }
             
-            return (BlockColor)result;
+            return new MergeResult((BlockColor)result, block1.Size, shouldDestroy: false);
         }
-        
-        // Check if a color is a primary color (single bit set)
+
         private static bool IsPrimaryColor(byte color)
         {
-            // Primary colors have only one bit set: 1, 2, or 4
             return color == 1 || color == 2 || color == 4;
         }
         
-        // Check if primaryColor is the missing component of secondaryColor
         private static bool IsMissingPrimary(byte secondaryColor, byte primaryColor)
         {
-            // The primary color should NOT be present in the secondary color
-            // and when combined, should make all three primaries (white = 7)
             return ((secondaryColor & primaryColor) == 0) && 
                    ((secondaryColor | primaryColor) == 7);
         }

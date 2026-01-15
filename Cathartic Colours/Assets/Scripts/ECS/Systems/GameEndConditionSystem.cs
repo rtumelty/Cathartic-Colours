@@ -8,27 +8,23 @@ namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     [UpdateAfter(typeof(BlockMovementSystem))]
-    [UpdateAfter(typeof(ColorMergeBlockMovementSystem))]
-    [UpdateAfter(typeof(AdvancedColorMergeBlockMovementSystem))]
     [UpdateAfter(typeof(SpawnColorSystem))]
     public partial struct GameEndConditionSystem : ISystem
     {
+        public void OnCreate(ref SystemState state)
+        {
+            state.RequireForUpdate<GameModeComponent>();
+        }
+
         public void OnUpdate(ref SystemState state)
         {
             var gameState = SystemAPI.GetSingletonRW<GameStateComponent>();
             
             if (gameState.ValueRW.GameOver) return;
             
-            // Determine which merge mode is active
-            bool isColorMergeMode = SystemAPI.HasSingleton<ColorMergeSystemTag>();
-            bool isStandardMode = SystemAPI.HasSingleton<StandardMergeSystemTag>();
-            bool isAdvancedColorMergeMode = SystemAPI.HasSingleton<AdvancedColorMergeSystemTag>();
-            
-            // If no mode is active, skip (shouldn't happen, but safety check)
-            if (!isColorMergeMode && !isStandardMode && !isAdvancedColorMergeMode)
-            {
-                return;
-            }
+            // Get the game mode and appropriate merge utility
+            var gameMode = SystemAPI.GetSingleton<GameModeComponent>();
+            IMergeUtility mergeUtility = MergeUtilityFactory.GetMergeUtility(gameMode.Mode);
             
             var gridConfig = SystemAPI.GetSingleton<GridConfigComponent>();
 
@@ -56,13 +52,12 @@ namespace ECS.Systems
                     break;
             }
 
-            // Check if there are valid merges based on active game mode
+            // Check if there are valid merges using the merge utility
             bool hasValidMerge = CheckForValidMerges(
                 ref state, 
                 ref occupancyMap, 
                 gridConfig, 
-                isColorMergeMode,
-                isAdvancedColorMergeMode
+                mergeUtility
             );
 
             occupancyMap.Dispose();
@@ -89,8 +84,7 @@ namespace ECS.Systems
             ref SystemState state,
             ref NativeHashMap<int2, Entity> occupancyMap,
             GridConfigComponent gridConfig,
-            bool isColorMergeMode,
-            bool isAdvancedColorMergeMode)
+            IMergeUtility mergeUtility)
         {
             // Reusable directions array
             var directions = new NativeArray<int2>(4, Allocator.Temp);
@@ -120,26 +114,8 @@ namespace ECS.Systems
 
                     var neighborBlock = state.EntityManager.GetComponentData<BlockComponent>(neighborEntity);
 
-                    // Skip indicator blocks
-                    if (block.ValueRO.IsNextColorIndicator || neighborBlock.IsNextColorIndicator)
-                        continue;
-
-                    // Check if blocks can merge based on game mode
-                    bool canMerge;
-                    if (isAdvancedColorMergeMode)
-                    {
-                        canMerge = AdvancedColorMergeUtility.CanMerge(block.ValueRO, neighborBlock);
-                    }
-                    else if (isColorMergeMode)
-                    {
-                        canMerge = ColorMergeUtility.CanMerge(block.ValueRO.Color, neighborBlock.Color);
-                    }
-                    else // Standard mode
-                    {
-                        canMerge = CanMergeStandard(block.ValueRO, neighborBlock);
-                    }
-
-                    if (canMerge)
+                    // Use merge utility to check if blocks can merge
+                    if (mergeUtility.CanMerge(block.ValueRO, neighborBlock))
                     {
                         hasValidMerge = true;
                         break;
@@ -152,13 +128,6 @@ namespace ECS.Systems
 
             directions.Dispose();
             return hasValidMerge;
-        }
-
-        // Standard merge logic: same color and same size
-        private bool CanMergeStandard(BlockComponent block1, BlockComponent block2)
-        {
-            return block1.Color == block2.Color && 
-                   block1.Size == block2.Size;
         }
     }
 }

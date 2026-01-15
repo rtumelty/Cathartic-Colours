@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using ECS.Utilities;
 using ECS.Components;
-using Unity.Burst;
+using ECS.Utilities;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -9,19 +8,22 @@ using Unity.Mathematics;
 namespace ECS.Systems
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [BurstCompile]
     public partial struct BlockMovementSystem : ISystem
     {
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<StandardMergeSystemTag>();
+            state.RequireForUpdate<GameStateComponent>();
+            state.RequireForUpdate<GameModeComponent>();
         }
 
-        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             if (!SystemAPI.TryGetSingleton<MoveDirectionComponent>(out var moveDirection))
                 return;
+
+            // Get the game mode and appropriate merge utility
+            var gameMode = SystemAPI.GetSingleton<GameModeComponent>();
+            IMergeUtility mergeUtility = MergeUtilityFactory.GetMergeUtility(gameMode.Mode);
 
             var gridConfig = SystemAPI.GetSingleton<GridConfigComponent>();
             var ecb = new EntityCommandBuffer(Allocator.Temp);
@@ -50,7 +52,7 @@ namespace ECS.Systems
                 blocks.Add((block.ValueRO, entity));
             }
 
-            // Sort blocks based on move direction (opposite order for merge evaluation)
+            // Sort blocks based on move direction
             blocks.Sort(new BlockComparer(moveDirection.Direction));
 
             // Process all moving blocks
@@ -94,15 +96,14 @@ namespace ECS.Systems
 
                     var targetBlock = state.EntityManager.GetComponentData<BlockComponent>(targetEntity);
 
-                    // Check if can merge (and target hasn't already been merged into)
-                    if (blockData.Color == targetBlock.Color &&
-                        blockData.Size == targetBlock.Size &&
-                        !blockData.IsNextColorIndicator &&
-                        !targetBlock.IsNextColorIndicator &&
-                        !mergedIntoBlocks.Contains(targetEntity))
+                    // Check if can merge using the appropriate utility
+                    if (!mergedIntoBlocks.Contains(targetEntity) &&
+                        mergeUtility.CanMerge(blockData, targetBlock))
                     {
-                        // Perform merge immediately
-                        if (blockData.Size == BlockSize.Large)
+                        // Perform merge using utility
+                        MergeResult result = mergeUtility.MergeBlocks(blockData, targetBlock);
+                        
+                        if (result.ShouldDestroy)
                         {
                             // Both blocks destroyed
                             ecb.DestroyEntity(entity);
@@ -119,13 +120,15 @@ namespace ECS.Systems
                         }
                         else
                         {
-                            // Upgrade target block
+                            // Update target block with merge result
                             var newBlock = targetBlock;
-
-                            CreateAudioEventEntity(ecb, targetBlock.Size == BlockSize.Small ? 
-                                FMODEventPaths.BlockMergeSmall : FMODEventPaths.BlockMergeMedium);
+                            newBlock.Color = result.Color;
+                            newBlock.Size = result.Size;
                             
-                            newBlock.Size = (BlockSize)((int)targetBlock.Size + 1);
+                            // Audio based on size change
+                            FixedString64Bytes audioPath = GetMergeAudioPath(blockData.Size, result.Size);
+                            CreateAudioEventEntity(ecb, audioPath);
+                            
                             ecb.SetComponent(targetEntity, newBlock);
                             
                             // Destroy moving block
@@ -165,14 +168,25 @@ namespace ECS.Systems
             destroyedBlocks.Dispose();
             blocks.Dispose();
         }
+
+        private FixedString64Bytes GetMergeAudioPath(BlockSize originalSize, BlockSize resultSize)
+        {
+            // If size increased or stayed same but merged
+            if (resultSize == BlockSize.Small || originalSize == BlockSize.Small)
+                return FMODEventPaths.BlockMergeSmall;
+            else if (resultSize == BlockSize.Medium || originalSize == BlockSize.Medium)
+                return FMODEventPaths.BlockMergeMedium;
+            else
+                return FMODEventPaths.BlockMergeLarge;
+        }
         
-        private void CreateAudioEventEntity(EntityCommandBuffer ecb, FixedString64Bytes eventPath) {
+        private void CreateAudioEventEntity(EntityCommandBuffer ecb, FixedString64Bytes eventPath)
+        {
             var audioEntity = ecb.CreateEntity();
             ecb.AddComponent(audioEntity, new AudioEventComponent
             {
                 EventPath = eventPath
             });
-            
         }
 
         // Custom comparer for sorting blocks based on move direction
@@ -189,7 +203,6 @@ namespace ECS.Systems
             {
                 int2 posA = a.Item1.GridPosition;
                 int2 posB = b.Item1.GridPosition;
-                // Sort in opposite direction (blocks furthest in move direction process first)
                 return math.dot(posB - posA, moveDirection);
             }
         }
