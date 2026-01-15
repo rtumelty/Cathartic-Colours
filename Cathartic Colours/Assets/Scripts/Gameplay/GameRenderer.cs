@@ -26,11 +26,7 @@ namespace CatharticColours
             }
         }
 
-        [Header("Grid Settings")]
-        [SerializeField] private int gridWidth = 6;
-        [SerializeField] private int gridHeight = 6;
-        [SerializeField] private float cellSize = 1f;
-        [SerializeField] private float cellSpacing = 0.1f;
+        [SerializeField] private GameConfiguration activeGameConfiguration;
 
         [Header("Prefabs")]
         [SerializeField] private GameObject cellPrefab;
@@ -41,11 +37,15 @@ namespace CatharticColours
         [SerializeField] private Color greenColor = Color.green;
         [SerializeField] private Color blueColor = Color.blue;
         [SerializeField] private Color whiteColor = Color.white;
+        [SerializeField] private Color yellowColor = Color.yellow;
+        [SerializeField] private Color cyanColor = Color.cyan;
+        [SerializeField] private Color magentaColor = Color.magenta;
         [SerializeField] private Color backgroundColor = Color.gray;
 
         [Header("UI and presentation")]
         [SerializeField] private UIDocument uiDocument;
-
+        [SerializeField] public float cellSize = 1f;
+        [SerializeField] public float cellSpacing = 0.1f;
         [SerializeField] private Vector4 gridMarginInPixels = new(20, 20, 20, 20);
 
         // UI Elements
@@ -57,6 +57,8 @@ namespace CatharticColours
         private Button nextLevelButton;
 
         private Dictionary<Entity, BlockVisual> blockVisuals = new Dictionary<Entity, BlockVisual>();
+        private int gridHeight;
+        private int gridWidth;
         private GameObject[,] gridCells;
         private EntityManager entityManager;
         
@@ -139,6 +141,9 @@ namespace CatharticColours
         {
             var world = World.DefaultGameObjectInjectionWorld;
             entityManager = world.EntityManager;
+
+            gridWidth = activeGameConfiguration.gridWidth;
+            gridHeight = activeGameConfiguration.gridHeight;
 
             // Create grid config
             var gridConfigEntity = entityManager.CreateEntity();
