@@ -11,8 +11,8 @@ namespace ECS.Components
         Blue = 4,
         Yellow = 3,
         Magenta = 5,
-        Cyan = 7,
-        White = 8  // Next color indicator
+        Cyan = 6,
+        White = 7  // Next color indicator
     }
 
     public enum BlockSize : byte
