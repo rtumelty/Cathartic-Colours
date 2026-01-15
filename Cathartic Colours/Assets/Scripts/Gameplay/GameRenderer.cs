@@ -1,15 +1,12 @@
-// Assets/Scripts/GameRenderer.cs
-using System;
-using UnityEngine;
-using UnityEngine.UIElements;
-using Unity.Entities;
-using Unity.Collections;
-using Unity.Mathematics;
 using System.Collections.Generic;
 using ECS.Components;
-using Gameplay;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
+using UnityEngine;
+using UnityEngine.UIElements;
 
-namespace CatharticColours
+namespace Gameplay
 {
     public class GameRenderer : MonoBehaviour
     {
@@ -460,7 +457,7 @@ namespace CatharticColours
             }
         }
 
-        public void RestartGame()
+        private void CleanUp()
         {
             // Clean up existing entities
             var query = entityManager.CreateEntityQuery(typeof(BlockComponent));
@@ -485,14 +482,17 @@ namespace CatharticColours
                 }
             }
             blockVisuals.Clear();
-
-            // Reinitialize
+        }
+        
+        public void RestartGame()
+        {
+            CleanUp();
             InitializeGame();
         }
 
         private void OnNextLevel()
         {
-            // Implement level progression logic
+            // TODO: Implement level progression logic
             RestartGame();
         }
 
@@ -521,11 +521,12 @@ namespace CatharticColours
                 levelCompleteMainMenuButton.clicked -= ReturnToMainMenu;
             }
 
-            // ADD THIS: Unhook footer button
             if (footerMainMenuButton != null)
             {
                 footerMainMenuButton.clicked -= ReturnToMainMenu;
             }
+            
+            CleanUp();
         }
 
         private void UpdateCamera(float headerHeight, float footerHeight)
