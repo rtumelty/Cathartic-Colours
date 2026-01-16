@@ -254,7 +254,8 @@ namespace Gameplay
             string instructionText = mode switch
             {
                 GameMode.Standard => 
-                    "Merge matching tiles: Small → Medium → Large → Clear",
+                    "Merge matching tiles\n" +
+                    "Small → Medium → Large → Clear",
                 
                 GameMode.ColorMerge => 
                     "Combine primary colors\n" +
