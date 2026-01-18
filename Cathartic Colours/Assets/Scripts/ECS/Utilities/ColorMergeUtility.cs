@@ -43,10 +43,10 @@ namespace ECS.Utilities
             // If all three primary colors are present, it becomes white (and destroys)
             if (result == 7) // Red | Green | Blue = 1 | 2 | 4 = 7
             {
-                return new MergeResult(BlockColor.White, block1.Size, shouldDestroy: true);
+                return new MergeResult(BlockColor.White, block1.Size, ScoreTier.Tier3, shouldDestroy: true);
             }
             
-            return new MergeResult((BlockColor)result, block1.Size, shouldDestroy: false);
+            return new MergeResult((BlockColor)result, block1.Size, ScoreTier.Tier1, shouldDestroy: false);
         }
 
         private static bool IsPrimaryColor(byte color)

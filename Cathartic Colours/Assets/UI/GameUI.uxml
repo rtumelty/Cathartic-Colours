@@ -1,9 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/GameUI.uss?fileID=7433441132597879392&amp;guid=fb18ae0b875ac7d4e9042cc2ab245d54&amp;type=3#GameUI"/>
     <ui:VisualElement name="root" class="root-container">
-        <ui:VisualElement name="header" class="header">
+        <ui:VisualElement name="header" class="header" style="flex-direction: column; align-items: flex-start;">
             <ui:Label text="Cathartic Colours" name="title" class="title"/>
             <ui:Label text="Moves: 0" name="move-count" class="move-count"/>
+            <ui:Label text="Score: 0&#10;" name="score-label" class="score-label"/>
         </ui:VisualElement>
         <ui:VisualElement name="game-over-panel" class="modal-panel">
             <ui:VisualElement class="modal-content">

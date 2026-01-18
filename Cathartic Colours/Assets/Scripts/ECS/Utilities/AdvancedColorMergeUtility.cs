@@ -58,28 +58,28 @@ namespace ECS.Utilities
             if (block1.Size == BlockSize.Small && block2.Size == BlockSize.Small &&
                 block1.Color == block2.Color)
             {
-                return new MergeResult(block1.Color, BlockSize.Medium);
+                return new MergeResult(block1.Color, BlockSize.Medium, ScoreTier.Tier1);
             }
 
             // Rule 2: Medium + Medium (different primaries) → Large secondary
             if (block1.Size == BlockSize.Medium && block2.Size == BlockSize.Medium)
             {
                 BlockColor mergedColor = (BlockColor)((byte)block1.Color | (byte)block2.Color);
-                return new MergeResult(mergedColor, BlockSize.Large);
+                return new MergeResult(mergedColor, BlockSize.Large, ScoreTier.Tier2);
             }
 
             // Rule 3: Large secondary + Medium primary → Large white
             if ((block1.Size == BlockSize.Large && block2.Size == BlockSize.Medium) ||
                 (block1.Size == BlockSize.Medium && block2.Size == BlockSize.Large))
             {
-                return new MergeResult(BlockColor.White, BlockSize.Large);
+                return new MergeResult(BlockColor.White, BlockSize.Large, ScoreTier.Tier3);
             }
 
             // Rule 4: Large white + Large white → Destroyed
             if (block1.Size == BlockSize.Large && block2.Size == BlockSize.Large &&
                 block1.Color == BlockColor.White && block2.Color == BlockColor.White)
             {
-                return new MergeResult(BlockColor.None, BlockSize.None, shouldDestroy: true);
+                return new MergeResult(BlockColor.None, BlockSize.None, ScoreTier.Tier4, shouldDestroy: true);
             }
 
             // Fallback (should never reach here)

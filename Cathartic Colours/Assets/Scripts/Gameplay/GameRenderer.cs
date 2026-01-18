@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Data;
 using ECS.Components;
 using Unity.Collections;
 using Unity.Entities;
@@ -55,6 +56,7 @@ namespace Gameplay
 
         // UI Elements
         private Label moveCountLabel;
+        private Label scoreLabel;
         private Label statusLabel;
         private Label instructionLabel;  
         private VisualElement gameOverPanel;
@@ -67,6 +69,9 @@ namespace Gameplay
         private int gridWidth;
         private GameObject[,] gridCells;
         private EntityManager entityManager;
+        
+        private Entity gameStateEntity;
+        private Entity scoreEntity;
         
         private Camera mainCamera;
         private LayoutObserver layoutObserver;
@@ -107,6 +112,7 @@ namespace Gameplay
 
             // Query UI elements
             moveCountLabel = root.Q<Label>("move-count");
+            scoreLabel = root.Q<Label>("score-label");
             statusLabel = root.Q<Label>("status-label");
             instructionLabel = root.Query<Label>(className: "instruction-text").First();
             gameOverPanel = root.Q<VisualElement>("game-over-panel");
@@ -145,7 +151,6 @@ namespace Gameplay
                 levelCompleteMainMenuButton.clicked += ReturnToMainMenu;
             }
 
-            // ADD THIS: Footer main menu button
             footerMainMenuButton = root.Q<Button>("footer-main-menu-button");
             if (footerMainMenuButton != null)
             {
@@ -198,7 +203,7 @@ namespace Gameplay
             });
 
             // Create game state
-            var gameStateEntity = entityManager.CreateEntity();
+            gameStateEntity = entityManager.CreateEntity();
             entityManager.AddComponentData(gameStateEntity, new GameStateComponent
             {
                 WaitingForInput = true,
@@ -206,6 +211,14 @@ namespace Gameplay
                 LevelComplete = false,
                 MoveCount = 0,
                 Random = new Unity.Mathematics.Random((uint)System.DateTime.Now.Ticks)
+            });
+
+            // Create score entity and cache reference
+            scoreEntity = entityManager.CreateEntity();
+            entityManager.AddComponentData(scoreEntity, new ScoreComponent
+            {
+                TotalScore = 0,
+                CurrentFrameScore = 0
             });
 
             var gameModeEntity = entityManager.CreateEntity();
@@ -375,7 +388,6 @@ namespace Gameplay
                 if (!existingEntities.Contains(kvp.Key))
                 {
                     kvp.Value.Block.Disappear();
-
                     toRemove.Add(kvp.Key);
                 }
             }
@@ -407,54 +419,63 @@ namespace Gameplay
 
         private void UpdateUI()
         {
-            var query = entityManager.CreateEntityQuery(typeof(GameStateComponent));
-            if (query.TryGetSingleton<GameStateComponent>(out var gameState))
+            // Check if entities are valid before accessing them
+            if (gameStateEntity == Entity.Null || !entityManager.Exists(gameStateEntity))
+                return;
+
+            var gameState = entityManager.GetComponentData<GameStateComponent>(gameStateEntity);
+
+            // Update move count
+            if (moveCountLabel != null)
             {
-                // Update move count
-                if (moveCountLabel != null)
-                {
-                    moveCountLabel.text = $"Moves: {gameState.MoveCount}";
-                }
+                moveCountLabel.text = $"Moves: {gameState.MoveCount}";
+            }
 
-                // Update status
-                if (statusLabel != null)
-                {
-                    if (gameState.GameOver)
-                    {
-                        statusLabel.text = "Grid Full!";
-                    }
-                    else if (gameState.LevelComplete)
-                    {
-                        statusLabel.text = "Level Complete!";
-                    }
-                    else if (gameState.WaitingForInput)
-                    {
-                        statusLabel.text = "Your turn...";
-                    }
-                    else
-                    {
-                        statusLabel.text = "Processing...";
-                    }
-                }
+            // Update score display
+            if (scoreLabel != null && scoreEntity != Entity.Null && entityManager.Exists(scoreEntity))
+            {
+                var score = entityManager.GetComponentData<ScoreComponent>(scoreEntity);
+                scoreLabel.text = $"Score: {score.TotalScore}";
+            }
 
-                // Show/hide panels
-                if (gameState.GameOver && gameOverPanel != null)
+            // Update status
+            if (statusLabel != null)
+            {
+                if (gameState.GameOver)
                 {
-                    gameOverPanel.style.display = DisplayStyle.Flex;
+                    statusLabel.text = "Grid Full!";
                 }
-                else if (gameOverPanel != null)
+                else if (gameState.LevelComplete)
                 {
-                    gameOverPanel.style.display = DisplayStyle.None;
+                    statusLabel.text = "Level Complete!";
                 }
+                else if (gameState.WaitingForInput)
+                {
+                    statusLabel.text = "Your turn...";
+                }
+                else
+                {
+                    statusLabel.text = "Processing...";
+                }
+            }
 
-                if (gameState.LevelComplete && levelCompletePanel != null)
-                {
-                    levelCompletePanel.style.display = DisplayStyle.Flex;
-                }
-                else if (levelCompletePanel != null)
-                {
-                    levelCompletePanel.style.display = DisplayStyle.None;
-                }
+            // Show/hide panels
+            if (gameState.GameOver && gameOverPanel != null)
+            {
+                gameOverPanel.style.display = DisplayStyle.Flex;
+            }
+            else if (gameOverPanel != null)
+            {
+                gameOverPanel.style.display = DisplayStyle.None;
+            }
+
+            if (gameState.LevelComplete && levelCompletePanel != null)
+            {
+                levelCompletePanel.style.display = DisplayStyle.Flex;
+            }
+            else if (levelCompletePanel != null)
+            {
+                levelCompletePanel.style.display = DisplayStyle.None;
             }
         }
 
@@ -464,8 +485,18 @@ namespace Gameplay
             var query = entityManager.CreateEntityQuery(typeof(BlockComponent));
             entityManager.DestroyEntity(query);
 
-            query = entityManager.CreateEntityQuery(typeof(GameStateComponent));
-            entityManager.DestroyEntity(query);
+            // Clean up cached entities if they exist
+            if (gameStateEntity != Entity.Null && entityManager.Exists(gameStateEntity))
+            {
+                entityManager.DestroyEntity(gameStateEntity);
+                gameStateEntity = Entity.Null;
+            }
+
+            if (scoreEntity != Entity.Null && entityManager.Exists(scoreEntity))
+            {
+                entityManager.DestroyEntity(scoreEntity);
+                scoreEntity = Entity.Null;
+            }
 
             query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
             entityManager.DestroyEntity(query);
@@ -569,7 +600,6 @@ namespace Gameplay
             );
             
             mainCamera.transform.position = gridCenter + new Vector3(0, -verticalShiftInWorldUnits, 0);
-            
         }
         
         private void ReturnToMainMenu()

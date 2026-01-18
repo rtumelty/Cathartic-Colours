@@ -14,17 +14,17 @@ namespace ECS.Utilities
 
         public MergeResult MergeBlocks(BlockComponent block1, BlockComponent block2)
         {
-            // Same color and size, upgrade to next size
             if (block1.Size == BlockSize.Large)
             {
-                // Large blocks are destroyed when merged
-                return new MergeResult(block1.Color, BlockSize.Large, shouldDestroy: true);
+                return new MergeResult(block1.Color, BlockSize.Large, ScoreTier.Tier3, shouldDestroy: true);
+            }
+            else if (block1.Size == BlockSize.Medium)
+            {
+                return new MergeResult(block1.Color, BlockSize.Large, ScoreTier.Tier2);
             }
             else
             {
-                // Upgrade to next size
-                BlockSize newSize = (BlockSize)((int)block1.Size + 1);
-                return new MergeResult(block1.Color, newSize, shouldDestroy: false);
+                return new MergeResult(block1.Color, BlockSize.Medium, ScoreTier.Tier1);
             }
         }
     }

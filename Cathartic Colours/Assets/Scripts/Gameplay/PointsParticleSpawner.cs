@@ -20,15 +20,38 @@ public class PointsParticleSpawner : MonoBehaviour
     
     [Header("Positioning")]
     public bool centerAlignment = true; // Whether to center the group of numbers
+    
+    [Header("Emission Settings")]
+    [SerializeField] float minAngle = -45f;  // Left edge of arc (degrees)
+    [SerializeField] float maxAngle = 45f;   // Right edge of arc (degrees)
+    [SerializeField] float minSpeed = 2f;    // Minimum launch speed
+    [SerializeField] float maxSpeed = 5f;    // Maximum launch speed
 
     private void SpawnParticles(Vector3 worldPosition, int count)
     {
         // Create emission parameters with minimal overrides
         ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
         emitParams.position = worldPosition;
+        //emitParams.velocity = GetRandomArcVelocity();
+        Debug.Log(count);
         
-        // Emit a single particle
         particleSystem.Emit(emitParams, count);
+    }
+    
+    private Vector3 GetRandomArcVelocity()
+    {
+        // Generate random values
+        float randomAngle = UnityEngine.Random.Range(minAngle, maxAngle);
+        float randomSpeed = UnityEngine.Random.Range(minSpeed, maxSpeed);
+    
+        // Convert to radians and calculate velocity vector
+        float angleRad = randomAngle * Mathf.Deg2Rad;
+    
+        return new Vector3(
+            Mathf.Cos(angleRad) * randomSpeed,  // X component
+            Mathf.Sin(angleRad) * randomSpeed,  // Y component  
+            0f                                   // Z component (2D game)
+        );
     }
 
     public void SpawnNumberParticle(int value, Vector3 worldPosition)
@@ -48,6 +71,7 @@ public class PointsParticleSpawner : MonoBehaviour
 
     public void Emit(int pointValue, Vector3 worldPosition)
     {
+        Debug.Log(pointValue);
         if (spawnMode == SpawnMode.Text)
         {
             SpawnPoints(pointValue, worldPosition);
@@ -57,19 +81,18 @@ public class PointsParticleSpawner : MonoBehaviour
             SpawnPointsScaled(pointValue, worldPosition);
         }
     }
-
+    
     private void SpawnPoints(int points, Vector3 position)
     {
-        // Convert points to string to get digit count
-        string pointsText = points.ToString();
-        int digitCount = pointsText.Length;
-        
-        if (digitCount == 0) return;
+        if (points <= 0) return;
 
+        // Calculate digit count using integer operations
+        int digitCount = Mathf.FloorToInt(Mathf.Log10(points)) + 1;
+    
         // Calculate spacing between particles
         float spacing = particleWidth * spacingMultiplier;
         float totalWidth = (digitCount - 1) * spacing;
-        
+    
         // Calculate starting position (leftmost particle position)
         Vector3 startPosition = position;
         if (centerAlignment)
@@ -81,7 +104,12 @@ public class PointsParticleSpawner : MonoBehaviour
         for (int i = 0; i < digitCount; i++)
         {
             Vector3 digitPosition = startPosition + Vector3.right * (spacing * i);
-            SpawnNumberParticle(points / (10 * digitCount), digitPosition);
+        
+            // Calculate the divisor for this digit position (leftmost first)
+            int divisor = (int)Mathf.Pow(10, digitCount - 1 - i);
+            int digit = (points / divisor) % 10;
+        
+            SpawnNumberParticle(digit, digitPosition);
         }
     }
     
@@ -89,7 +117,7 @@ public class PointsParticleSpawner : MonoBehaviour
     private void SpawnPointsScaled(int points, Vector3 position)
     {
         // Determine how many particles to spawn based on point value
-        int particleCount = Mathf.Clamp(points / 100, 1, 5); // 1-5 particles based on points
-        SpawnParticles(position, particleCount);
+        //int particleCount = Mathf.Clamp(points / 100, 1, 5); // 1-5 particles based on points
+        SpawnParticles(position, points);
     }
 }

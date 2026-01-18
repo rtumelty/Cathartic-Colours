@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Data;
+using UnityEngine;
 
 public static class GameConfigurationManager
 {
@@ -29,9 +30,6 @@ public static class GameConfigurationManager
 
         // Create a runtime copy that's not bound to an asset file
         _activeConfiguration = Object.Instantiate(defaultConfig);
-        
-        Debug.Log($"GameConfigurationManager initialized: Mode={_activeConfiguration.gameMode}, " +
-                  $"Grid={_activeConfiguration.gridWidth}x{_activeConfiguration.gridHeight}");
     }
 
     /// <summary>

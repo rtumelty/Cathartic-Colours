@@ -117,6 +117,7 @@ namespace ECS.Systems
                             occupancyMap.Remove(targetPos);
                             
                             CreateAudioEventEntity(ecb, FMODEventPaths.BlockMergeLarge);
+                            CreateMergeEventEntity(ecb, targetPos, result);
                         }
                         else
                         {
@@ -128,6 +129,7 @@ namespace ECS.Systems
                             // Audio based on size change
                             FixedString64Bytes audioPath = GetMergeAudioPath(blockData.Size, result.Size);
                             CreateAudioEventEntity(ecb, audioPath);
+                            CreateMergeEventEntity(ecb, targetPos, result);
                             
                             ecb.SetComponent(targetEntity, newBlock);
                             
@@ -186,6 +188,17 @@ namespace ECS.Systems
             ecb.AddComponent(audioEntity, new AudioEventComponent
             {
                 EventPath = eventPath
+            });
+        }
+        
+        private void CreateMergeEventEntity(EntityCommandBuffer ecb, int2 position, MergeResult result)
+        {
+            var mergeEventEntity = ecb.CreateEntity();
+            ecb.AddComponent(mergeEventEntity, new MergeEventComponent
+            {
+                Position = position,
+                Tier = result.ScoreTier,
+                Points = 0 
             });
         }
 

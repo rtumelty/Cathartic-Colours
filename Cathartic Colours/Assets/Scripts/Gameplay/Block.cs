@@ -18,7 +18,6 @@ public class Block : MonoBehaviour
 
     public void Disappear()
     {
-        Debug.Log("Disappear");
         animator.SetTrigger("Disappear");
     }
 
