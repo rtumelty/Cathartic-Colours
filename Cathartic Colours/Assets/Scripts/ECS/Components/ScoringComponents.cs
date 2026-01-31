@@ -16,7 +16,7 @@ namespace ECS.Components
     {
         public int2 Position;       // Grid position where merge occurred
         public ScoreTier Tier;      // Scoring tier for this merge
-        public int Points;          // Points awarded (calculated from tier)
+        public BlockColor Color;    // Colour of resulting block
     }
 
     public struct ScoreComponent : IComponentData

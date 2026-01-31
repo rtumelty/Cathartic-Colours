@@ -54,14 +54,13 @@ namespace ECS.Systems
 
                 // Update merge event with calculated points
                 var updatedEvent = mergeEvent.ValueRO;
-                updatedEvent.Points = points;
                 mergeEvent.ValueRW = updatedEvent;
 
                 // Add to frame score
                 frameScore += points;
 
                 // Convert grid position to world position
-                Vector3 worldPosition = GridToWorldPosition(mergeEvent.ValueRO.Position, gameRenderer);
+                Vector3 worldPosition = GridToWorldPosition(mergeEvent.ValueRO.Position, gameRenderer) + new Vector3(0,0, -5);
 
                 // Spawn particles at merge location
                 particleSpawner.Emit(points, worldPosition);

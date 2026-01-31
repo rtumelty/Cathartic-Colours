@@ -29,29 +29,10 @@ public class PointsParticleSpawner : MonoBehaviour
 
     private void SpawnParticles(Vector3 worldPosition, int count)
     {
-        // Create emission parameters with minimal overrides
         ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
         emitParams.position = worldPosition;
-        //emitParams.velocity = GetRandomArcVelocity();
-        Debug.Log(count);
         
         particleSystem.Emit(emitParams, count);
-    }
-    
-    private Vector3 GetRandomArcVelocity()
-    {
-        // Generate random values
-        float randomAngle = UnityEngine.Random.Range(minAngle, maxAngle);
-        float randomSpeed = UnityEngine.Random.Range(minSpeed, maxSpeed);
-    
-        // Convert to radians and calculate velocity vector
-        float angleRad = randomAngle * Mathf.Deg2Rad;
-    
-        return new Vector3(
-            Mathf.Cos(angleRad) * randomSpeed,  // X component
-            Mathf.Sin(angleRad) * randomSpeed,  // Y component  
-            0f                                   // Z component (2D game)
-        );
     }
 
     public void SpawnNumberParticle(int value, Vector3 worldPosition)
@@ -113,7 +94,6 @@ public class PointsParticleSpawner : MonoBehaviour
         }
     }
     
-    // Alternative method if you want to spawn different amounts based on point value
     private void SpawnPointsScaled(int points, Vector3 position)
     {
         // Determine how many particles to spawn based on point value

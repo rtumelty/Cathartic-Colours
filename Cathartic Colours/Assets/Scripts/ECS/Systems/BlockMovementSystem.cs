@@ -198,7 +198,7 @@ namespace ECS.Systems
             {
                 Position = position,
                 Tier = result.ScoreTier,
-                Points = 0 
+                Color = result.Color
             });
         }
 
