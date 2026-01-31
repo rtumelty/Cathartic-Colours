@@ -12,6 +12,7 @@ namespace CatharticColours.UI
     {
         [Header("Configuration")]
         [SerializeField] private GameConfiguration defaultConfiguration;
+        [SerializeField] private ColorProfile defaultColorProfile;
         [SerializeField] private GameConfiguration[] presetConfigurations;
         [SerializeField] private string gameSceneName = "GameScene";
         
@@ -38,7 +39,7 @@ namespace CatharticColours.UI
             // Initialize the static configuration manager with a runtime copy
             if (!GameConfigurationManager.IsInitialized)
             {
-                GameConfigurationManager.Initialize(defaultConfiguration);
+                GameConfigurationManager.Initialize(defaultConfiguration, defaultColorProfile);
             }
 
             SetupUI();

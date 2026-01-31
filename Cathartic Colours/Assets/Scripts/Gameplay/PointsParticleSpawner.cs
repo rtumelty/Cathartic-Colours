@@ -1,4 +1,5 @@
 using System;
+using ECS.Components;
 using UnityEngine;
 
 public class PointsParticleSpawner : MonoBehaviour
@@ -27,10 +28,11 @@ public class PointsParticleSpawner : MonoBehaviour
     [SerializeField] float minSpeed = 2f;    // Minimum launch speed
     [SerializeField] float maxSpeed = 5f;    // Maximum launch speed
 
-    private void SpawnParticles(Vector3 worldPosition, int count)
+    private void SpawnParticles(Vector3 worldPosition, BlockColor blockColor, int count)
     {
         ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
         emitParams.position = worldPosition;
+        emitParams.startColor = GameConfigurationManager.ActiveColorProfile.GetColor(blockColor);
         
         particleSystem.Emit(emitParams, count);
     }
@@ -50,7 +52,7 @@ public class PointsParticleSpawner : MonoBehaviour
         digitParticleSystem.Emit(emitParams, 1);
     }
 
-    public void Emit(int pointValue, Vector3 worldPosition)
+    public void Emit(int pointValue, BlockColor mergeColor, Vector3 worldPosition)
     {
         Debug.Log(pointValue);
         if (spawnMode == SpawnMode.Text)
@@ -59,7 +61,7 @@ public class PointsParticleSpawner : MonoBehaviour
         }
         else if (spawnMode == SpawnMode.ParticleCount) 
         {
-            SpawnPointsScaled(pointValue, worldPosition);
+            SpawnPointsScaled(pointValue, worldPosition, mergeColor);
         }
     }
     
@@ -94,10 +96,10 @@ public class PointsParticleSpawner : MonoBehaviour
         }
     }
     
-    private void SpawnPointsScaled(int points, Vector3 position)
+    private void SpawnPointsScaled(int points, Vector3 position, BlockColor mergeColor)
     {
         // Determine how many particles to spawn based on point value
         //int particleCount = Mathf.Clamp(points / 100, 1, 5); // 1-5 particles based on points
-        SpawnParticles(position, points);
+        SpawnParticles(position, mergeColor, points);
     }
 }

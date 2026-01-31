@@ -4,6 +4,7 @@ using UnityEngine;
 public static class GameConfigurationManager
 {
     private static GameConfiguration _activeConfiguration;
+    private static ColorProfile _activeColorProfile;
 
     public static GameConfiguration ActiveConfiguration
     {
@@ -17,10 +18,22 @@ public static class GameConfigurationManager
         }
     }
 
+    public static ColorProfile ActiveColorProfile
+    {
+        get
+        {
+            if (_activeColorProfile == null)
+            {
+                Debug.LogWarning("GameConfigurationManager not initialized. Call Initialize() first.");
+            }
+            return _activeColorProfile;
+        }
+    }
+
     /// <summary>
-    /// Initialize with a runtime copy of the default configuration
+    /// Initialize with a runtime copy of the configurations
     /// </summary>
-    public static void Initialize(GameConfiguration defaultConfig)
+    public static void Initialize(GameConfiguration defaultConfig, ColorProfile defaultColorProfile)
     {
         if (defaultConfig == null)
         {
@@ -30,6 +43,7 @@ public static class GameConfigurationManager
 
         // Create a runtime copy that's not bound to an asset file
         _activeConfiguration = Object.Instantiate(defaultConfig);
+        _activeColorProfile = Object.Instantiate(defaultColorProfile);
     }
 
     /// <summary>

@@ -63,7 +63,7 @@ namespace ECS.Systems
                 Vector3 worldPosition = GridToWorldPosition(mergeEvent.ValueRO.Position, gameRenderer) + new Vector3(0,0, -5);
 
                 // Spawn particles at merge location
-                particleSpawner.Emit(points, worldPosition);
+                particleSpawner.Emit(points, mergeEvent.ValueRO.Color, worldPosition);
 
                 // Clean up the merge event
                 ecb.DestroyEntity(entity);

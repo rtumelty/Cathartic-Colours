@@ -400,6 +400,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.MainMenuController
   defaultConfiguration: {fileID: 11400000, guid: fb21b3db59f34db4bb68ddb06cdd1843, type: 2}
+  defaultColorProfile: {fileID: 11400000, guid: 49a37da81e2534f7c985e516a6703ca0, type: 2}
   presetConfigurations:
   - {fileID: 11400000, guid: 2f3788a2278d2da4489744f5ea6e8007, type: 2}
   - {fileID: 11400000, guid: ad81839d1ff15734d9574bd32a6b7430, type: 2}

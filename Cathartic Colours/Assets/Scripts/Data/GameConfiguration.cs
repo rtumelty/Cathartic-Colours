@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Data
 {
-    [CreateAssetMenu(fileName = "GameConfiguration", menuName = "Scriptable Objects/GameConfiguration")]
+    [CreateAssetMenu(fileName = "GameConfiguration", menuName = "CatharticColors/GameConfiguration")]
     public class GameConfiguration : ScriptableObject
     {
         [Header("Gameplay Settings")] 

@@ -27,8 +27,9 @@ namespace Gameplay
         }
         
         [Header("Configuration")]
-        [Tooltip("Fallback configuration - only used if GameConfigurationManager is not initialized")]
+        [Tooltip("Fallback configurations - used if GameConfigurationManager is not initialized")]
         [SerializeField] private GameConfiguration fallbackConfiguration;
+        [SerializeField] private ColorProfile fallbackColorProfile;
         
         [Header("Scene Management")]
         [SerializeField] private string mainMenuSceneName = "MainMenu";
@@ -37,15 +38,6 @@ namespace Gameplay
         [SerializeField] private GameObject cellPrefab;
         [SerializeField] private GameObject blockPrefab;
 
-        [Header("Colors")]
-        [SerializeField] private Color redColor = Color.red;
-        [SerializeField] private Color greenColor = Color.green;
-        [SerializeField] private Color blueColor = Color.blue;
-        [SerializeField] private Color whiteColor = Color.white;
-        [SerializeField] private Color yellowColor = Color.yellow;
-        [SerializeField] private Color cyanColor = Color.cyan;
-        [SerializeField] private Color magentaColor = Color.magenta;
-        [SerializeField] private Color backgroundColor = Color.gray;
 
         [Header("UI and presentation")]
         [SerializeField] private UIDocument uiDocument;
@@ -79,8 +71,8 @@ namespace Gameplay
         private void Awake()
         {
             mainCamera = Camera.main;
-            layoutObserver = new LayoutObserver(uiDocument);
-            
+
+            LoadConfigs();
             SetupUI();
             InitializeGame();
         }
@@ -95,6 +87,20 @@ namespace Gameplay
             layoutObserver.OnLayoutRecalculated -= UpdateCamera;
         }
 
+        void LoadConfigs()
+        {
+            // Get configuration from static manager
+            GameConfiguration config = GameConfigurationManager.ActiveConfiguration;
+            
+            // Fallback to serialized config if manager isn't initialized (shouldn't happen in normal flow)
+            if (config == null && fallbackConfiguration != null)
+            {
+                Debug.LogWarning("GameConfigurationManager not initialized, using fallback configuration");
+                GameConfigurationManager.Initialize(fallbackConfiguration, fallbackColorProfile);
+                config = GameConfigurationManager.ActiveConfiguration;
+            }
+        }
+
         private void SetupUI()
         {
             if (uiDocument == null)
@@ -107,8 +113,13 @@ namespace Gameplay
                 Debug.LogError("UIDocument not found! Please assign it in the inspector.");
                 return;
             }
+            
+            mainCamera.backgroundColor = GameConfigurationManager.ActiveColorProfile.BackgroundColor;
 
+            uiDocument.visualTreeAsset = GameConfigurationManager.ActiveColorProfile.UITreeAsset;
             var root = uiDocument.rootVisualElement;
+            
+            layoutObserver = new LayoutObserver(uiDocument);
 
             // Query UI elements
             moveCountLabel = root.Q<Label>("move-count");
@@ -171,25 +182,15 @@ namespace Gameplay
 
         private void InitializeGame()
         {
-            var world = World.DefaultGameObjectInjectionWorld;
-            entityManager = world.EntityManager;
-
-            // Get configuration from static manager
-            GameConfiguration config = GameConfigurationManager.ActiveConfiguration;
-            
-            // Fallback to serialized config if manager isn't initialized (shouldn't happen in normal flow)
-            if (config == null && fallbackConfiguration != null)
-            {
-                Debug.LogWarning("GameConfigurationManager not initialized, using fallback configuration");
-                GameConfigurationManager.Initialize(fallbackConfiguration);
-                config = GameConfigurationManager.ActiveConfiguration;
-            }
-
+            var config = GameConfigurationManager.ActiveConfiguration;
             if (config == null)
             {
                 Debug.LogError("No configuration available!");
                 return;
             }
+            
+            var world = World.DefaultGameObjectInjectionWorld;
+            entityManager = world.EntityManager;
 
             gridWidth = config.gridWidth;
             gridHeight = config.gridHeight;
@@ -307,7 +308,7 @@ namespace Gameplay
                     var renderer = cell.GetComponent<SpriteRenderer>();
                     if (renderer != null)
                     {
-                        renderer.color = backgroundColor;
+                        renderer.color = GameConfigurationManager.ActiveColorProfile.GridBackgroundColor;
                     }
 
                     gridCells[x, y] = cell;
@@ -402,17 +403,25 @@ namespace Gameplay
 
         private void UpdateBlockVisual(BlockVisual visual, BlockComponent blockComponent)
         {
-            visual.Renderer.color = blockComponent.Color switch
+            if (GameConfigurationManager.ActiveColorProfile != null)
             {
-                BlockColor.Red => redColor,
-                BlockColor.Green => greenColor,
-                BlockColor.Blue => blueColor,
-                BlockColor.Yellow => yellowColor,
-                BlockColor.Cyan => cyanColor,
-                BlockColor.Magenta => magentaColor,
-                BlockColor.White => whiteColor,
-                _ => Color.white
-            };
+                visual.Renderer.color = GameConfigurationManager.ActiveColorProfile.GetColor(blockComponent.Color);
+            }
+            else
+            {
+                // Fallback colors if configuration is missing
+                visual.Renderer.color = blockComponent.Color switch
+                {
+                    BlockColor.Red => Color.red,
+                    BlockColor.Green => Color.green,
+                    BlockColor.Blue => Color.blue,
+                    BlockColor.Yellow => Color.yellow,
+                    BlockColor.Cyan => Color.cyan,
+                    BlockColor.Magenta => Color.magenta,
+                    BlockColor.White => Color.white,
+                    _ => Color.white
+                };
+            }
 
             visual.Block.Size = (int)blockComponent.Size;
         }
