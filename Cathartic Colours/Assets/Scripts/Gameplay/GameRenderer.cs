@@ -5,7 +5,6 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Gameplay
 {
@@ -30,31 +29,14 @@ namespace Gameplay
         [Tooltip("Fallback configurations - used if GameConfigurationManager is not initialized")]
         [SerializeField] private GameConfiguration fallbackConfiguration;
         [SerializeField] private ColorProfile fallbackColorProfile;
-        
-        [Header("Scene Management")]
-        [SerializeField] private string mainMenuSceneName = "MainMenu";
 
         [Header("Prefabs")]
         [SerializeField] private GameObject cellPrefab;
         [SerializeField] private GameObject blockPrefab;
 
-
-        [Header("UI and presentation")]
-        [SerializeField] private UIDocument uiDocument;
+        [Header("Grid Settings")]
         [SerializeField] public float cellSize = 1f;
         [SerializeField] public float cellSpacing = 0.1f;
-        [SerializeField] private Vector4 gridMarginInPixels = new(20, 20, 20, 20);
-        private Button footerMainMenuButton;
-
-        // UI Elements
-        private Label moveCountLabel;
-        private Label scoreLabel;
-        private Label statusLabel;
-        private Label instructionLabel;  
-        private VisualElement gameOverPanel;
-        private VisualElement levelCompletePanel;
-        private Button restartButton;
-        private Button nextLevelButton;
 
         private Dictionary<Entity, BlockVisual> blockVisuals = new Dictionary<Entity, BlockVisual>();
         private int gridHeight;
@@ -66,7 +48,6 @@ namespace Gameplay
         private Entity scoreEntity;
         
         private Camera mainCamera;
-        private LayoutObserver layoutObserver;
 
         private void Awake()
         {
@@ -74,52 +55,49 @@ namespace Gameplay
             mainCamera = Camera.main;
 
             LoadConfigs();
-            SetupUI();
+        }
+
+        private void Start()
+        {
+            SetupUI(); 
             InitializeGame();
         }
 
         private void OnEnable()
         {
-            layoutObserver.OnLayoutRecalculated += UpdateCamera;
+            StartCoroutine(SubscribeToUIEventsWhenReady());
+        }
+        
+        private System.Collections.IEnumerator SubscribeToUIEventsWhenReady()
+        {
+            // Wait until UI manager is available and set up
+            while (GameManager.ActiveGameUIManager == null)
+            {
+                yield return null;
+            }
+
+            // Subscribe to UI manager events
+            GameManager.ActiveGameUIManager.OnRestartRequested += RestartGame;
+            GameManager.ActiveGameUIManager.OnNextLevelRequested += OnNextLevel;
+            GameManager.ActiveGameUIManager.OnLayoutRecalculated += UpdateCamera;
+
+            Debug.Log("GameRenderer subscribed to UI events");
         }
 
         private void OnDisable()
         {
-            layoutObserver.OnLayoutRecalculated -= UpdateCamera;
+            // Unsubscribe from UI manager events
+            if (GameManager.ActiveGameUIManager != null)
+            {
+                GameManager.ActiveGameUIManager.OnRestartRequested -= RestartGame;
+                GameManager.ActiveGameUIManager.OnNextLevelRequested -= OnNextLevel;
+                GameManager.ActiveGameUIManager.OnLayoutRecalculated -= UpdateCamera;
+            }
         }
 
         private void OnDestroy()
         {
             GameManager.ActiveGameRenderer = null;
-            
-            // Unhook events
-            if (restartButton != null)
-            {
-                restartButton.clicked -= RestartGame;
-            }
-
-            if (nextLevelButton != null)
-            {
-                nextLevelButton.clicked -= OnNextLevel;
-            }
-
-            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
-            if (gameOverMainMenuButton != null)
-            {
-                gameOverMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-
-            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
-            if (levelCompleteMainMenuButton != null)
-            {
-                levelCompleteMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-
-            if (footerMainMenuButton != null)
-            {
-                footerMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-            
             CleanUp();
         }
 
@@ -128,7 +106,7 @@ namespace Gameplay
             // Get configuration from static manager
             GameConfiguration config = GameManager.ActiveConfiguration;
             
-            // Fallback to serialized config if manager isn't initialized (shouldn't happen in normal flow)
+            // Fallback to serialized config if manager isn't initialized
             if (config == null && fallbackConfiguration != null)
             {
                 Debug.LogWarning("GameConfigurationManager not initialized, using fallback configuration");
@@ -139,80 +117,17 @@ namespace Gameplay
 
         private void SetupUI()
         {
-            if (uiDocument == null)
-            {
-                uiDocument = GetComponent<UIDocument>();
-            }
-
-            if (uiDocument == null)
-            {
-                Debug.LogError("UIDocument not found! Please assign it in the inspector.");
-                return;
-            }
-            
+            // Set camera background color
             mainCamera.backgroundColor = GameManager.ActiveColorProfile.BackgroundColor;
-
-            uiDocument.visualTreeAsset = GameManager.ActiveColorProfile.UITreeAsset;
-            var root = uiDocument.rootVisualElement;
             
-            layoutObserver = new LayoutObserver(uiDocument);
-
-            // Query UI elements
-            moveCountLabel = root.Q<Label>("move-count");
-            scoreLabel = root.Q<Label>("score-label");
-            statusLabel = root.Q<Label>("status-label");
-            instructionLabel = root.Query<Label>(className: "instruction-text").First();
-            gameOverPanel = root.Q<VisualElement>("game-over-panel");
-            levelCompletePanel = root.Q<VisualElement>("level-complete-panel");
-            
-            // Query buttons and hook up events
-            restartButton = root.Q<Button>("restart-button");
-            if (restartButton != null)
+            // Delegate UI setup to UI manager
+            if (GameManager.ActiveGameUIManager != null)
             {
-                restartButton.clicked += RestartGame;
+                GameManager.ActiveGameUIManager.SetupUI();
             }
-
-            // Additional restart button in game over panel
-            var gameOverRestartButton = gameOverPanel?.Q<Button>("restart-button");
-            if (gameOverRestartButton != null)
+            else
             {
-                gameOverRestartButton.clicked += RestartGame;
-            }
-
-            nextLevelButton = levelCompletePanel?.Q<Button>("next-level-button");
-            if (nextLevelButton != null)
-            {
-                nextLevelButton.clicked += OnNextLevel;
-            }
-
-            // Main menu buttons in modals
-            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
-            if (gameOverMainMenuButton != null)
-            {
-                gameOverMainMenuButton.clicked += ReturnToMainMenu;
-            }
-
-            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
-            if (levelCompleteMainMenuButton != null)
-            {
-                levelCompleteMainMenuButton.clicked += ReturnToMainMenu;
-            }
-
-            footerMainMenuButton = root.Q<Button>("footer-main-menu-button");
-            if (footerMainMenuButton != null)
-            {
-                footerMainMenuButton.clicked += ReturnToMainMenu;
-            }
-
-            // Hide panels initially
-            if (gameOverPanel != null)
-            {
-                gameOverPanel.style.display = DisplayStyle.None;
-            }
-            
-            if (levelCompletePanel != null)
-            {
-                levelCompletePanel.style.display = DisplayStyle.None;
+                Debug.LogError("GameUIManager not found! Make sure it's attached to the scene.");
             }
         }
 
@@ -264,7 +179,7 @@ namespace Gameplay
                 Mode = config.gameMode
             });
 
-            // Set game mode tags (optional - for systems that still use tags)
+            // Set game mode tags
             switch (config.gameMode)
             {
                 case ECS.Components.GameMode.Standard:
@@ -284,8 +199,11 @@ namespace Gameplay
                 entityManager.AddComponent<SpawnColorSystemTag>(gameStateEntity);
             }
 
-            // Update instruction text based on game mode
-            UpdateInstructionText(config.gameMode);
+            // Update instruction text via UI manager
+            if (GameManager.ActiveGameUIManager != null)
+            {
+                GameManager.ActiveGameUIManager.UpdateInstructionText(config.gameMode);
+            }
 
             // Create visual grid
             CreateVisualGrid();
@@ -295,33 +213,6 @@ namespace Gameplay
 
             // Reset UI
             UpdateUI();
-        }
-
-        private void UpdateInstructionText(GameMode mode)
-        {
-            if (instructionLabel == null) return;
-
-            string instructionText = mode switch
-            {
-                GameMode.Standard => 
-                    "Merge matching tiles\n" +
-                    "Small → Medium → Large → Clear",
-                
-                GameMode.ColorMerge => 
-                    "Combine primary colors\n" +
-                    "(R+G=Yellow, R+B=Magenta, G+B=Cyan) \n" +
-                    "Secondary + missing primary = White (clears)",
-                
-                GameMode.AdvancedColorMerge => 
-                    "Small same color → Medium\n" +
-                    "Medium primary colors → Large secondary \n" +
-                    "Large secondary + missing medium primary -> White\n" +
-                    "White + White → Clear",
-                
-                _ => "Merge matching tiles"
-            };
-
-            instructionLabel.text = instructionText;
         }
 
         private void CreateVisualGrid()
@@ -465,62 +356,17 @@ namespace Gameplay
         private void UpdateUI()
         {
             // Check if entities are valid before accessing them
-            if (gameStateEntity == Entity.Null || !entityManager.Exists(gameStateEntity))
+            if (gameStateEntity == Entity.Null || !entityManager.Exists(gameStateEntity) ||
+                scoreEntity == Entity.Null || !entityManager.Exists(scoreEntity))
                 return;
 
             var gameState = entityManager.GetComponentData<GameStateComponent>(gameStateEntity);
+            var score = entityManager.GetComponentData<ScoreComponent>(scoreEntity);
 
-            // Update move count
-            if (moveCountLabel != null)
+            // Delegate UI updates to UI manager
+            if (GameManager.ActiveGameUIManager != null)
             {
-                moveCountLabel.text = $"Moves: {gameState.MoveCount}";
-            }
-
-            // Update score display
-            if (scoreLabel != null && scoreEntity != Entity.Null && entityManager.Exists(scoreEntity))
-            {
-                var score = entityManager.GetComponentData<ScoreComponent>(scoreEntity);
-                scoreLabel.text = $"Score: {score.TotalScore}";
-            }
-
-            // Update status
-            if (statusLabel != null)
-            {
-                if (gameState.GameOver)
-                {
-                    statusLabel.text = "Grid Full!";
-                }
-                else if (gameState.LevelComplete)
-                {
-                    statusLabel.text = "Level Complete!";
-                }
-                else if (gameState.WaitingForInput)
-                {
-                    statusLabel.text = "Your turn...";
-                }
-                else
-                {
-                    statusLabel.text = "Processing...";
-                }
-            }
-
-            // Show/hide panels
-            if (gameState.GameOver && gameOverPanel != null)
-            {
-                gameOverPanel.style.display = DisplayStyle.Flex;
-            }
-            else if (gameOverPanel != null)
-            {
-                gameOverPanel.style.display = DisplayStyle.None;
-            }
-
-            if (gameState.LevelComplete && levelCompletePanel != null)
-            {
-                levelCompletePanel.style.display = DisplayStyle.Flex;
-            }
-            else if (levelCompletePanel != null)
-            {
-                levelCompletePanel.style.display = DisplayStyle.None;
+                GameManager.ActiveGameUIManager.UpdateGameState(gameState, score);
             }
         }
 
@@ -546,7 +392,6 @@ namespace Gameplay
             query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
             entityManager.DestroyEntity(query);
 
-            // Clean up game mode component
             query = entityManager.CreateEntityQuery(typeof(ECS.Components.GameModeComponent));
             entityManager.DestroyEntity(query);
 
@@ -575,6 +420,10 @@ namespace Gameplay
 
         private void UpdateCamera(float headerHeight, float footerHeight)
         {
+            if (GameManager.ActiveGameUIManager == null) return;
+            
+            var gridMarginInPixels = GameManager.ActiveGameUIManager.GridMarginInPixels;
+            
             float actualGridWidth = (gridWidth - 1) * (cellSize + cellSpacing) + cellSize;
             float actualGridHeight = (gridHeight - 1) * (cellSize + cellSpacing) + cellSize;
             
@@ -597,14 +446,11 @@ namespace Gameplay
 
             float worldUnitsPerPixel = (mainCamera.orthographicSize * 2) / Screen.height;
     
-            // Calculate vertical offset to center grid in available space
-            // The offset is the difference between space below and above the screen center
             float spaceBelow = footerHeight + gridMarginInPixels.w;
             float spaceAbove = headerHeight + gridMarginInPixels.y;
             float verticalShiftInPixels = (spaceBelow - spaceAbove) / 2f;
             float verticalShiftInWorldUnits = verticalShiftInPixels * worldUnitsPerPixel;
             
-            // Center camera
             Vector3 gridCenter = new Vector3(
                 (gridWidth - 1) * (cellSize + cellSpacing) / 2f,
                 (gridHeight - 1) * (cellSize + cellSpacing) / 2f,
@@ -612,11 +458,6 @@ namespace Gameplay
             );
             
             mainCamera.transform.position = gridCenter + new Vector3(0, -verticalShiftInWorldUnits, 0);
-        }
-        
-        private void ReturnToMainMenu()
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(mainMenuSceneName);
         }
     }
 }

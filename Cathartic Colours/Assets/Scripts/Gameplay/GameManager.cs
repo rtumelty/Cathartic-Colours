@@ -32,6 +32,7 @@ public static class GameManager
     }
     
     public static GameRenderer ActiveGameRenderer { get; set; }
+    public static GameUIManager ActiveGameUIManager { get; set; }
     public static PointsParticleSpawner ActivePointsParticleSpawner { get; set; }
 
     /// <summary>
@@ -58,6 +59,9 @@ public static class GameManager
     {
         _activeConfiguration = null;
         _activeColorProfile = null;
+        ActiveGameRenderer = null;
+        ActiveGameUIManager = null;
+        ActivePointsParticleSpawner = null;
     }
 
     /// <summary>
