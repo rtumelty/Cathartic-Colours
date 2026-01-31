@@ -1,7 +1,8 @@
 ﻿using Data;
+using Gameplay;
 using UnityEngine;
 
-public static class GameConfigurationManager
+public static class GameManager
 {
     private static GameConfiguration _activeConfiguration;
     private static ColorProfile _activeColorProfile;
@@ -29,6 +30,9 @@ public static class GameConfigurationManager
             return _activeColorProfile;
         }
     }
+    
+    public static GameRenderer ActiveGameRenderer { get; set; }
+    public static PointsParticleSpawner ActivePointsParticleSpawner { get; set; }
 
     /// <summary>
     /// Initialize with a runtime copy of the configurations
@@ -53,7 +57,7 @@ public static class GameConfigurationManager
     private static void ResetStatics()
     {
         _activeConfiguration = null;
-        Debug.Log("GameConfigurationManager reset (SubsystemRegistration)");
+        _activeColorProfile = null;
     }
 
     /// <summary>

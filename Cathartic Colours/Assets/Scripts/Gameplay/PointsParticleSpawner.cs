@@ -11,9 +11,10 @@ public class PointsParticleSpawner : MonoBehaviour
     }
     
     [Header("Particle System(s)")]
-    [SerializeField]  ParticleSystem particleSystem;
+    [SerializeField]  ParticleSystem blobParticleSystem;
     public ParticleSystem[] digitParticleSystems = new ParticleSystem[10];
     [SerializeField] SpawnMode spawnMode = SpawnMode.Text;
+    [SerializeField] int pointsPerBlobParticle = 10;
     
     [Header("Text Settings")]
     [SerializeField]  float particleWidth = .1f; // Adjust based on your particle size/font
@@ -21,20 +22,24 @@ public class PointsParticleSpawner : MonoBehaviour
     
     [Header("Positioning")]
     public bool centerAlignment = true; // Whether to center the group of numbers
-    
-    [Header("Emission Settings")]
-    [SerializeField] float minAngle = -45f;  // Left edge of arc (degrees)
-    [SerializeField] float maxAngle = 45f;   // Right edge of arc (degrees)
-    [SerializeField] float minSpeed = 2f;    // Minimum launch speed
-    [SerializeField] float maxSpeed = 5f;    // Maximum launch speed
+
+    private void Awake()
+    {
+        GameManager.ActivePointsParticleSpawner = this;
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.ActivePointsParticleSpawner = null;
+    }
 
     private void SpawnParticles(Vector3 worldPosition, BlockColor blockColor, int count)
     {
         ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
         emitParams.position = worldPosition;
-        emitParams.startColor = GameConfigurationManager.ActiveColorProfile.GetColor(blockColor);
+        emitParams.startColor = GameManager.ActiveColorProfile.GetColor(blockColor);
         
-        particleSystem.Emit(emitParams, count);
+        blobParticleSystem.Emit(emitParams, count);
     }
 
     public void SpawnNumberParticle(int value, Vector3 worldPosition)
@@ -61,7 +66,7 @@ public class PointsParticleSpawner : MonoBehaviour
         }
         else if (spawnMode == SpawnMode.ParticleCount) 
         {
-            SpawnPointsScaled(pointValue, worldPosition, mergeColor);
+            SpawnBlobParticles(pointValue, worldPosition, mergeColor);
         }
     }
     
@@ -96,10 +101,10 @@ public class PointsParticleSpawner : MonoBehaviour
         }
     }
     
-    private void SpawnPointsScaled(int points, Vector3 position, BlockColor mergeColor)
+    private void SpawnBlobParticles(int points, Vector3 position, BlockColor mergeColor)
     {
         // Determine how many particles to spawn based on point value
-        //int particleCount = Mathf.Clamp(points / 100, 1, 5); // 1-5 particles based on points
-        SpawnParticles(position, mergeColor, points);
+        int particleCount = Mathf.Clamp(points / pointsPerBlobParticle, 1, int.MaxValue); // 1-5 particles based on points
+        SpawnParticles(position, mergeColor, particleCount);
     }
 }

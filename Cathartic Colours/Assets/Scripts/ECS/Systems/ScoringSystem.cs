@@ -20,7 +20,7 @@ namespace ECS.Systems
                 return;
 
             // Get active configuration
-            var gameConfig = GameConfigurationManager.ActiveConfiguration;
+            var gameConfig = GameManager.ActiveConfiguration;
             if (gameConfig == null)
             {
                 Debug.LogWarning("No active GameConfiguration found!");
@@ -28,7 +28,7 @@ namespace ECS.Systems
             }
 
             // Find particle spawner in scene
-            var particleSpawner = GameObject.FindObjectOfType<PointsParticleSpawner>();
+            var particleSpawner = GameManager.ActivePointsParticleSpawner;
             if (particleSpawner == null)
             {
                 Debug.LogWarning("PointsParticleSpawner not found in scene!");
@@ -36,7 +36,7 @@ namespace ECS.Systems
             }
 
             // Find GameRenderer for world position conversion
-            var gameRenderer = GameObject.FindObjectOfType<Gameplay.GameRenderer>();
+            var gameRenderer = GameManager.ActiveGameRenderer;
             if (gameRenderer == null)
             {
                 Debug.LogWarning("GameRenderer not found in scene!");

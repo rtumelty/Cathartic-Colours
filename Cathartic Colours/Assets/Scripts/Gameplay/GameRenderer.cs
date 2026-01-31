@@ -70,6 +70,7 @@ namespace Gameplay
 
         private void Awake()
         {
+            GameManager.ActiveGameRenderer = this;
             mainCamera = Camera.main;
 
             LoadConfigs();
@@ -87,17 +88,52 @@ namespace Gameplay
             layoutObserver.OnLayoutRecalculated -= UpdateCamera;
         }
 
+        private void OnDestroy()
+        {
+            GameManager.ActiveGameRenderer = null;
+            
+            // Unhook events
+            if (restartButton != null)
+            {
+                restartButton.clicked -= RestartGame;
+            }
+
+            if (nextLevelButton != null)
+            {
+                nextLevelButton.clicked -= OnNextLevel;
+            }
+
+            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
+            if (gameOverMainMenuButton != null)
+            {
+                gameOverMainMenuButton.clicked -= ReturnToMainMenu;
+            }
+
+            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
+            if (levelCompleteMainMenuButton != null)
+            {
+                levelCompleteMainMenuButton.clicked -= ReturnToMainMenu;
+            }
+
+            if (footerMainMenuButton != null)
+            {
+                footerMainMenuButton.clicked -= ReturnToMainMenu;
+            }
+            
+            CleanUp();
+        }
+
         void LoadConfigs()
         {
             // Get configuration from static manager
-            GameConfiguration config = GameConfigurationManager.ActiveConfiguration;
+            GameConfiguration config = GameManager.ActiveConfiguration;
             
             // Fallback to serialized config if manager isn't initialized (shouldn't happen in normal flow)
             if (config == null && fallbackConfiguration != null)
             {
                 Debug.LogWarning("GameConfigurationManager not initialized, using fallback configuration");
-                GameConfigurationManager.Initialize(fallbackConfiguration, fallbackColorProfile);
-                config = GameConfigurationManager.ActiveConfiguration;
+                GameManager.Initialize(fallbackConfiguration, fallbackColorProfile);
+                config = GameManager.ActiveConfiguration;
             }
         }
 
@@ -114,9 +150,9 @@ namespace Gameplay
                 return;
             }
             
-            mainCamera.backgroundColor = GameConfigurationManager.ActiveColorProfile.BackgroundColor;
+            mainCamera.backgroundColor = GameManager.ActiveColorProfile.BackgroundColor;
 
-            uiDocument.visualTreeAsset = GameConfigurationManager.ActiveColorProfile.UITreeAsset;
+            uiDocument.visualTreeAsset = GameManager.ActiveColorProfile.UITreeAsset;
             var root = uiDocument.rootVisualElement;
             
             layoutObserver = new LayoutObserver(uiDocument);
@@ -182,7 +218,7 @@ namespace Gameplay
 
         private void InitializeGame()
         {
-            var config = GameConfigurationManager.ActiveConfiguration;
+            var config = GameManager.ActiveConfiguration;
             if (config == null)
             {
                 Debug.LogError("No configuration available!");
@@ -308,7 +344,7 @@ namespace Gameplay
                     var renderer = cell.GetComponent<SpriteRenderer>();
                     if (renderer != null)
                     {
-                        renderer.color = GameConfigurationManager.ActiveColorProfile.GridBackgroundColor;
+                        renderer.color = GameManager.ActiveColorProfile.GridBackgroundColor;
                     }
 
                     gridCells[x, y] = cell;
@@ -403,9 +439,9 @@ namespace Gameplay
 
         private void UpdateBlockVisual(BlockVisual visual, BlockComponent blockComponent)
         {
-            if (GameConfigurationManager.ActiveColorProfile != null)
+            if (GameManager.ActiveColorProfile != null)
             {
-                visual.Renderer.color = GameConfigurationManager.ActiveColorProfile.GetColor(blockComponent.Color);
+                visual.Renderer.color = GameManager.ActiveColorProfile.GetColor(blockComponent.Color);
             }
             else
             {
@@ -535,39 +571,6 @@ namespace Gameplay
         {
             // TODO: Implement level progression logic
             RestartGame();
-        }
-
-        private void OnDestroy()
-        {
-            // Unhook events
-            if (restartButton != null)
-            {
-                restartButton.clicked -= RestartGame;
-            }
-
-            if (nextLevelButton != null)
-            {
-                nextLevelButton.clicked -= OnNextLevel;
-            }
-
-            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
-            if (gameOverMainMenuButton != null)
-            {
-                gameOverMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-
-            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
-            if (levelCompleteMainMenuButton != null)
-            {
-                levelCompleteMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-
-            if (footerMainMenuButton != null)
-            {
-                footerMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-            
-            CleanUp();
         }
 
         private void UpdateCamera(float headerHeight, float footerHeight)

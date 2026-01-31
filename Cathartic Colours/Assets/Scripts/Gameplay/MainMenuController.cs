@@ -37,9 +37,9 @@ namespace CatharticColours.UI
             }
 
             // Initialize the static configuration manager with a runtime copy
-            if (!GameConfigurationManager.IsInitialized)
+            if (!GameManager.IsInitialized)
             {
-                GameConfigurationManager.Initialize(defaultConfiguration, defaultColorProfile);
+                GameManager.Initialize(defaultConfiguration, defaultColorProfile);
             }
 
             SetupUI();
@@ -111,7 +111,7 @@ namespace CatharticColours.UI
 
             gameModeDropdown.RegisterValueChangedCallback(evt =>
             {
-                var config = GameConfigurationManager.ActiveConfiguration;
+                var config = GameManager.ActiveConfiguration;
                 if (config == null) return;
 
                 config.gameMode = evt.newValue switch
@@ -131,7 +131,7 @@ namespace CatharticColours.UI
             {
                 widthSlider.RegisterValueChangedCallback(evt =>
                 {
-                    var config = GameConfigurationManager.ActiveConfiguration;
+                    var config = GameManager.ActiveConfiguration;
                     if (config == null) return;
 
                     widthValue.text = evt.newValue.ToString();
@@ -143,7 +143,7 @@ namespace CatharticColours.UI
             {
                 heightSlider.RegisterValueChangedCallback(evt =>
                 {
-                    var config = GameConfigurationManager.ActiveConfiguration;
+                    var config = GameManager.ActiveConfiguration;
                     if (config == null) return;
 
                     heightValue.text = evt.newValue.ToString();
@@ -154,7 +154,7 @@ namespace CatharticColours.UI
 
         private void LoadActiveConfiguration()
         {
-            var config = GameConfigurationManager.ActiveConfiguration;
+            var config = GameManager.ActiveConfiguration;
             if (config == null) return;
 
             // Set game mode
@@ -178,7 +178,7 @@ namespace CatharticColours.UI
         {
             if (preset == null) return;
             
-            var config = GameConfigurationManager.ActiveConfiguration;
+            var config = GameManager.ActiveConfiguration;
             if (config == null) return;
 
             // Copy preset values to active configuration (runtime instance)

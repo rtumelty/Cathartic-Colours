@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!198 &321284654 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 2281520140598774800, guid: 21850e6af654f4a019ab1795ee8b7b55, type: 3}
+  m_PrefabInstance: {fileID: 4813271528048257489}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &456116779
 GameObject:
   m_ObjectHideFlags: 0
@@ -493,7 +498,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 394757530706102308, guid: 21850e6af654f4a019ab1795ee8b7b55, type: 3}
       propertyPath: m_Name
-      value: ScoreParticles
+      value: BlobParticles
       objectReference: {fileID: 0}
     - target: {fileID: 6173812386148756770, guid: 21850e6af654f4a019ab1795ee8b7b55, type: 3}
       propertyPath: m_LocalPosition.x
@@ -535,6 +540,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 62.161
       objectReference: {fileID: 0}
+    - target: {fileID: 8957115364696822706, guid: 21850e6af654f4a019ab1795ee8b7b55, type: 3}
+      propertyPath: blobParticleSystem
+      value: 
+      objectReference: {fileID: 321284654}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
