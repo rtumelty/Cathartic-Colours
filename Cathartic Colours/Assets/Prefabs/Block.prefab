@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4175050007656332911}
   - component: {fileID: 2272099039687328990}
   - component: {fileID: -2683934503743559372}
+  - component: {fileID: 579514495776100686}
   m_Layer: 0
   m_Name: Block
   m_TagString: Untagged
@@ -60,7 +61,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: cb2a794ca7a15468e8fb91e385e1e5a9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -128,3 +129,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Block
   animator: {fileID: 2272099039687328990}
+--- !u!114 &579514495776100686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6376311976494174261}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e62510313e2f4308bec137f62d253ed3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.JellyController
+  animateWobble: 1
+  wobbleStrengthRange: {x: 0.01, y: 0.05}
+  wobbleAnimationSpeed: 1
+  respondToScale: 1
+  scaleInfluence: 1

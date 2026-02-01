@@ -34,6 +34,7 @@ public static class GameManager
     public static GameRenderer ActiveGameRenderer { get; set; }
     public static GameUIManager ActiveGameUIManager { get; set; }
     public static PointsParticleSpawner ActivePointsParticleSpawner { get; set; }
+    public static JellyManager JellyManager { get; set; }
 
     /// <summary>
     /// Initialize with a runtime copy of the configurations
@@ -62,6 +63,7 @@ public static class GameManager
         ActiveGameRenderer = null;
         ActiveGameUIManager = null;
         ActivePointsParticleSpawner = null;
+        JellyManager = null;
     }
 
     /// <summary>

@@ -59,7 +59,6 @@ public class PointsParticleSpawner : MonoBehaviour
 
     public void Emit(int pointValue, BlockColor mergeColor, Vector3 worldPosition)
     {
-        Debug.Log(pointValue);
         if (spawnMode == SpawnMode.Text)
         {
             SpawnPoints(pointValue, worldPosition);

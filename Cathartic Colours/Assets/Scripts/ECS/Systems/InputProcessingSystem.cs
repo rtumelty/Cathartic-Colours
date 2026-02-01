@@ -1,6 +1,7 @@
 using ECS.Components;
 using Unity.Collections;
 using Unity.Entities;
+using UnityEngine;
 
 namespace ECS.Systems
 {
@@ -36,6 +37,7 @@ namespace ECS.Systems
             {
                 state.EntityManager.SetComponentEnabled<MovingBlockTag>(entity, true);
             }
+            GameManager.JellyManager.StartWobble(new Vector2(moveDirection.Direction.x, moveDirection.Direction.y));
 
             gameState.WaitingForInput = false;
             gameState.MoveCount++;
