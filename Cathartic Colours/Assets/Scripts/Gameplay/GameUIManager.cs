@@ -111,8 +111,6 @@ namespace Gameplay
             {
                 layoutObserver.OnLayoutRecalculated += HandleLayoutRecalculated;
             }
-
-            Debug.Log("GameUIManager setup complete");
         }
 
         // Rest of your existing methods remain the same...

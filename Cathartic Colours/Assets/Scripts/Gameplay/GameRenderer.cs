@@ -82,8 +82,6 @@ namespace Gameplay
             GameManager.ActiveGameUIManager.OnRestartRequested += RestartGame;
             GameManager.ActiveGameUIManager.OnNextLevelRequested += OnNextLevel;
             GameManager.ActiveGameUIManager.OnLayoutRecalculated += UpdateCamera;
-
-            Debug.Log("GameRenderer subscribed to UI events");
         }
 
         private void OnDisable()

@@ -38,8 +38,6 @@ public class LayoutObserver
                 bottomPadding = root.resolvedStyle.height - footerBounds.yMin;
             }
 
-            Debug.Log($"Top: {topPadding}px (from screen top), Bottom: {bottomPadding}px (from screen bottom)");
-
             OnLayoutRecalculated?.Invoke(topPadding, bottomPadding);
         });
     }
