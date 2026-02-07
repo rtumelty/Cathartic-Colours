@@ -10,14 +10,16 @@ namespace Gameplay
 {
     public class GameRenderer : MonoBehaviour
     {
+        private static readonly int MainColor = Shader.PropertyToID("_MainColor");
+
         // Structure to cache all visual components
         private struct BlockVisual
         {
             public GameObject GameObject;
             public Block Block;
-            public SpriteRenderer Renderer;
+            public Renderer Renderer;
 
-            public BlockVisual(GameObject gameObject, Block block, SpriteRenderer renderer)
+            public BlockVisual(GameObject gameObject, Block block, Renderer renderer)
             {
                 GameObject = gameObject;
                 Block = block;
@@ -280,7 +282,7 @@ namespace Gameplay
                     // Create new visual and cache all components
                     GameObject gameObject = Instantiate(blockPrefab, transform);
                     Block blockComponent = gameObject.GetComponent<Block>();
-                    SpriteRenderer renderer = gameObject.GetComponent<SpriteRenderer>();
+                    Renderer renderer = gameObject.GetComponent<Renderer>();
                     
                     if (blockComponent == null)
                     {
@@ -291,7 +293,7 @@ namespace Gameplay
 
                     if (renderer == null)
                     {
-                        Debug.LogError("SpriteRenderer component not found on blockPrefab!");
+                        Debug.LogError("Renderer component not found on blockPrefab!");
                         Destroy(gameObject);
                         continue;
                     }
@@ -330,14 +332,16 @@ namespace Gameplay
 
         private void UpdateBlockVisual(BlockVisual visual, BlockComponent blockComponent)
         {
+            var propertyBlock = new MaterialPropertyBlock();
+            visual.Renderer.GetPropertyBlock(propertyBlock);
             if (GameManager.ActiveColorProfile != null)
             {
-                visual.Renderer.color = GameManager.ActiveColorProfile.GetColor(blockComponent.Color);
+                propertyBlock.SetColor(MainColor, GameManager.ActiveColorProfile.GetColor(blockComponent.Color));
             }
             else
             {
                 // Fallback colors if configuration is missing
-                visual.Renderer.color = blockComponent.Color switch
+                var color = blockComponent.Color switch
                 {
                     BlockColor.Red => Color.red,
                     BlockColor.Green => Color.green,
@@ -348,7 +352,9 @@ namespace Gameplay
                     BlockColor.White => Color.white,
                     _ => Color.white
                 };
+                propertyBlock.SetColor(MainColor, color);
             }
+            visual.Renderer.SetPropertyBlock(propertyBlock);
 
             visual.Block.Size = (int)blockComponent.Size;
         }
