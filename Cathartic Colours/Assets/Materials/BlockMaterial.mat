@@ -77,7 +77,7 @@ Material:
     m_Floats:
     - _Alpha: 0.88
     - _ColorMask: 15
-    - _DirectionInfluence: 0.000010073185
+    - _DirectionInfluence: 0.0000025853515
     - _DirectionWobbleFrequency: -0.030570833
     - _DistortionSpeed: 1
     - _DistortionStrength: 0.02
@@ -98,7 +98,7 @@ Material:
     - _VolumePower: 1.69
     - _WobbleFrequency: 3
     - _WobbleSpeed: 0.9
-    - _WobbleStrength: 0.000024181605
+    - _WobbleStrength: 0.0000063300135
     - _WobbleVariation: 3
     - _XRMotionVectorsPass: 1
     - _ZWrite: 0
@@ -107,7 +107,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _FresnelColor: {r: 1, g: 1, b: 1, a: 0.5}
     - _MainColor: {r: 1, g: 1, b: 1, a: 1}
-    - _MoveDirection: {r: 0, g: -1, b: 0, a: 0}
+    - _MoveDirection: {r: 1, g: -0, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

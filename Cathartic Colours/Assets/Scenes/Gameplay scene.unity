@@ -471,6 +471,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BlobParticles
       objectReference: {fileID: 0}
+    - target: {fileID: 2281520140598774800, guid: 21850e6af654f4a019ab1795ee8b7b55, type: 3}
+      propertyPath: InitialModule.startLifetime.scalar
+      value: 0.6
+      objectReference: {fileID: 0}
     - target: {fileID: 6173812386148756770, guid: 21850e6af654f4a019ab1795ee8b7b55, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.71634
