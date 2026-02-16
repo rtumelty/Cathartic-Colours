@@ -30,6 +30,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Button text="Start Game" name="start-button" class="modal-button primary-button menu-start-button"/>
+            <ui:Button text="Resume Game" name="resume-game-button" class="modal-button primary-button" />
         </ui:VisualElement>
         <ui:VisualElement name="footer" class="footer">
             <ui:Label text="Configure your game settings and press Start" class="hint-text"/>

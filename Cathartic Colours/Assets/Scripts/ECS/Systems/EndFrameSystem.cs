@@ -2,25 +2,29 @@ using ECS.Components;
 using Unity.Burst;
 using Unity.Entities;
 
-[UpdateInGroup(typeof(PresentationSystemGroup))]
-partial struct EndFrameSystem : ISystem
+namespace ECS.Systems
 {
-    [BurstCompile]
-    public void OnCreate(ref SystemState state)
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateAfter(typeof(SaveGameSystem))]
+    partial struct EndFrameSystem : ISystem
     {
-        state.RequireForUpdate<GameStateComponent>();
-    }
+        [BurstCompile]
+        public void OnCreate(ref SystemState state)
+        {
+            state.RequireForUpdate<GameStateComponent>();
+        }
 
-    [BurstCompile]
-    public void OnUpdate(ref SystemState state)
-    {
-        var gameState = SystemAPI.GetSingletonRW<GameStateComponent>();
-        gameState.ValueRW.WaitingForInput = true;
-    }
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
+        {
+            var gameState = SystemAPI.GetSingletonRW<GameStateComponent>();
+            gameState.ValueRW.WaitingForInput = true;
+        }
 
-    [BurstCompile]
-    public void OnDestroy(ref SystemState state)
-    {
+        [BurstCompile]
+        public void OnDestroy(ref SystemState state)
+        {
         
+        }
     }
 }

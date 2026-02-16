@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Data;
 using ECS.Components;
+using SaveSystem;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -139,6 +140,25 @@ namespace Gameplay
                 Debug.LogError("No configuration available!");
                 return;
             }
+
+            var loadFromSave = PlayerPrefs.GetString("LoadFromSave", "false") == "true";
+            SaveGameData saveData = null;
+            if (loadFromSave)
+            {
+                saveData = SaveGameManager.LoadSaveGame();
+                PlayerPrefs.DeleteKey("LoadFromSave"); // Clear the flag
+        
+                if (saveData != null)
+                {
+                    // Initialize configuration from save data
+                    SaveGameManager.InitializeFromSave(saveData, config, GameManager.ActiveColorProfile);
+                    config = GameManager.ActiveConfiguration; // Get updated config
+                }
+                else
+                {
+                    loadFromSave = false; // Fall back to normal initialization
+                }
+            }
             
             var world = World.DefaultGameObjectInjectionWorld;
             entityManager = world.EntityManager;
@@ -208,8 +228,16 @@ namespace Gameplay
             // Create visual grid
             CreateVisualGrid();
 
-            // Spawn initial white block
-            SpawnInitialBlock();
+            if (loadFromSave && saveData != null)
+            {
+                // Restore world state from save
+                SaveGameManager.RestoreWorldState(saveData);
+            }
+            else
+            {
+                // Spawn initial block for new game
+                SpawnInitialBlock();
+            }
 
             // Reset UI
             UpdateUI();

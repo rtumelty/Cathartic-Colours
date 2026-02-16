@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Data;
 using ECS.Components;
+using SaveSystem;
 
 namespace CatharticColours.UI
 {
@@ -28,6 +29,7 @@ namespace CatharticColours.UI
         private Label widthValue;
         private Label heightValue;
         private Button startButton;
+        private Button resumeGameButton;
 
         private void Awake()
         {
@@ -44,6 +46,15 @@ namespace CatharticColours.UI
 
             SetupUI();
         }
+        
+        private void OnEnable()
+        {
+            // Update button visibility when returning to main menu
+            if (resumeGameButton != null)
+            {
+                UpdateResumeButtonVisibility();
+            }
+        }
 
         private void SetupUI()
         {
@@ -58,6 +69,13 @@ namespace CatharticColours.UI
             widthValue = root.Q<Label>("width-value");
             heightValue = root.Q<Label>("height-value");
             startButton = root.Q<Button>("start-button");
+            
+            resumeGameButton = root.Q<Button>("resume-game-button");
+            if (resumeGameButton != null)
+            {
+                resumeGameButton.clicked += ResumeGame;
+                UpdateResumeButtonVisibility();
+            }
 
             // Setup preset dropdown
             SetupPresetDropdown();
@@ -149,6 +167,32 @@ namespace CatharticColours.UI
                     heightValue.text = evt.newValue.ToString();
                     config.gridHeight = evt.newValue;
                 });
+            }
+        }
+
+        private void UpdateResumeButtonVisibility()
+        {
+            if (resumeGameButton != null)
+            {
+                resumeGameButton.style.display = SaveGameManager.HasSaveGame() ? 
+                    DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+
+        private void ResumeGame()
+        {
+            var saveData = SaveGameManager.LoadSaveGame();
+            if (saveData != null)
+            {
+                // Store save data in a way that GameRenderer can access it
+                PlayerPrefs.SetString("LoadFromSave", "true");
+                PlayerPrefs.Save();
+        
+                SceneManager.LoadScene(gameSceneName);
+            }
+            else
+            {
+                Debug.LogError("Failed to load save game");
             }
         }
 
