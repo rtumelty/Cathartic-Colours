@@ -25,7 +25,8 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 ## 3. Codebase patterns to follow
 - **Namespaces:** `ECS.Components`, `ECS.Systems`, `ECS.Utilities`, `Gameplay`, `Data`, `SaveSystem`.
 - **ECS:** `partial struct` systems implementing `ISystem`, ordered with `[UpdateInGroup]`/`[UpdateAfter]`/`[UpdateBefore]`; singleton components for game state (`GameStateComponent`, `ScoreComponent`, `GridConfigComponent`, `GameModeComponent`); **tag components** to enable systems (`SpawnColorSystemTag`, mode tags); **event entities** for one-off effects (`AudioEventComponent`, `MergeEventComponent`) consumed and destroyed by their system; `EntityCommandBuffer` for structural changes.
-- **Rules as strategies:** merge rules implement `IMergeUtility`, chosen by `MergeUtilityFactory` from `GameMode`.
+- **Rules as strategies:** merge rules implement `IMergeUtility`, chosen by `MergeUtilityFactory` from `GameMode`. (A managed interface, so `BlockMovementSystem` cannot be Burst-compiled; new rule code should take a Burst-compatible form, see below.)
+- **Favour Burst-compatible solutions** in ECS code: unmanaged components and data, no managed objects, interfaces or statics (`GameManager`) inside systems, `[BurstCompile]` on systems where possible. A non-Burst choice needs a stated reason on the feature page.
 - **Configuration as ScriptableObjects:** `GameConfiguration`, `ColorProfile` (menu `CatharticColors/…`); runtime copies held by static `GameManager`.
 - **Presentation** (MonoBehaviours: `GameRenderer`, `GameUIManager`, `JellyManager`, `PointsParticleSpawner`) reads ECS state; UI is UI Toolkit (UXML/USS), elements found by name with `root.Q<>()`.
 - **Audio:** FMOD one-shots by event path constants in `FMODEventPaths`.
