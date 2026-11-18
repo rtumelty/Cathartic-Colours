@@ -120,6 +120,11 @@ All approved by Ronan 2026-11-18.
 - **CC-034.1 (minor):** views were created through the API instead of by Ronan. The plan made the MANUAL route conditional on the API not supporting it. Only the Backlog sort and the two workflows remain MANUAL.
 - **CC-034.1 (minor):** the primary set visible fields on both table views at review (one API call) instead of sending it back to the worker.
 - **D4 note (open question):** D4 covers issue visibility (public) but not the board's. The project was left **private** (the default), so the board link in the wiki works only for Ronan. Make it public in project Settings → Visibility if it should match the issues.
+- **CC-034.2 (minor, specifics):**
+  - **Phase.** An item gets its own `##` heading if that's a phase. Otherwise it gets the first phase in "Suggested order" that mentions it. Items in neither (CC-019, CC-025, CC-026, CC-027, CC-030, CC-032) default to *Quick fixes*, with a warning. "Quick fixes, any time" is read as *Quick fixes*.
+  - **Absorbed items.** CC-020 to CC-024 ("in CC-006") get a `Part of: #n` line, not a dependency or a sub-issue link. Sub-issues are only for deliverables.
+  - **Links.** Relative wiki links in issue bodies are rewritten to `blob/develop/docs/wiki/…` URLs. CC-034's feature-page link resolves only once this branch is merged.
+  - **Primary review fixes.** The worker's phase rule put CC-013 in *Quick fixes* (from "CC-031 before CC-013"), so the heading now comes first. Field-value paging was raised to 50. Live writes are paced at 1 s to stay under GitHub's secondary rate limit.
 
 ## Feature test plan
 1. Open the project board: every CC item is in the right Status column; CC-001 is in Done (closed).
@@ -130,3 +135,4 @@ All approved by Ronan 2026-11-18.
 - 2026-11-18: Planned
 - 2026-11-18: Approved by Ronan (plan, D1–D4, model routing)
 - 2026-11-18: In progress (feature session started)
+- 2026-11-18: CC-034.1 approved by Ronan; CC-034.2 started

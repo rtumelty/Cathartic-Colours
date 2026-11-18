@@ -36,3 +36,6 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] implement | CC-034 | Status → In progress; feature session started
 ## [2026-11-18] implement | CC-034.1 | Labels (11), user project #1 with Status/Severity/Size/Phase fields, three views created by API; API cannot set view sort or enable workflows, so Backlog sort and Item closed / PR merged workflows are MANUAL (Ronan)
 ## [2026-11-18] diverge | CC-034.1 | Views created by agent, not Ronan (API supports it); primary set table visible fields at review; board visibility (private) raised as open question on D4
+## [2026-11-18] approve | CC-034.1 | Approved by Ronan; CC-034.2 started
+## [2026-11-18] implement | CC-034.2 | tools/roadmap-import.ps1 (dry run by default, -Apply, -Ids, -ShowBodies); primary review fixed phase rule (CC-013), paging and write pacing; dry run: 34 items, 13 sub-issues, 47 creates, 6 closes, 0 errors; live run awaiting Ronan
+## [2026-11-18] diverge | CC-034.2 | Minor specifics: phase from heading then suggested order (default Quick fixes); absorbed items get "Part of"; wiki links made absolute
