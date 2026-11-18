@@ -105,7 +105,7 @@ The built banks in `Build/Desktop/` nevertheless appear to contain the events: t
 - `Block_Move` plays whenever a move command exists, including rejected moves (game over). [CC-023](../roadmap.md#cc-023)
 - `AudioSystem` is unordered against the systems that create events, so playback timing is not deterministic. [ecs-frame-order.md](ecs-frame-order.md)
 - There is no `Metadata/Event/` folder and the `.fspro` is an empty stub, so a bank build from a fresh clone of the saved project would contain no events (`Cathartic Colours - FMOD/Metadata/`). Part of [CC-003](../roadmap.md#cc-003).
-- Note (an issue only if the design says otherwise): the merge sound is selected from the moving block's size only, so the Medium and Large merge events are chosen by the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This may be intended (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `GetMergeAudioPath`).
+- Note (design, confirmed by Ronan 2026-11-18): the merge sound is selected from the moving block's size, i.e. the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This is a naming choice, not an issue (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `GetMergeAudioPath`).
 
 ## Related test cases
 _Seeded in CC-001.4._
