@@ -27,6 +27,14 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 | [CC-017](#cc-017) | Performance: profiling baseline, Adaptive Performance / ADPF | Feature | Medium            | M          | Backlog | CC-004         |
 | [CC-018](#cc-018) | Aesthetic rework of gameplay and UI                          | Feature | High              | XL         | Backlog | —              |
 | [CC-019](#cc-019) | Level-complete panel is unreachable                          | Bug     | Low               | S          | Backlog | —              |
+| [CC-020](#cc-020) | Colour roll doesn't advance the stored RNG                   | Bug     | Medium            | S          | Backlog | —              |
+| [CC-021](#cc-021) | Spawn can fail while empty cells remain                      | Bug     | Medium            | S          | Backlog | —              |
+| [CC-022](#cc-022) | Resume replays the resolve/spawn step                        | Bug     | High              | S          | Backlog | —              |
+| [CC-023](#cc-023) | Move sound plays on rejected moves                           | Bug     | Low               | S          | Backlog | —              |
+| [CC-024](#cc-024) | Remove dead ECS code                                         | Chore   | Low               | S          | Backlog | —              |
+| [CC-025](#cc-025) | Missing guards on singletons, config and scene name          | Chore   | Low               | S          | Backlog | —              |
+| [CC-026](#cc-026) | Review mode rule gaps (Advanced dead ends, Color Merge size) | Chore   | Medium            | S          | Backlog | —              |
+| [CC-027](#cc-027) | Runtime configuration leaks between menu, presets and resume | Bug     | Low               | S          | Backlog | —              |
 
 ### Suggested order
 1. **Foundations:** CC-001, CC-003, CC-002, CC-004, CC-005
@@ -45,8 +53,8 @@ Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-00
 
 | Deliverable | Title | Risk | Worker | Status |
 |---|---|---|---|---|
-| CC-001.1 | Structure, conventions and raw layer | Low | Haiku | In review |
-| CC-001.2 | Core simulation pages (frame order, merge rules, configuration) | Medium | Sonnet | Planning |
+| CC-001.1 | Structure, conventions and raw layer | Low | Haiku | Done |
+| CC-001.2 | Core simulation pages (frame order, merge rules, configuration) | Medium | Sonnet | In review |
 | CC-001.3 | Supporting system pages (save, audio, input, UI, presentation) | Medium | Sonnet | Planning |
 | CC-001.4 | Seed test plan and lint | Low/Medium | Sonnet + Haiku | Planning |
 
@@ -132,4 +140,38 @@ Complete visual overhaul of gameplay and UI. `GameRenderer` only reads ECS state
 
 ### CC-019
 **Level-complete panel is unreachable** · Bug · Low · S
-`GameUI.uxml` has a "Level Complete / Next Level" panel and `GameStateComponent.LevelComplete` exists, but no mode sets it. Decide whether to remove it or use it (e.g. for puzzle mode, CC-009).
+`GameUI.uxml` has a "Level Complete / Next Level" panel and `GameStateComponent.LevelComplete` exists, but no mode sets it. Decide whether to remove it or use it (e.g. for puzzle mode, CC-009). The PuzzleScript prototype declares a win when the board is cleared ([merge-rules](systems/merge-rules.md#end-conditions)).
+
+_CC-020 to CC-027 were found while writing the CC-001.2 system pages (2026-11-18). Details and source citations are in each page's Known issues._
+
+### CC-020
+**Colour roll doesn't advance the stored RNG** · Bug · Medium · S
+`ResolveNewBlocksSystem` rolls the indicator colour from a local copy of `GameStateComponent` and never writes it back, so `SpawnColorSystem` draws the next position from the same RNG state. Colour and next position are correlated. Matters for CC-007 and seeded puzzles (CC-009). [ecs-frame-order](systems/ecs-frame-order.md#known-issues)
+
+### CC-021
+**Spawn can fail while empty cells remain** · Bug · Medium · S
+`SpawnColorSystem` makes at most `Width*Height*2` random tries for a cell (about 13% failure with one empty cell on 6x6). On failure it spawns nothing and the move isn't saved. Pick from the list of empty cells instead. [ecs-frame-order](systems/ecs-frame-order.md#known-issues)
+
+### CC-022
+**Resume replays the resolve/spawn step** · Bug · High · S
+Saves happen while `WaitingForInput` is false, so a resumed game starts mid-move: the first frame resolves the saved indicator and spawns another with no move made. Restored blocks, including the indicator, also get a disabled `MovingBlockTag`. Found by code reading; reproduce first. Relevant to cloud saves (CC-013). [ecs-frame-order](systems/ecs-frame-order.md#known-issues)
+
+### CC-023
+**Move sound plays on rejected moves** · Bug · Low · S
+`BlockMovementSystem` emits `Block_Move` whenever a move command exists, including during game over. [ecs-frame-order](systems/ecs-frame-order.md#known-issues)
+
+### CC-024
+**Remove dead ECS code** · Chore · Low · S
+Unused `PendingMergeTag`, `PendingDestructionTag`, `SpawnNextColorRequest`, `GridCellComponent` and the three mode tags; unreachable branches in `BlockMovementSystem`; a no-op copy-back in `ScoringSystem`; `SaveGameSystem` checks for a save file every frame during game over. Can be absorbed by CC-006. [ecs-frame-order](systems/ecs-frame-order.md#known-issues), [merge-rules](systems/merge-rules.md#known-issues)
+
+### CC-025
+**Missing guards on singletons, config and scene name** · Chore · Low · S
+`GameEndConditionSystem` reads singletons it doesn't require. `GameManager.Initialize` throws on a null colour profile. `MainMenuController.gameSceneName` is "Gameplay Scene" but the file is `Gameplay scene.unity` (case differs; whether `LoadScene` tolerates it is unverified). [ecs-frame-order](systems/ecs-frame-order.md#known-issues), [configuration](systems/configuration.md#known-issues)
+
+### CC-026
+**Review mode rule gaps** · Chore · Medium · S
+Advanced Color Merge has dead ends: same-colour Mediums, Small+Medium and different-colour Smalls never merge. Color Merge ignores size and uses the moving block's size. Design input for CC-008. [merge-rules](systems/merge-rules.md#known-issues)
+
+### CC-027
+**Runtime configuration leaks between menu, presets and resume** · Bug · Low · S
+`LoadPreset` doesn't copy tier points. The menu doesn't expose `spawnNextColourSystem`. Resuming replaces the shared runtime config, so the menu then shows the resumed game's settings. [configuration](systems/configuration.md#known-issues)

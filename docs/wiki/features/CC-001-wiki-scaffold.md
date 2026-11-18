@@ -50,10 +50,12 @@ _Specifics (2026-11-18):_ system pages cite paths relative to the Unity project 
 - `systems/configuration.md`: `GameConfiguration`, `ColorProfile`, static `GameManager` runtime copies and how a game is started
 
 **Definition of Done**
-- [ ] Each claim cites its source file; primary has verified the frame order against the attributes in code
-- [ ] At least one worked example per mode in `merge-rules.md`
-- [ ] Known issues linked to roadmap ids; any newly found problems added to the roadmap backlog
-- [ ] Index, log updated
+- [x] Each claim cites its source file; primary has verified the frame order against the attributes in code
+- [x] At least one worked example per mode in `merge-rules.md`
+- [x] Known issues linked to roadmap ids; any newly found problems added to the roadmap backlog
+- [x] Index, log updated
+
+_Specifics (2026-11-18):_ primary re-read all ten systems, the three merge utilities, the components, `GameRenderer.InitializeGame` and `SaveGameManager.RestoreWorldState`, and checked every worked example by hand. 15 new findings were grouped into 8 backlog items (CC-020 to CC-027) rather than one id each. One-cell-per-move movement was flagged by the worker as possibly unintended; it matches the PuzzleScript prototype, so it's documented as design, not as an issue. The D3 update to project `CLAUDE.md` §2 is done in CC-001.3, once all system pages exist.
 
 ### CC-001.3 — Supporting system pages
 **Risk:** Medium · **Worker:** Sonnet · **Review:** primary

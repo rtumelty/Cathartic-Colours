@@ -12,3 +12,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] diverge | CC-001 | Branch is feature/CC-001-wiki-setup, not feature/CC-001-wiki-scaffold as planned; references corrected (minor)
 ## [2026-11-18] implement | CC-001 | Status → In progress; feature session started
 ## [2026-11-18] implement | CC-001.1 | Wiki structure: features/decisions/systems READMEs, ADR-000 template, docs/raw register, test-plan skeleton (8 areas), index recategorised; 0 broken links
+## [2026-11-18] implement | CC-001.2 | System pages ecs-frame-order, merge-rules, configuration; frame order verified against attributes by primary
+## [2026-11-18] plan | roadmap.md | Backlog CC-020–CC-027 added from CC-001.2 findings (RNG, spawn, resume, audio, dead code, guards, mode rules, config)
