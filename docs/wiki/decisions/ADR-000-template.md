@@ -4,7 +4,7 @@
 |---|---|
 | Status | <Proposed / Accepted / Superseded by ADR-nnn / Deprecated> |
 | Date | <YYYY-MM-DD> |
-| Roadmap id | `[CC-<nnn>](../roadmap.md#cc-<nnn>)` (link to the roadmap item) |
+| Roadmap id | `[CC-<nnn>](https://github.com/rtumelty/Cathartic-Colours/issues/<n>)` (link to the item's issue) |
 | Supersedes | <ADR-nnn, or —> |
 
 ## Context

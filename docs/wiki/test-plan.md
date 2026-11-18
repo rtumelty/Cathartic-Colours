@@ -7,7 +7,7 @@ Comprehensive manual test plan, organised by area. Each feature folds its cases 
 1. Run the areas **in the order listed below**. Each area is ordered so one pass covers its cases without retreading paths.
 2. Within an area, run the cases top to bottom.
 3. For each case, record **pass or fail, the date, and the build** (version or build number) you tested. Note any defect with its case id.
-4. A failed case that is a known issue links to its roadmap id. A new defect becomes a backlog item in the [roadmap](roadmap.md).
+4. A failed case that is a known issue names its roadmap id (each id links to its issue in [roadmap.md](roadmap.md#id-to-issue)). A new defect becomes a new Backlog issue (project `CLAUDE.md` §6).
 
 ## Case format
 

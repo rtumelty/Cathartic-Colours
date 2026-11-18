@@ -3,6 +3,10 @@
 # Dry run by default. Pass -Apply to write. Targets Windows PowerShell 5.1.
 #
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\roadmap-import.ps1 [-Ids CC-006,CC-020] [-ShowBodies] [-Apply]
+#
+# One-time import, run for CC-034.2 on 2026-11-18. Since CC-034.3, roadmap.md is a strategy page
+# without the item table and detail sections this script reads, so it finds no items and does
+# nothing. Track items with gh directly (project CLAUDE.md §6, ADR-002).
 
 param(
     [switch]$Apply,

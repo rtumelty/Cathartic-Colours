@@ -2,16 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Type | Chore |
-| Severity / impact | High |
-| Complexity | M |
-| Status | In progress |
+| Issue | [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-034-github-issues` (from `develop`, created by the planning session on approval) |
 | PR | — |
 | Project board | [Cathartic Colours Roadmap](https://github.com/users/rtumelty/projects/1) (user project #1, private) |
-| Roadmap | [CC-034](../roadmap.md#cc-034) |
 | Depends on | — (planned before CC-033 and CC-006) |
-| Decision | ADR-002 (written in CC-034.3) |
+| Decision | [ADR-002](../decisions/ADR-002-issue-tracking.md) |
 
 ## Goal
 Item tracking (status, fields, deliverables, new finds) moves to GitHub Issues and a Project board. The wiki keeps the knowledge (feature pages, ADRs, system pages, test plan). Status changes stop needing commits, and parallel sessions stop conflicting on `roadmap.md`.
@@ -95,8 +91,17 @@ Direction agreed by Ronan in a side session on 2026-11-18. This page is the deta
 - Index, log (`schema`); memory note on batched status commits retired (planning-session housekeeping)
 
 **DoD (beyond template)**
-- [ ] No status or field information left only in the wiki; every CC id links to its issue
-- [ ] Both CLAUDE.md files describe the same workflow; lint pass clean
+- [x] No status or field information left only in the wiki; every CC id links to its issue
+- [x] Both CLAUDE.md files describe the same workflow; lint pass clean (except two older broken links; see below)
+
+**Result (2026-11-18).**
+- **`roadmap.md`:** now the strategy page. It has the board link, the six phases, the suggested order with issue links, and an id-to-issue table for all 34 ids. Rows are `| CC-nnn | [#n](…) | title |`, which the import script's row pattern doesn't match.
+- **Links:** 83 `roadmap.md#cc-nnn` links in system pages, feature pages and the systems README now point at their issue URLs. `log.md` was left as written (append-only).
+- **Feature pages:** CC-001 and CC-034 have an `Issue` row in their headers. The Type, Severity, Complexity and Status rows are gone. `features/README.md`, the ADR template, `systems/README.md` and `test-plan.md` now point to issues and the board.
+- **ADR-002** written (Accepted). `index.md` no longer copies statuses, links each feature's issue and lists ADR-002.
+- **CLAUDE.md files:** user-level §1.5, §2.1, §2.2, §3, §4, §5 (tree, Roadmap items, Lint). Project §6 (planning hand-off, tracking, new finds, status changes, `gh` on Windows). The user-level file isn't in git; the change is logged.
+- **Board:** CC-034.2 (#48) is Done and closed; CC-034.3 (#49) is In progress.
+- **Lint and link check:** 139 relative links checked, 0 broken by this change. Two were already broken: `index.md` links `features/CC-006-pure-simulation.md` and `decisions/ADR-001-pure-board-simulation.md`, which exist only on `feature/CC-006-pure-simulation`. They resolve when that branch merges. No status values are left in the wiki (ADR statuses aside).
 
 ## Tests
 No game code, so no Unity tests. Verification:
@@ -136,6 +141,13 @@ All approved by Ronan 2026-11-18.
   - **Absorbed items.** CC-020 to CC-024 ("in CC-006") get a `Part of: #n` line, not a dependency or a sub-issue link. Sub-issues are only for deliverables.
   - **Links.** Relative wiki links in issue bodies are rewritten to `blob/develop/docs/wiki/…` URLs. CC-034's feature-page link resolves only once this branch is merged.
   - **Primary review fixes.** The worker's phase rule put CC-013 in *Quick fixes* (from "CC-031 before CC-013"), so the heading now comes first. Field-value paging was raised to 50. Live writes are paced at 1 s to stay under GitHub's secondary rate limit.
+- **CC-034.3 (open, needs Ronan):** the CC-006 feature page lives only on `feature/CC-006-pure-simulation`, not on this branch, so it hasn't been given an issue header here. Its roadmap links will also break once this merges. Proposal: the planning session or the CC-006 session applies the same change there (header `Issue` row linking #12; `roadmap.md#cc-nnn` links → issue URLs) before CC-006 starts.
+- **CC-034.3 (minor, specifics):**
+  - **Feature headers.** Type, Severity, Complexity and Status were dropped from feature headers, not just given an issue link next to them. Keeping status there would bring back the status commits. Status logs stay as milestones added only in commits made for other reasons.
+  - **Index.** Status values were removed from `index.md` entries.
+  - **Links.** `roadmap.md#cc-nnn` links across the wiki were rewritten to issue URLs, because those anchors no longer exist.
+  - **User-level `CLAUDE.md`.** A duplicated bullet in §2.1 was removed, and §5 now notes that a project without a board keeps the old `roadmap.md` table.
+  - **New ids.** The project `CLAUDE.md` says a new id's row is added to the `roadmap.md` table in the next commit made for another reason, so no commit is made just to add the row.
 
 ## Feature test plan
 1. Open the project board: every CC item is in the right Status column; CC-001 is in Done (closed).
