@@ -8,7 +8,7 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 
 | Id                | Title                                                        | Type    | Severity / impact | Complexity | Status  | Depends on     |
 | ----------------- | ------------------------------------------------------------ | ------- | ----------------- | ---------- | ------- | -------------- |
-| [CC-001](#cc-001) | Wiki scaffold and system pages                               | Chore   | Medium            | S          | In review   | —              |
+| [CC-001](#cc-001) | Wiki scaffold and system pages                               | Chore   | Medium            | S          | In review   | [#1](https://github.com/rtumelty/Cathartic-Colours/pull/1) |
 | [CC-002](#cc-002) | Test infrastructure (assembly definitions + CLI test runs)   | Chore   | High              | M          | Backlog | —              |
 | [CC-003](#cc-003) | FMOD events exist only in `.unsaved/`                        | Bug     | High              | S          | Backlog | —              |
 | [CC-004](#cc-004) | Android build pipeline                                       | Chore   | High              | M          | Backlog | CC-003         |
@@ -54,7 +54,7 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 
 ### CC-001
 **Wiki scaffold and system pages** · Chore · Medium · S · **In review**
-Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-001-wiki-setup` · PR —
+Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-001-wiki-setup` · PR [#1](https://github.com/rtumelty/Cathartic-Colours/pull/1)
 
 | Deliverable | Title | Risk | Worker | Status |
 |---|---|---|---|---|

@@ -7,7 +7,7 @@
 | Complexity | S |
 | Status | In review |
 | Branch | `feature/CC-001-wiki-setup` (from `develop`) |
-| PR | — |
+| PR | [#1](https://github.com/rtumelty/Cathartic-Colours/pull/1) |
 | Roadmap | [CC-001](../roadmap.md#cc-001) |
 
 ## Goal
