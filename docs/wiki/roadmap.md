@@ -41,7 +41,7 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 | [CC-031](#cc-031) | Save file robustness (versioning, atomic write)              | Bug     | Medium            | S          | Backlog | —              |
 | [CC-032](#cc-032) | Presentation-layer cleanup (jelly material, unused scripts)  | Chore   | Low               | S          | Backlog | —              |
 | [CC-033](#cc-033) | Upgrade project to Unity 6000.6.9f1                          | Chore   | High              | M          | Backlog | CC-034         |
-| [CC-034](#cc-034) | Move roadmap tracking to GitHub Issues and Projects          | Chore   | High              | M          | Approved | —              |
+| [CC-034](#cc-034) | Move roadmap tracking to GitHub Issues and Projects          | Chore   | High              | M          | In progress | —              |
 
 ### Suggested order
 1. **Foundations:** ~~CC-001~~, CC-034 (tracking), CC-033, CC-003 (needs the machine with the FMOD copy), CC-004, CC-005
@@ -223,12 +223,12 @@ _CC-028 to CC-032 were found while writing the CC-001.3 system pages (2026-11-18
 The project is on 6000.3.2f1, but this machine has only 6000.6.9f1, and batchmode test runs with it would upgrade the project anyway. Upgrade deliberately: check package compatibility (Entities 1.4.4, URP, Input System, Test Framework 1.6.0, FMOD for Unity 2.03), update packages, fix API changes, confirm the game runs in all three modes, and record the editor path in project `CLAUDE.md` §4. Blocks CC-006 (its command-line test runs use this editor). Added 2026-11-18.
 
 ### CC-034
-**Move roadmap tracking to GitHub Issues and Projects** · Chore · High · M · **Approved**
+**Move roadmap tracking to GitHub Issues and Projects** · Chore · High · M · **In progress**
 Links: [feature page](features/CC-034-github-issues.md) · branch `feature/CC-034-github-issues` · PR —
 Hybrid tracking: one GitHub issue per item (labels for type, severity and size), a Project board for Status, Severity, Size and Phase, and sub-issues for deliverables. The wiki keeps feature pages, ADRs and system pages, and `roadmap.md` shrinks to a strategy page. Removes status commits and `roadmap.md` merge conflicts. Proposed from a side session on 2026-11-18; done before CC-033 and CC-006.
 
 | Deliverable | Title | Risk | Worker | Status |
 |---|---|---|---|---|
-| CC-034.1 | Labels, project, fields, views and automation | Low | Haiku | Approved |
+| CC-034.1 | Labels, project, fields, views and automation | Low | Haiku | In progress |
 | CC-034.2 | Import script for existing items (dry run, idempotent) | Low | Haiku | Approved |
 | CC-034.3 | Wiki and workflow switch-over, ADR-002, CLAUDE.md files | Medium | Primary | Approved |

@@ -9,7 +9,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [Feature page format](features/README.md) — filename, header table, sections and conventions for feature pages.
 - [CC-001 Wiki scaffold and system pages](features/CC-001-wiki-scaffold.md) — plan for the full wiki structure, system pages and seeded test plan. Status: Done.
 - [CC-006 Extract pure board simulation from ECS](features/CC-006-pure-simulation.md) — pure, tested simulation assembly with ECS as a thin wrapper; absorbs CC-020–CC-024. Status: Approved (starts after CC-034 and CC-033).
-- [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Status: Approved.
+- [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Status: In progress.
 
 ## Decisions
 - [ADR format](decisions/README.md) — when an ADR is needed, numbering, statuses.

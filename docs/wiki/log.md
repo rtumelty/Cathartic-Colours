@@ -33,3 +33,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] approve | CC-006 | Plan approved; D3 changed: struct rule sets renamed *MergeRules behind IMergeRules (I prefix only on the interface); order CC-034 → CC-033 → CC-006; ADR-001 Accepted
 ## [2026-11-18] lint | .gitignore | Obsidian ignore rules didn't match docs/.obsidian; fixed to **/.obsidian and docs/.obsidian/workspace.json untracked
 ## [2026-11-18] implement | develop | 940c674 (Burst guidance, pushed to the CC-001 branch after PR #1 was squash-merged) brought into develop
+## [2026-11-18] implement | CC-034 | Status → In progress; feature session started

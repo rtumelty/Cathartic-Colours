@@ -5,7 +5,7 @@
 | Type | Chore |
 | Severity / impact | High |
 | Complexity | M |
-| Status | Approved |
+| Status | In progress |
 | Branch | `feature/CC-034-github-issues` (from `develop`, created by the planning session on approval) |
 | PR | — |
 | Roadmap | [CC-034](../roadmap.md#cc-034) |
@@ -110,3 +110,4 @@ _None yet._
 ## Status log
 - 2026-11-18: Planned
 - 2026-11-18: Approved by Ronan (plan, D1–D4, model routing)
+- 2026-11-18: In progress (feature session started)
