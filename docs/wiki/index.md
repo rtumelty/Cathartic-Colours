@@ -7,7 +7,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 
 ## Features
 - [Feature page format](features/README.md) — filename, header table, sections and conventions for feature pages.
-- [CC-001 Wiki scaffold and system pages](features/CC-001-wiki-scaffold.md) — plan for the full wiki structure, system pages and seeded test plan. Status: In progress.
+- [CC-001 Wiki scaffold and system pages](features/CC-001-wiki-scaffold.md) — plan for the full wiki structure, system pages and seeded test plan. Status: In review.
 
 ## Decisions
 - [ADR format](decisions/README.md) — when an ADR is needed, numbering, statuses.

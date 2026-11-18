@@ -5,7 +5,7 @@
 | Type | Chore |
 | Severity / impact | Medium |
 | Complexity | S |
-| Status | In progress |
+| Status | In review |
 | Branch | `feature/CC-001-wiki-setup` (from `develop`) |
 | PR | — |
 | Roadmap | [CC-001](../roadmap.md#cc-001) |
@@ -85,7 +85,7 @@ _Specifics (2026-11-18):_ primary checked the bug-level findings directly in cod
 - [x] Lint pass logged with findings and fixes; zero broken relative links
 - [x] Index, log, roadmap updated
 
-_Specifics (2026-11-18):_ 51 cases (MENU 6, STD 9, CM 6, ACM 7, HUD 6, OVER 6, SAVE 6, AUDIO 5), with a shared notation paragraph before the first area. Seven cases describe desired behaviour for known issues and say "Known to fail until <id>" (CC-030, CC-028, CC-022, CC-023, CC-003, CC-032, CC-029). TP-OVER-05 (editor-only cell count, CC-029) was added at Ronan's request after review; the old TP-OVER-05 became TP-OVER-06. Primary review corrected the particle colour, wobble length, restart notes and coordinates against code. Review also found that the Advanced Color Merge top-tier clear emits transparent particles (folded into CC-032) and that `configuration.md` described a header restart button that doesn't exist (corrected). Lint: see log. CC-001 stays In progress until Ronan approves CC-001.4; it then moves to In review with the PR.
+_Specifics (2026-11-18):_ 51 cases (MENU 6, STD 9, CM 6, ACM 7, HUD 6, OVER 6, SAVE 6, AUDIO 5), with a shared notation paragraph before the first area. Seven cases describe desired behaviour for known issues and say "Known to fail until <id>" (CC-030, CC-028, CC-022, CC-023, CC-003, CC-032, CC-029). TP-OVER-05 (editor-only cell count, CC-029) was added at Ronan's request after review; the old TP-OVER-05 became TP-OVER-06. Primary review corrected the particle colour, wobble length, restart notes and coordinates against code. Review also found that the Advanced Color Merge top-tier clear emits transparent particles (folded into CC-032) and that `configuration.md` described a header restart button that doesn't exist (corrected). Lint: see log. Approved by Ronan 2026-11-18; CC-001 moved to In review with the PR.
 
 ## Tests
 This is a documentation-only change, so no unit or system tests are added, and the "compiles / test suite passes" DoD items don't apply. Verification instead:
@@ -125,3 +125,4 @@ Docs-only: Ronan opens `docs/wiki/index.md` in Obsidian, follows every link, and
 - 2026-11-18: Planned
 - 2026-11-18: Approved by Ronan (plan, D1–D3, model routing)
 - 2026-11-18: In progress (feature session started; develop merged in)
+- 2026-11-18: In review (CC-001.1–.4 approved; PR opened to `develop`)

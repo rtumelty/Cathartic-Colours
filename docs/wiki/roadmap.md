@@ -8,7 +8,7 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 
 | Id                | Title                                                        | Type    | Severity / impact | Complexity | Status  | Depends on     |
 | ----------------- | ------------------------------------------------------------ | ------- | ----------------- | ---------- | ------- | -------------- |
-| [CC-001](#cc-001) | Wiki scaffold and system pages                               | Chore   | Medium            | S          | In progress | —              |
+| [CC-001](#cc-001) | Wiki scaffold and system pages                               | Chore   | Medium            | S          | In review   | —              |
 | [CC-002](#cc-002) | Test infrastructure (assembly definitions + CLI test runs)   | Chore   | High              | M          | Backlog | —              |
 | [CC-003](#cc-003) | FMOD events exist only in `.unsaved/`                        | Bug     | High              | S          | Backlog | —              |
 | [CC-004](#cc-004) | Android build pipeline                                       | Chore   | High              | M          | Backlog | CC-003         |
@@ -53,7 +53,7 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 ## Foundations
 
 ### CC-001
-**Wiki scaffold and system pages** · Chore · Medium · S · **In progress**
+**Wiki scaffold and system pages** · Chore · Medium · S · **In review**
 Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-001-wiki-setup` · PR —
 
 | Deliverable | Title | Risk | Worker | Status |
@@ -61,7 +61,7 @@ Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-00
 | CC-001.1 | Structure, conventions and raw layer | Low | Haiku | Done |
 | CC-001.2 | Core simulation pages (frame order, merge rules, configuration) | Medium | Sonnet | Done |
 | CC-001.3 | Supporting system pages (save, audio, input, UI, presentation) | Medium | Sonnet | Done |
-| CC-001.4 | Seed test plan and lint | Low/Medium | Sonnet + Haiku | In review |
+| CC-001.4 | Seed test plan and lint | Low/Medium | Sonnet + Haiku | Done |
 
 Create the full `docs/wiki/` structure (index, log, test plan, `features/`, `decisions/`, `systems/`) and `docs/raw/`. Write system pages for existing behaviour: merge rules per mode, ECS frame order, save system, audio/FMOD, input, UI layout. Seed `test-plan.md` with current areas.
 

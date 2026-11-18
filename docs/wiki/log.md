@@ -22,3 +22,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] plan | roadmap.md | CC-032 extended: Advanced Color Merge top-tier clear emits transparent particles
 ## [2026-11-18] implement | CC-001.4 | test-plan.md: TP-OVER-05 added (editor-only grid cell count after restart, CC-029); old TP-OVER-05 renumbered TP-OVER-06; references updated
 ## [2026-11-18] decision | CC-001 D3 | Wording clarified at Ronan's request: two new system pages (configuration, presentation) plus scoring/spawn/end folded into merge-rules; decision unchanged
+## [2026-11-18] approve | CC-001 | CC-001.4 approved; all deliverables Done; CC-001 → In review, PR feature/CC-001-wiki-setup → develop
