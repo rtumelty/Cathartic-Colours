@@ -109,4 +109,5 @@ There is none. `version` is written as `"1.0"` and never read; there is no forma
 - `colorProfileName` and `currentFrameScore` are saved but ignored on restore (`Assets/Scripts/SaveSystem/SaveData.cs`); a save made with a different colour profile resumes with the current one. [CC-031](../roadmap.md#cc-031)
 
 ## Related test cases
-_Seeded in CC-001.4._
+- [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-01 to TP-SAVE-06.
+- [Game over](../test-plan.md#game-over-over): TP-OVER-05 (save deleted on game over).

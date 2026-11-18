@@ -108,4 +108,4 @@ The built banks in `Build/Desktop/` nevertheless appear to contain the events: t
 - Note (design, confirmed by Ronan 2026-11-18): the merge sound is selected from the moving block's size, i.e. the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This is a naming choice, not an issue (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `GetMergeAudioPath`).
 
 ## Related test cases
-_Seeded in CC-001.4._
+- [Audio](../test-plan.md#audio-audio): TP-AUDIO-01 to TP-AUDIO-05.

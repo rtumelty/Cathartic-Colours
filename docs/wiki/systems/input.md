@@ -88,4 +88,5 @@ There is none in the input code. `GameInputHandler` and `SwipeDetector` do not c
 - keyboard and swipe paths use different dead-zone rules (`|y| > 0.1` for keyboard, none for swipe) and both resolve diagonal ties to vertical (`Assets/Scripts/Gameplay/GameInputHandler.cs`, `OnMove` and `OnSwipe`). [CC-030](../roadmap.md#cc-030)
 
 ## Related test cases
-_Seeded in CC-001.4._
+- [Standard](../test-plan.md#standard-mode-std): TP-STD-02 (keyboard), TP-STD-08 (swipe), TP-STD-09 (gamepad, CC-030).
+- [Game over](../test-plan.md#game-over-over): TP-OVER-03 (input ignored after game over).

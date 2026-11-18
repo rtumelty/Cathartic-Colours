@@ -148,4 +148,5 @@ The camera is only fitted when a layout event fires; `RestartGame` does not call
 - `UnhookEvents` unsubscribes with new lambda instances (`clicked -= () => ...`), which never match the subscribed ones, so those handlers are not removed (`Assets/Scripts/Gameplay/GameUIManager.cs`, `UnhookEvents`). Harmless while the whole UI is destroyed with the scene. [CC-028](../roadmap.md#cc-028)
 
 ## Related test cases
-_Seeded in CC-001.4._
+- [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-04, TP-MENU-06. [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-01 to TP-HUD-05 (TP-HUD-03 status label, CC-028).
+- [Game over](../test-plan.md#game-over-over): TP-OVER-02, TP-OVER-04 (game-over panel, restart).

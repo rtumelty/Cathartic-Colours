@@ -166,7 +166,7 @@ New game: `GameRenderer.InitializeGame` creates the singletons and one white ind
 ## Interactions with other systems
 - Merge, scoring, spawn and end rules: [merge-rules.md](merge-rules.md).
 - Singleton creation, configuration and `GameManager`: [configuration.md](configuration.md).
-- Presentation (`GameRenderer`, `JellyManager`, `PointsParticleSpawner`) is called from simulation systems; see Known issues. Input, save-system, audio-fmod, ui-layout and presentation pages are planned in CC-001.3 and referenced here as plain text.
+- Presentation (`GameRenderer`, `JellyManager`, `PointsParticleSpawner`) is called from simulation systems; see Known issues. See [input.md](input.md), [save-system.md](save-system.md), [audio-fmod.md](audio-fmod.md), [ui-layout.md](ui-layout.md) and [presentation.md](presentation.md).
 
 ## Known issues
 - Presentation is called from inside simulation systems: `InputProcessingSystem` calls `GameManager.JellyManager.StartWobble` with no null check, and `ScoringSystem` reads `GameManager.ActivePointsParticleSpawner` and `ActiveGameRenderer`, returning early (without consuming merge events or updating score) if any is missing. [CC-006](../roadmap.md#cc-006)
@@ -182,4 +182,5 @@ New game: `GameRenderer.InitializeGame` creates the singletons and one white ind
 - `GameEndConditionSystem` requires only `GameModeComponent` but calls `GetSingletonRW<GameStateComponent>` and `GetSingleton<GridConfigComponent>`; it relies on `GameRenderer` creating all singletons together (`Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs`). [CC-025](../roadmap.md#cc-025)
 
 ## Related test cases
-_Seeded in CC-001.4._
+- [Standard](../test-plan.md#standard-mode-std): TP-STD-01 to TP-STD-03 (first move, one cell per move, walls).
+- [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-04 (move counter). [Game over](../test-plan.md#game-over-over): TP-OVER-01 to TP-OVER-03 (end condition, moves ignored).

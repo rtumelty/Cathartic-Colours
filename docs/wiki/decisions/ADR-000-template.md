@@ -4,7 +4,7 @@
 |---|---|
 | Status | <Proposed / Accepted / Superseded by ADR-nnn / Deprecated> |
 | Date | <YYYY-MM-DD> |
-| Roadmap id | [<CC-nnn>](../roadmap.md#cc-nnn) |
+| Roadmap id | `[CC-<nnn>](../roadmap.md#cc-<nnn>)` (link to the roadmap item) |
 | Supersedes | <ADR-nnn, or —> |
 
 ## Context

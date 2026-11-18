@@ -37,7 +37,7 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 | [CC-027](#cc-027) | Runtime configuration leaks between menu, presets and resume | Bug     | Low               | S          | Backlog | —              |
 | [CC-028](#cc-028) | In-game UI wiring faults (status label, double restart)      | Bug     | Medium            | S          | Backlog | —              |
 | [CC-029](#cc-029) | Restart stacks duplicate grid cells; grid colour not applied | Bug     | Medium            | S          | Backlog | —              |
-| [CC-030](#cc-030) | Input ignores `GameControls` asset (no gamepad, touch-only swipe) | Chore | Medium          | S          | Backlog | —              |
+| [CC-030](#cc-030) | Input uses a hard-coded keyboard action instead of `GameControls` | Chore | Medium          | S          | Backlog | —              |
 | [CC-031](#cc-031) | Save file robustness (versioning, atomic write)              | Bug     | Medium            | S          | Backlog | —              |
 | [CC-032](#cc-032) | Presentation-layer cleanup (jelly material, unused scripts)  | Chore   | Low               | S          | Backlog | —              |
 
@@ -60,8 +60,8 @@ Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-00
 |---|---|---|---|---|
 | CC-001.1 | Structure, conventions and raw layer | Low | Haiku | Done |
 | CC-001.2 | Core simulation pages (frame order, merge rules, configuration) | Medium | Sonnet | Done |
-| CC-001.3 | Supporting system pages (save, audio, input, UI, presentation) | Medium | Sonnet | In review |
-| CC-001.4 | Seed test plan and lint | Low/Medium | Sonnet + Haiku | Planning |
+| CC-001.3 | Supporting system pages (save, audio, input, UI, presentation) | Medium | Sonnet | Done |
+| CC-001.4 | Seed test plan and lint | Low/Medium | Sonnet + Haiku | In review |
 
 Create the full `docs/wiki/` structure (index, log, test plan, `features/`, `decisions/`, `systems/`) and `docs/raw/`. Write system pages for existing behaviour: merge rules per mode, ECS frame order, save system, audio/FMOD, input, UI layout. Seed `test-plan.md` with current areas.
 
@@ -201,4 +201,4 @@ _CC-028 to CC-032 were found while writing the CC-001.3 system pages (2026-11-18
 
 ### CC-032
 **Presentation-layer cleanup** · Chore · Low · S
-`JellyManager` writes to the shared `BlockMaterial.mat` asset, which changes it during editor play, and its smoothing depends on frame rate. `JellyController` is unused. `ScoreParticles.prefab` has stale fields and empty digit systems, so Text mode would throw. [presentation](systems/presentation.md#known-issues)
+`JellyManager` writes to the shared `BlockMaterial.mat` asset, which changes it during editor play, and its smoothing depends on frame rate. `JellyController` is unused. `ScoreParticles.prefab` has stale fields and empty digit systems, so Text mode would throw. The Advanced Color Merge top-tier clear emits transparent particles (result colour `None`). [presentation](systems/presentation.md#known-issues)

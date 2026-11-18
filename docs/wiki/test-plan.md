@@ -35,34 +35,536 @@ Each case has an id and these fields:
 
 ---
 
+**Notation used in the cases.** Grid cells are `(column, row)` counted from 0, column 0 at the left and row 0 at the bottom. "Up" is towards the top of the screen. `R`, `G`, `B` are Red, Green, Blue; `Y`, `M`, `C` are Yellow, Magenta, Cyan; `W` is White. `s`, `m`, `l` are Small, Medium, Large (Large is the biggest visual size). The **white indicator** is the white Small block that shows where the next block will appear; it takes a random colour (Red, Green or Blue) on the next move. Block movement is **one cell per move** by design (it matches the PuzzleScript prototype). A block only merges when the cell ahead is occupied at the moment it is processed, so to merge two blocks, push them along their line until the front block is against a wall or an unmergeable block, then press once more. Random spawns mean a tester cannot script a board: play until the situation described arises, and mark the case "not reached" if it does not within a reasonable number of moves.
+
 ## Main menu (MENU)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: fresh launch on the main menu with no save file (delete `savegame.json` from the app's persistent data folder first). Make no moves in the game started in TP-MENU-05, so no save is written.
+
+### TP-MENU-01 — Menu defaults on first launch
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-01` |
+| Preconditions | Fresh launch, no save file |
+| Steps | 1. Look at the main menu without touching anything. |
+| Expected | The menu shows a preset dropdown, a game mode dropdown with a mode description, a width slider and a height slider with value labels, and a Start button. Mode is Standard and both sliders read 6. There is no Resume button. |
+| Roadmap id | — |
+
+### TP-MENU-02 — Mode dropdown and description
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-02` |
+| Preconditions | Main menu showing |
+| Steps | 1. Open the game mode dropdown. 2. Select each entry in turn. |
+| Expected | The dropdown lists "Standard", "Color Merge" and "Advanced Color Merge". The description label shows text for the selected mode and the text changes when the mode changes. |
+| Roadmap id | — |
+
+### TP-MENU-03 — Size sliders range and labels
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-03` |
+| Preconditions | Main menu showing |
+| Steps | 1. Drag the width slider fully left, then fully right. 2. Do the same for the height slider. 3. Set width to 5 and height to 7. |
+| Expected | Each slider ranges from 4 to 10. The value label next to each slider shows the slider's current value. The two sliders are independent. After step 3 the labels read 5 and 7. |
+| Roadmap id | — |
+
+### TP-MENU-04 — Presets set mode and size
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-04` |
+| Preconditions | Main menu showing |
+| Steps | 1. Open the preset dropdown. 2. Select the Color Merge 4x4 preset. 3. Select the Advanced Color Merge 6x6 preset. 4. Select the Standard 6x6 preset. 5. Set the sliders back to 5 and 7. |
+| Expected | The dropdown offers "Custom" plus the three presets. After each preset the mode and the grid size are the preset's (Color Merge 4x4, Advanced Color Merge 6x6, Standard 6x6). Whether the mode dropdown and sliders visibly update to the preset values is not confirmed in the wiki: record what you see. |
+| Roadmap id | — |
+
+### TP-MENU-05 — Start loads a board of the chosen size
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-05` |
+| Preconditions | Main menu showing, mode Standard, width 5 and height 7 |
+| Steps | 1. Tap Start. 2. Count the columns and rows of the board. 3. Find the white block. |
+| Expected | The gameplay scene loads with a board of 5 columns and 7 rows. The score label reads "Score: 0" and the move label "Moves: 0". One white block is on the board at (2, 3), the cell at half the width and half the height, rounded down. |
+| Roadmap id | — |
+
+### TP-MENU-06 — Footer Main Menu keeps the settings
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-06` |
+| Preconditions | The game from TP-MENU-05 is running and no move has been made |
+| Steps | 1. Tap the Main Menu button in the footer. 2. Look at the dropdowns and sliders. |
+| Expected | The main menu loads. The mode and sliders still show Standard, width 5, height 7 (the last runtime settings are kept). There is no Resume button, because no move was made. |
+| Roadmap id | — |
 
 ## Standard mode (STD)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start. Keep the same game for TP-STD-01 to TP-STD-07 (return to the menu only if the board becomes full). TP-STD-08 and TP-STD-09 need a touch device and a gamepad.
+
+### TP-STD-01 — First move converts the white block
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-01` |
+| Preconditions | New Standard 6x6 game, no moves made. One white block at (3, 3) |
+| Steps | 1. Press the left arrow key once. |
+| Expected | The white block stays in its cell and becomes a Red, Green or Blue Small block. A new white block appears in a different, previously empty cell. Moves reads 1, Score reads 0. |
+| Roadmap id | — |
+
+### TP-STD-02 — One cell per move, all four directions
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-02` |
+| Preconditions | After TP-STD-01; a coloured block has an empty cell next to it in the direction you press |
+| Steps | 1. Press an arrow key towards an empty neighbouring cell of a coloured block. 2. Repeat with the other three arrow keys, then with W, A, S and D. |
+| Expected | Each coloured block moves exactly one cell per key press, never all the way to the wall. Up/Down/Left/Right arrows and W/A/S/D move blocks up/down/left/right on screen respectively. The block that was white before the press changes colour but does not move on that press. |
+| Roadmap id | — |
+
+### TP-STD-03 — Walls and the white block stop movement
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-03` |
+| Preconditions | A game in progress with a coloured block on the board |
+| Steps | 1. Press one direction repeatedly until a coloured block is against the wall. 2. Press the same direction again and note the Moves label. 3. Set up a coloured block with the white block directly ahead of it in its line, and press towards the white block. |
+| Expected | A block at the wall does not move or leave the board. The move still counts: Moves increases by 1 on the extra press. A block next to the white block does not move into it and does not merge with it. The white block stays in its cell and turns into a coloured block on that move, as on every move. |
+| Roadmap id | — |
+
+### TP-STD-04 — Small pair merges to Medium
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-04` |
+| Preconditions | Two Small blocks of the same colour in one row or column, with the front one against a wall or a block that cannot merge with it |
+| Steps | 1. Note the Score. 2. Press once towards the front block (for example `[. . Rs Rs]` pressing right). |
+| Expected | The moving block disappears. The block it moved into becomes a Medium block (visibly larger) of the same colour: `[. . . Rm]`. Score increases by 10 and Moves by 1. Particles in that colour appear at the merge cell. |
+| Roadmap id | — |
+
+### TP-STD-05 — Blocks that must not merge
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-05` |
+| Preconditions | Two adjacent blocks in a line pressed against a wall that differ in colour (for example Rs next to Bs) or in size (a Small next to a Medium of the same colour) |
+| Steps | 1. Note the Score. 2. Press towards the wall, along the line of the pair. |
+| Expected | Neither block merges or changes. Score does not change. Moves increases by 1. |
+| Roadmap id | — |
+
+### TP-STD-06 — Only one merge per block in a move
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-06` |
+| Preconditions | Three same-colour Small blocks in a row with the front one against a wall, with no other block in that row, for example `[. Rs Rs Rs]` |
+| Steps | 1. Note the Score. 2. Press once towards the wall. |
+| Expected | Only one merge happens: `[. . Rs Rm]`. The middle block merges into the front block and the back block moves up one cell. Score increases by 10 once. |
+| Roadmap id | — |
+
+### TP-STD-07 — Medium pair and Large pair
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-07` |
+| Preconditions | Extended play. Two same-colour Medium blocks, front one against a wall; later two same-colour Large blocks, front one against a wall |
+| Steps | 1. Press towards the Medium pair. 2. Later, press towards the Large pair. |
+| Expected | Step 1: `[. . Rm Rm]` becomes `[. . . Rl]`, Score +50. Step 2: `[. . Rl Rl]` becomes `[. . . .]`, both blocks disappear, Score +100. |
+| Roadmap id | — |
+
+### TP-STD-08 — Swipe on a touch device
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-08` |
+| Preconditions | Game in progress on a touch device (or the editor with a touch simulator). A coloured block has an empty neighbouring cell |
+| Steps | 1. Swipe a long distance (at least 50 pixels) in each of the four directions. 2. Make a short touch drag of about 10 pixels. |
+| Expected | Each long swipe makes the same move as the matching arrow key and Moves increases by 1. The short drag makes no move and Moves does not change. |
+| Roadmap id | — |
+
+### TP-STD-09 — Gamepad moves blocks
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-09` |
+| Preconditions | Game in progress; a gamepad is connected |
+| Steps | 1. Push the left stick in each direction. 2. Press each D-pad direction. |
+| Expected | Each input moves blocks one cell in that direction and Moves increases by 1. Known to fail until CC-030. |
+| Roadmap id | CC-030 |
 
 ## Color Merge mode (CM)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: return to the main menu with the footer Main Menu button, choose the Color Merge 4x4 preset and tap Start. Blocks are always Small and only Red, Green or Blue spawn.
+
+### TP-CM-01 — 4x4 board and first move
+
+| Field | Content |
+|---|---|
+| Id | `TP-CM-01` |
+| Preconditions | New Color Merge 4x4 game, no moves made |
+| Steps | 1. Count the cells. 2. Find the white block. 3. Press any direction once. |
+| Expected | The board is 4 by 4. The white block is at (2, 2). After the move it is a Red, Green or Blue block, a new white block appears in an empty cell, and Moves reads 1. |
+| Roadmap id | — |
+
+### TP-CM-02 — Two different primaries make a secondary
+
+| Field | Content |
+|---|---|
+| Id | `TP-CM-02` |
+| Preconditions | Two Small blocks of different primary colours adjacent in a line, front one against a wall or a block that cannot merge with it |
+| Steps | 1. Note the Score. 2. Press along the line towards the front block (for example `[Rs Gs . .]` pressing left). |
+| Expected | The moving block disappears and the block it moved into takes the combined colour: Red+Green gives Yellow, Red+Blue gives Magenta, Green+Blue gives Cyan (`[Ys . . .]`). Score +10. Try at least two of the three pairs. |
+| Roadmap id | — |
+
+### TP-CM-03 — Equal colours do not merge
+
+| Field | Content |
+|---|---|
+| Id | `TP-CM-03` |
+| Preconditions | Two same-colour primaries adjacent in a line against a wall (`[Rs Rs . .]`) |
+| Steps | 1. Note the Score. 2. Press towards the wall. |
+| Expected | Nothing merges and the blocks stay as they are. Score does not change. Moves increases by 1. |
+| Roadmap id | — |
+
+### TP-CM-04 — Secondary plus its missing primary clears both
+
+| Field | Content |
+|---|---|
+| Id | `TP-CM-04` |
+| Preconditions | A secondary block adjacent to the primary it lacks (Yellow and Blue, Magenta and Green, or Cyan and Red), front one against a wall or unmergeable block |
+| Steps | 1. Note the Score. 2. Press along the line towards the front block (for example `[Ys Bs . .]` pressing left). |
+| Expected | Both blocks disappear. Score +100. The particles at the merge cell are white. |
+| Roadmap id | — |
+
+### TP-CM-05 — Pairs that do not merge
+
+| Field | Content |
+|---|---|
+| Id | `TP-CM-05` |
+| Preconditions | Either two different secondaries adjacent (for example Yellow and Magenta), or a secondary next to a primary it already contains (for example Yellow and Red), against a wall |
+| Steps | 1. Note the Score. 2. Press towards the wall along the line. |
+| Expected | Nothing merges. Score does not change. |
+| Roadmap id | — |
+
+### TP-CM-06 — White block never merges
+
+| Field | Content |
+|---|---|
+| Id | `TP-CM-06` |
+| Preconditions | A coloured block with the white block directly ahead in its line |
+| Steps | 1. Press towards the white block. |
+| Expected | The coloured block does not move into or merge with the white block, and Score does not change. The white block then becomes a coloured block on that same move (resolved by the move), and a new white block appears elsewhere. |
+| Roadmap id | — |
 
 ## Advanced Color Merge mode (ACM)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset and tap Start. Cases 04 to 07 need extended play to build Medium and Large blocks; mark "not reached" if they do not arise.
+
+### TP-ACM-01 — 6x6 board and first move
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-01` |
+| Preconditions | New Advanced Color Merge 6x6 game, no moves made |
+| Steps | 1. Press any direction once. |
+| Expected | The white block at (3, 3) becomes a Small Red, Green or Blue block and a new white block appears. Moves reads 1. |
+| Roadmap id | — |
+
+### TP-ACM-02 — Small pair of one colour grows to Medium
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-02` |
+| Preconditions | Two Small blocks of the same primary colour adjacent in a line, front one against a wall or unmergeable block |
+| Steps | 1. Note the Score. 2. Press towards the front block (`[. . Rs Rs]` pressing right). |
+| Expected | `[. . . Rm]`: one block disappears and the other becomes a larger Medium block of the same colour. Score +10. |
+| Roadmap id | — |
+
+### TP-ACM-03 — Small blocks that do not merge
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-03` |
+| Preconditions | Against a wall: two Small blocks of different colours (`[. . Rs Gs]`), or a Small next to a Medium (`[. . Rs Rm]`) |
+| Steps | 1. Note the Score. 2. Press towards the wall. |
+| Expected | Nothing merges and Score does not change. (These are current rules; the dead ends are under review in CC-026.) |
+| Roadmap id | — |
+
+### TP-ACM-04 — Two different Medium primaries make a Large secondary
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-04` |
+| Preconditions | Two Medium blocks of different primary colours adjacent in a line, front one against a wall or unmergeable block |
+| Steps | 1. Note the Score. 2. Press towards the front block (`[. . Rm Bm]` pressing right). |
+| Expected | `[. . . Ml]`: one block disappears and the other becomes a Large Magenta block (Red+Blue). Red+Green gives Yellow and Green+Blue gives Cyan the same way. Score +50. |
+| Roadmap id | — |
+
+### TP-ACM-05 — Same-colour Medium blocks do not merge
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-05` |
+| Preconditions | Two Medium blocks of the same colour adjacent in a line against a wall (`[. . Rm Rm]`) |
+| Steps | 1. Note the Score. 2. Press towards the wall. |
+| Expected | Nothing merges and Score does not change. (Current rule; under review in CC-026.) |
+| Roadmap id | — |
+
+### TP-ACM-06 — Large secondary plus its missing Medium primary makes White
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-06` |
+| Preconditions | A Large secondary block adjacent to a Medium block of the primary it lacks (Yellow with Blue, Magenta with Green, Cyan with Red), in either order |
+| Steps | 1. Note the Score. 2. Press along the line so one is blocked by the wall or the other block (`[. . Gm Ml]` pressing right, or `[. . Ml Gm]` pressing right). |
+| Expected | One block disappears and the other becomes a Large White block (`[. . . Wl]`). Score +100. |
+| Roadmap id | — |
+
+### TP-ACM-07 — Two Large White blocks clear
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-07` |
+| Preconditions | Two Large White blocks adjacent in a line, front one against a wall or unmergeable block |
+| Steps | 1. Note the Score. 2. Press towards the front block (`[. . Wl Wl]` pressing right). |
+| Expected | Both blocks disappear and Score +200. Particles at the merge cell are expected to be visible. Known to fail until CC-032 (the clear result colour is None, which the colour profile maps to transparent). |
+| Roadmap id | CC-032 |
 
 ## Gameplay HUD (HUD)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start and make no move yet.
+
+### TP-HUD-01 — Header and footer content at start
+
+| Field | Content |
+|---|---|
+| Id | `TP-HUD-01` |
+| Preconditions | New Standard 6x6 game, no moves made |
+| Steps | 1. Read the header and footer. |
+| Expected | The header shows the title, "Moves: 0" and "Score: 0". The footer shows an instruction line describing the mode, the text "Swipe / Arrow Keys / WASD to Move" and a Main Menu button. |
+| Roadmap id | — |
+
+### TP-HUD-02 — Board fits between header and footer
+
+| Field | Content |
+|---|---|
+| Id | `TP-HUD-02` |
+| Preconditions | New game just loaded (wait about a second for the layout to settle) |
+| Steps | 1. Look at the full board. 2. Check that every edge row and column is visible. |
+| Expected | The whole board is visible and centred in the free area between header and footer, with a margin around it. No row or column is hidden behind the header or footer. |
+| Roadmap id | — |
+
+### TP-HUD-03 — Status label shows whose turn it is
+
+| Field | Content |
+|---|---|
+| Id | `TP-HUD-03` |
+| Preconditions | Game waiting for input |
+| Steps | 1. Look for a status line in the HUD. |
+| Expected | A status line reading "Your turn..." is visible while the game waits for input. Known to fail until CC-028 (the element is missing, so no status text is displayed). |
+| Roadmap id | CC-028 |
+
+### TP-HUD-04 — Move counter
+
+| Field | Content |
+|---|---|
+| Id | `TP-HUD-04` |
+| Preconditions | New game, "Moves: 0" |
+| Steps | 1. Press an arrow key. 2. Press the same direction repeatedly until nothing on the board can move. 3. Press once more. |
+| Expected | Moves reads 1 after step 1 and rises by exactly 1 per key press, including presses where no block moves. |
+| Roadmap id | — |
+
+### TP-HUD-05 — Score label shows the running total
+
+| Field | Content |
+|---|---|
+| Id | `TP-HUD-05` |
+| Preconditions | Game in progress, score 0 |
+| Steps | 1. Play until two merges have happened (see TP-STD-04). 2. Compare the score after each. |
+| Expected | Score stays unchanged on moves with no merge. Each Small-pair merge adds 10 and the label shows the running total (for example 10, then 20), not the last gain. |
+| Roadmap id | — |
+
+### TP-HUD-06 — Move and merge feedback
+
+| Field | Content |
+|---|---|
+| Id | `TP-HUD-06` |
+| Preconditions | Game in progress with blocks on the board |
+| Steps | 1. Press a direction and watch the blocks. 2. Cause a merge and watch the merge cell. |
+| Expected | Blocks wobble for about 0.6 seconds after each accepted move. A merge emits particles at the merge cell in the colour of the merge result (for a Standard Large-pair clear, the pair's colour). Blocks jump to their new cell without sliding. |
+| Roadmap id | — |
 
 ## Game over (OVER)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a small board fills fastest), tap Start and play until the board is full. No save file should exist when the pass starts.
+
+### TP-OVER-01 — Full board with a merge available keeps playing
+
+| Field | Content |
+|---|---|
+| Id | `TP-OVER-01` |
+| Preconditions | Standard 4x4 game; play until all 16 cells are occupied (the white block counts as occupied) |
+| Steps | 1. When the board becomes full, check whether two same-colour, same-size blocks touch. 2. If so, press along them to merge. |
+| Expected | While the board is full but at least one adjacent pair can merge, the game-over panel does not appear and the move that merges is accepted. If the board fills with no mergeable pair the game ends instead: continue with TP-OVER-02. |
+| Roadmap id | — |
+
+### TP-OVER-02 — Game over appears when full and no merge exists
+
+| Field | Content |
+|---|---|
+| Id | `TP-OVER-02` |
+| Preconditions | Continuing from TP-OVER-01; keep pressing directions until the board is full and no adjacent pair can merge |
+| Steps | 1. Make the move that fills the last cell with no merge available. |
+| Expected | A full-screen game-over panel appears over the board with a Restart button and a Main Menu button. Score and Moves keep their final values. |
+| Roadmap id | — |
+
+### TP-OVER-03 — Moves are ignored after game over
+
+| Field | Content |
+|---|---|
+| Id | `TP-OVER-03` |
+| Preconditions | Game-over panel showing |
+| Steps | 1. Note Score and Moves. 2. Press each arrow key. 3. Swipe if on a touch device. |
+| Expected | The board, Score and Moves do not change. The panel stays up. |
+| Roadmap id | — |
+
+### TP-OVER-04 — Restart starts a fresh game
+
+| Field | Content |
+|---|---|
+| Id | `TP-OVER-04` |
+| Preconditions | Game-over panel showing |
+| Steps | 1. Tap Restart once. |
+| Expected | The panel disappears. The board is empty apart from one white block at (2, 2). Score reads 0 and Moves reads 0. The game accepts moves again. One click currently restarts twice (CC-028) and leaves old grid cells behind (CC-029); the visible effect is not confirmed, so record anything unusual. |
+| Roadmap id | — |
+
+### TP-OVER-05 — No resume offered after a finished game
+
+| Field | Content |
+|---|---|
+| Id | `TP-OVER-05` |
+| Preconditions | The game restarted in TP-OVER-04, no move made since |
+| Steps | 1. Tap the footer Main Menu button. 2. Look at the main menu. |
+| Expected | The main menu shows no Resume button, because the save file is deleted when the game ends and no move has been made since. |
+| Roadmap id | — |
 
 ## Save/Resume (SAVE)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: start on the main menu with no Resume button (the state after TP-OVER-05). Use the Standard 6x6 preset. TP-SAVE-06 needs a build running on a device.
+
+### TP-SAVE-01 — Resume button appears after a move
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-01` |
+| Preconditions | Main menu with no Resume button |
+| Steps | 1. Choose Standard 6x6 and tap Start. 2. Make one move. 3. Tap the footer Main Menu button. |
+| Expected | The main menu now shows a Resume button. |
+| Roadmap id | — |
+
+### TP-SAVE-02 — Resume restores the saved game
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-02` |
+| Preconditions | Resume button showing; first start a new game, make several moves until you have a score above 0, and write down the Moves, Score and the position, colour and size of every coloured block, then tap Main Menu |
+| Steps | 1. On the menu select the Color Merge 4x4 preset. 2. Tap Resume. |
+| Expected | The saved game loads as a Standard 6x6 game, not as Color Merge 4x4. Moves and Score equal the noted values and every coloured block is in its noted position with its colour and size. |
+| Roadmap id | — |
+
+### TP-SAVE-03 — White block is unchanged after resume
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-03` |
+| Preconditions | The game resumed in TP-SAVE-02; you noted the white block's cell before leaving |
+| Steps | 1. Without pressing any key, compare the white block's cell and colour with the noted values. |
+| Expected | The white block is in the same cell as before leaving, is still white, and no additional white block appeared. Known to fail until CC-022 (backlog item derived from code reading, not yet confirmed on a device: resume may turn the saved white block into a coloured one and spawn a new one without a move). |
+| Roadmap id | CC-022 |
+
+### TP-SAVE-04 — Play continues and later moves are saved
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-04` |
+| Preconditions | Resumed game from TP-SAVE-02 |
+| Steps | 1. Make two moves and note Moves, Score and the board. 2. Tap Main Menu. 3. Tap Resume. |
+| Expected | Moves continues from the resumed count (it rises by 1 per move). The second resume shows the state after the two further moves, not the earlier save. |
+| Roadmap id | — |
+
+### TP-SAVE-05 — A new game keeps the old save until its first move
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-05` |
+| Preconditions | Main menu with a Resume button |
+| Steps | 1. Tap Start (a new game). 2. Without moving, tap Main Menu. 3. Tap Resume and note the board. 4. Tap Main Menu, tap Start, make one move, tap Main Menu, tap Resume. |
+| Expected | Step 3 shows the old saved game from TP-SAVE-04. In step 4 the Resume button loads the new game's state (Moves 1) instead of the old one. |
+| Roadmap id | — |
+
+### TP-SAVE-06 — Force-closing the app keeps the last move
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-06` |
+| Preconditions | Build installed on a device; game in progress with at least 3 moves made |
+| Steps | 1. Note Moves and Score. 2. Make one more move and note the new values. 3. Force-close the app from the system app switcher. 4. Relaunch and tap Resume. |
+| Expected | The Resume button shows. The game loads with the Moves and Score from after the last completed move in step 2. |
+| Roadmap id | — |
 
 ## Audio (AUDIO)
 
-_No cases yet; seeded in CC-001.4._
+Pass setup: start on the main menu, choose the Standard 4x4 settings (custom width and height 4) and tap Start with speakers or headphones on and the device volume up. The Color Merge and Advanced Color Merge clear sounds are the same as the Standard Large pair sound; test them only if time allows. TP-AUDIO-05 is a separate check in FMOD Studio and needs no game running.
+
+### TP-AUDIO-01 — Move sound on each move
+
+| Field | Content |
+|---|---|
+| Id | `TP-AUDIO-01` |
+| Preconditions | New game, sound audible |
+| Steps | 1. Press an arrow key once. 2. Repeat four more times. |
+| Expected | A move sound plays on each key press. |
+| Roadmap id | — |
+
+### TP-AUDIO-02 — Merge sound follows the moving block's size
+
+| Field | Content |
+|---|---|
+| Id | `TP-AUDIO-02` |
+| Preconditions | Game in progress; extended play for Medium and Large merges |
+| Steps | 1. Merge two Small blocks (see TP-STD-04). 2. Later merge two Medium blocks (TP-STD-07). 3. Later clear two Large blocks (TP-STD-07). |
+| Expected | A merge sound plays in each merge. The sound is picked by the size of the moving block, not the block produced: the small merge sound for Small + Small, the medium merge sound for Medium + Medium (although a Large block results), the large merge sound for Large + Large. If the three sounds are distinct to the ear, the tester can tell them apart. |
+| Roadmap id | — |
+
+### TP-AUDIO-03 — Game-over sound
+
+| Field | Content |
+|---|---|
+| Id | `TP-AUDIO-03` |
+| Preconditions | Game in progress on a 4x4 board, played until the board is full with no merge available |
+| Steps | 1. Make the move that ends the game. 2. Listen. |
+| Expected | The game-over sound plays once when the game-over panel appears and does not repeat. |
+| Roadmap id | — |
+
+### TP-AUDIO-04 — No move sound for a rejected move
+
+| Field | Content |
+|---|---|
+| Id | `TP-AUDIO-04` |
+| Preconditions | Game-over panel showing |
+| Steps | 1. Press an arrow key. 2. Press it again. |
+| Expected | No sound plays, because moves are ignored after game over. Known to fail until CC-023. |
+| Roadmap id | CC-023 |
+
+### TP-AUDIO-05 — FMOD project contains the five game events
+
+| Field | Content |
+|---|---|
+| Id | `TP-AUDIO-05` |
+| Preconditions | A fresh clone of the repo; FMOD Studio 2.03 installed; no `.unsaved/` folder in `Cathartic Colours - FMOD/` |
+| Steps | 1. Open `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` in FMOD Studio. 2. Open the Events browser. |
+| Expected | The project lists the five events `Block_Move`, `Block_Merge_Small`, `Block_Merge_Medium`, `Block_Merge_Large` and `GameOver`, assigned to the Master bank. Known to fail until CC-003. |
+| Roadmap id | CC-003 |

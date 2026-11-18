@@ -141,7 +141,7 @@ Source: `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs`.
 ## Interactions with other systems
 - System ordering, events and singletons: [ecs-frame-order.md](ecs-frame-order.md).
 - Mode selection, tier points and spawn toggle come from `GameConfiguration`: [configuration.md](configuration.md).
-- Merge events drive particles and score display; audio events drive FMOD one-shots; the save system stores blocks, score and random state. See the planned pages save-system, audio-fmod and presentation (plain text until written).
+- Merge events drive particles and score display; audio events drive FMOD one-shots; the save system stores blocks, score and random state. See [save-system.md](save-system.md), [audio-fmod.md](audio-fmod.md) and [presentation.md](presentation.md).
 
 ## Known issues
 - `IMergeUtility` covers merge rules only; spawn policy, end conditions, scoring and move mechanics are hard-coded in systems. [CC-008](../roadmap.md#cc-008)
@@ -154,4 +154,5 @@ Source: `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs`.
 - Random colour/position correlation (stored `Random` not advanced by `ResolveNewBlocksSystem`), and `SpawnColorSystem` can fail to spawn when empty cells remain; both described in [ecs-frame-order.md](ecs-frame-order.md#known-issues) (`Assets/Scripts/ECS/Systems/ResolveNewBlocksSystem.cs`, `Assets/Scripts/ECS/Systems/SpawnColorSystem.cs`). [CC-020](../roadmap.md#cc-020), [CC-021](../roadmap.md#cc-021)
 
 ## Related test cases
-_Seeded in CC-001.4._
+- [Standard](../test-plan.md#standard-mode-std): TP-STD-01 to TP-STD-07. [Color Merge](../test-plan.md#color-merge-mode-cm): TP-CM-01 to TP-CM-06. [Advanced Color Merge](../test-plan.md#advanced-color-merge-mode-acm): TP-ACM-01 to TP-ACM-07.
+- [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-05 (score). [Game over](../test-plan.md#game-over-over): TP-OVER-01, TP-OVER-02 (end condition).

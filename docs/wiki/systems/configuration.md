@@ -92,17 +92,17 @@ Wiring:
 3. **New game.** `StartGame` calls `SceneManager.LoadScene(gameSceneName)`.
 4. **Gameplay scene.** `GameRenderer.Awake` registers itself in `GameManager` and calls `LoadConfigs`, which initializes `GameManager` from the prefab's fallback assets if the menu was skipped (for example when running the gameplay scene directly in the editor). `GameRenderer.Start` calls `SetupUI` (camera background from the profile, then `GameUIManager.SetupUI`, which assigns `ActiveColorProfile.UITreeAsset` to its `UIDocument`) and `InitializeGame`.
 5. **`GameRenderer.InitializeGame`** reads `gridWidth`/`gridHeight`, then creates the ECS state: `GridConfigComponent`, `GameStateComponent` (`WaitingForInput = true`, random seed from `DateTime.Now.Ticks`), `ScoreComponent`, `GameModeComponent` (from `gameMode`), the mode tag and (if enabled) `SpawnColorSystemTag` on the game-state entity; then the visual grid cells, then either the initial indicator block or the restored save. Details of the entities are in [ecs-frame-order.md](ecs-frame-order.md).
-6. **Restart.** The game-over and header restart buttons raise `GameUIManager.OnRestartRequested`; `GameRenderer.RestartGame` runs `CleanUp` then `InitializeGame` with the same runtime configuration. "Next level" also calls `RestartGame` (its handler is a TODO).
+6. **Restart.** The game-over Restart button raises `GameUIManager.OnRestartRequested` (twice per click: `root.Q("restart-button")` and the game-over panel query find the same button, see [CC-028](../roadmap.md#cc-028)); there is no restart button in the header; `GameRenderer.RestartGame` runs `CleanUp` then `InitializeGame` with the same runtime configuration. "Next level" also calls `RestartGame` (its handler is a TODO).
 
 ### Resume from save (entry point only)
 - `MainMenuController.ResumeGame` loads the save file; if it loads, it sets `PlayerPrefs` key `LoadFromSave` to "true" and loads the gameplay scene.
 - In `GameRenderer.InitializeGame`, if that key is "true" it deletes the key, loads the save again, and calls `SaveGameManager.InitializeFromSave(saveData, config, ActiveColorProfile)`, which replaces the `GameManager` configuration with a new instance (template from the current runtime copy, then `gameMode`, `gridWidth`, `gridHeight`, `spawnNextColourSystem` from the save) and re-instantiates the colour profile. Entity creation then proceeds as for a new game and `SaveGameManager.RestoreWorldState` overwrites game state, score and blocks instead of `SpawnInitialBlock`.
-- If the save cannot be loaded the game starts as a new one. Save format and triggers belong to the planned save-system page.
+- If the save cannot be loaded the game starts as a new one. Save format and triggers: [save-system.md](save-system.md).
 
 ## Interactions with other systems
 - Merge rules, tier points and spawn toggle: [merge-rules.md](merge-rules.md).
 - Entities, tags and systems created from the configuration: [ecs-frame-order.md](ecs-frame-order.md).
-- `GameUIManager` (ui-layout) uses the profile's UI tree; `PointsParticleSpawner`, `GameRenderer` (presentation) use the profile's colours; save-system restores configuration on resume. These pages are planned and are plain text here.
+- `GameUIManager` uses the profile's UI tree ([ui-layout.md](ui-layout.md)); `PointsParticleSpawner` and `GameRenderer` use the profile's colours ([presentation.md](presentation.md)); resume restores configuration ([save-system.md](save-system.md)).
 
 ## Known issues
 - Simulation and presentation reach each other through the static `GameManager` (`ScoringSystem`, `InputProcessingSystem`). [CC-006](../roadmap.md#cc-006)
@@ -112,4 +112,5 @@ Wiring:
 - `GameManager.Initialize` does not guard a null colour profile (`Object.Instantiate(null)` throws) (`Assets/Scripts/Gameplay/GameManager.cs`). [CC-025](../roadmap.md#cc-025)
 
 ## Related test cases
-_Seeded in CC-001.4._
+- [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-06 (defaults, presets, sliders, start).
+- [Game over](../test-plan.md#game-over-over): TP-OVER-04 (restart). [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-02 (resume restores the saved configuration).

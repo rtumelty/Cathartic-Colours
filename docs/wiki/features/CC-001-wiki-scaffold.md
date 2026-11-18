@@ -81,9 +81,11 @@ _Specifics (2026-11-18):_ primary checked the bug-level findings directly in cod
 - Update the roadmap: CC-001 → In review; add any new backlog items found.
 
 **Definition of Done**
-- [ ] Every area in `test-plan.md` has at least one case; each case has id, preconditions, steps, expected, roadmap id (`—` for existing behaviour)
-- [ ] Lint pass logged with findings and fixes; zero broken relative links
-- [ ] Index, log, roadmap updated
+- [x] Every area in `test-plan.md` has at least one case; each case has id, preconditions, steps, expected, roadmap id (`—` for existing behaviour)
+- [x] Lint pass logged with findings and fixes; zero broken relative links
+- [x] Index, log, roadmap updated
+
+_Specifics (2026-11-18):_ 50 cases (MENU 6, STD 9, CM 6, ACM 7, HUD 6, OVER 5, SAVE 6, AUDIO 5), with a shared notation paragraph before the first area. Five cases describe desired behaviour for known issues and say "Known to fail until <id>" (CC-030, CC-028, CC-022, CC-023, CC-003, CC-032). Primary review corrected the particle colour, wobble length, restart notes and coordinates against code. Review also found that the Advanced Color Merge top-tier clear emits transparent particles (folded into CC-032) and that `configuration.md` described a header restart button that doesn't exist (corrected). Lint: see log. CC-001 stays In progress until Ronan approves CC-001.4; it then moves to In review with the PR.
 
 ## Tests
 This is a documentation-only change, so no unit or system tests are added, and the "compiles / test suite passes" DoD items don't apply. Verification instead:

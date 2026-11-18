@@ -20,15 +20,15 @@ A system page describes how one part of the game works **today**. It does not de
 
 ## Pages
 
-Written in CC-001 (core simulation and supporting systems), and listed here as plain text until they exist:
+Written in CC-001 (core simulation and supporting systems):
 
-- ecs-frame-order
-- merge-rules
-- configuration
-- save-system
-- audio-fmod
-- input
-- ui-layout
-- presentation
+- [ecs-frame-order](ecs-frame-order.md)
+- [merge-rules](merge-rules.md)
+- [configuration](configuration.md)
+- [save-system](save-system.md)
+- [audio-fmod](audio-fmod.md)
+- [input](input.md)
+- [ui-layout](ui-layout.md)
+- [presentation](presentation.md)
 
 Pages that exist are listed in [index.md](../index.md).
