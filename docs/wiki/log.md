@@ -49,3 +49,7 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] diverge | CC-034.3 | CC-006 feature page is not on this branch, so its issue header and link rewrite are left to the planning or CC-006 session (raised with Ronan); feature headers drop status/fields
 ## [2026-11-18] approve | CC-034.3 | Approved by Ronan; #49 closed; MANUAL steps 2–3 done by Ronan (workflows verified enabled); CC-006 page fix assigned to the planning session
 ## [2026-11-18] implement | CC-034 | Feature test cases folded into test-plan.md (new area TRACK, 4 cases); #46 → In review; PR to develop opened
+## [2026-11-18] implement | CC-034 | PR #50 merged; squash 3096558 matches the branch tip; #46 closed by hand, since "Closes #n" only fires on merges into the default branch (master)
+## [2026-11-18] approve | CC-006 | Burst alignment of plan and ADR-001 §5 approved by Ronan
+## [2026-11-18] plan | CC-033 | Feature page written: 3 deliverables (strip packages + Android module + editor upgrade; FMOD 2.04 + API fixes; test-runner smoke run + docs), routing Sonnet/primary/Haiku
+## [2026-11-18] approve | CC-033 | Plan, D1–D4 and routing approved by Ronan; #45 Approved, sub-issues #51–#53 created
