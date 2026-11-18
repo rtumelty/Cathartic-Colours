@@ -35,10 +35,12 @@ Creates:
 - `index.md` rewritten into categories (Planning · Features · Decisions · Systems · Testing · Raw sources · History)
 
 **Definition of Done**
-- [ ] Template DoD items, where applicable (no code, so no compile/test items, see Tests)
-- [ ] All folders exist with READMEs; ADR template present
-- [ ] `test-plan.md` has every area from project `CLAUDE.md` §2
-- [ ] Index lists every page; log entry added (`implement | CC-001.1`)
+- [x] Template DoD items, where applicable (no code, so no compile/test items, see Tests)
+- [x] All folders exist with READMEs; ADR template present
+- [x] `test-plan.md` has every area from project `CLAUDE.md` §2
+- [x] Index lists every page; log entry added (`implement | CC-001.1`)
+
+_Specifics (2026-11-18):_ system pages cite paths relative to the Unity project folder (`Assets/Scripts/...`, i.e. `Cathartic Colours/Assets/Scripts/...` from the repo root). `docs/raw/` did not exist before; only `CatharticColours.pz` is registered. Relative-link check: 0 broken.
 
 ### CC-001.2 — Core simulation pages
 **Risk:** Medium · **Worker:** Sonnet · **Review:** primary, checked line by line against code

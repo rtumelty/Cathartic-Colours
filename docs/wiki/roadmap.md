@@ -45,7 +45,7 @@ Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-00
 
 | Deliverable | Title | Risk | Worker | Status |
 |---|---|---|---|---|
-| CC-001.1 | Structure, conventions and raw layer | Low | Haiku | In progress |
+| CC-001.1 | Structure, conventions and raw layer | Low | Haiku | In review |
 | CC-001.2 | Core simulation pages (frame order, merge rules, configuration) | Medium | Sonnet | Planning |
 | CC-001.3 | Supporting system pages (save, audio, input, UI, presentation) | Medium | Sonnet | Planning |
 | CC-001.4 | Seed test plan and lint | Low/Medium | Sonnet + Haiku | Planning |

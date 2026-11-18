@@ -11,3 +11,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] schema | CLAUDE.md | §6: feature sessions run locally only with Remote Control; no cloud sessions
 ## [2026-11-18] diverge | CC-001 | Branch is feature/CC-001-wiki-setup, not feature/CC-001-wiki-scaffold as planned; references corrected (minor)
 ## [2026-11-18] implement | CC-001 | Status → In progress; feature session started
+## [2026-11-18] implement | CC-001.1 | Wiki structure: features/decisions/systems READMEs, ADR-000 template, docs/raw register, test-plan skeleton (8 areas), index recategorised; 0 broken links
