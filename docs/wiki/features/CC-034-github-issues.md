@@ -117,9 +117,9 @@ No game code, so no Unity tests. Verification:
 | CC-034.3 | Medium | Primary | Changes the workflow rules for every session |
 
 ## MANUAL (Ronan)
-1. **Approve the live import** after reviewing the dry-run output (CC-034.2).
-2. **Sort the Backlog view by Severity** (the API can't set sort; CC-034.1). Open <https://github.com/users/rtumelty/projects/1/views/1> → click the ▾ beside the **Backlog by severity** tab → **Sort by** → **Severity** (ascending, so Critical comes first) → click **Save** on the tab (it shows a dot until saved).
-3. **Enable the two workflows** (the API can't enable workflows; CC-034.1). Open the project → **⋯** (top right) → **Workflows**:
+1. **Approve the live import** after reviewing the dry-run output (CC-034.2). Done 2026-11-18.
+2. **Sort the Backlog view by Severity** (done by Ronan, 2026-11-18; the saved sort is Size, then Severity) (the API can't set sort; CC-034.1). Open <https://github.com/users/rtumelty/projects/1/views/1> → click the ▾ beside the **Backlog by severity** tab → **Sort by** → **Severity** (ascending, so Critical comes first) → click **Save** on the tab (it shows a dot until saved).
+3. **Enable the two workflows** (done by Ronan, 2026-11-18; both checked enabled through the API) (the API can't enable workflows; CC-034.1). Open the project → **⋯** (top right) → **Workflows**:
    - **Item closed** → **Edit** → *When* "Issue, Pull request" closed → *Set value* **Status: Done** → **Save and turn on workflow**.
    - **Pull request merged** → **Edit** → *Set value* **Status: Done** → **Save and turn on workflow**.
    Check the *Set value* dropdown in both: the Status options were replaced, so a stale default may show as empty.
@@ -141,7 +141,7 @@ All approved by Ronan 2026-11-18.
   - **Absorbed items.** CC-020 to CC-024 ("in CC-006") get a `Part of: #n` line, not a dependency or a sub-issue link. Sub-issues are only for deliverables.
   - **Links.** Relative wiki links in issue bodies are rewritten to `blob/develop/docs/wiki/…` URLs. CC-034's feature-page link resolves only once this branch is merged.
   - **Primary review fixes.** The worker's phase rule put CC-013 in *Quick fixes* (from "CC-031 before CC-013"), so the heading now comes first. Field-value paging was raised to 50. Live writes are paced at 1 s to stay under GitHub's secondary rate limit.
-- **CC-034.3 (open, needs Ronan):** the CC-006 feature page lives only on `feature/CC-006-pure-simulation`, not on this branch, so it hasn't been given an issue header here. Its roadmap links will also break once this merges. Proposal: the planning session or the CC-006 session applies the same change there (header `Issue` row linking #12; `roadmap.md#cc-nnn` links → issue URLs) before CC-006 starts.
+- **CC-034.3 (resolved 2026-11-18: Ronan assigned it to the planning session):** the CC-006 feature page lives only on `feature/CC-006-pure-simulation`, not on this branch, so it hasn't been given an issue header here. Its roadmap links will also break once this merges. Proposal: the planning session or the CC-006 session applies the same change there (header `Issue` row linking #12; `roadmap.md#cc-nnn` links → issue URLs) before CC-006 starts.
 - **CC-034.3 (minor, specifics):**
   - **Feature headers.** Type, Severity, Complexity and Status were dropped from feature headers, not just given an issue link next to them. Keeping status there would bring back the status commits. Status logs stay as milestones added only in commits made for other reasons.
   - **Index.** Status values were removed from `index.md` entries.
@@ -153,6 +153,9 @@ All approved by Ronan 2026-11-18.
 1. Open the project board: every CC item is in the right Status column; CC-001 is in Done (closed).
 2. Open CC-006's issue: 6 sub-issues, labels high/L/chore, a working link to its feature page.
 3. In a scratch test, create and close an issue: it moves to Done on its own. Delete the scratch issue afterwards.
+4. Merge the CC-034 PR: #46 closes and moves to Done.
+
+Folded into [test-plan.md](../test-plan.md#project-tracking-track) as TP-TRACK-01 to TP-TRACK-04. No build: CC-034 changes no game code.
 
 ## Status log
 - 2026-11-18: Planned
@@ -160,3 +163,4 @@ All approved by Ronan 2026-11-18.
 - 2026-11-18: In progress (feature session started)
 - 2026-11-18: CC-034.1 approved by Ronan; CC-034.2 started
 - 2026-11-18: CC-034.2 live import approved by Ronan and run; rerun idempotent
+- 2026-11-18: CC-034.3 approved by Ronan; MANUAL steps done; In review, PR opened

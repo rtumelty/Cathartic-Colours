@@ -47,3 +47,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] schema | CLAUDE.md | §6: planning hand-off via gh, tracking (board #1, fields, labels, views), new-finds commands, status changes via gh, gh on Windows
 ## [2026-11-18] lint | docs/wiki | 139 relative links, 0 broken by CC-034.3; 2 already broken (index → CC-006 page and ADR-001, which exist only on feature/CC-006-pure-simulation); no status values left in wiki pages; 34/34 ids in the id-to-issue table
 ## [2026-11-18] diverge | CC-034.3 | CC-006 feature page is not on this branch, so its issue header and link rewrite are left to the planning or CC-006 session (raised with Ronan); feature headers drop status/fields
+## [2026-11-18] approve | CC-034.3 | Approved by Ronan; #49 closed; MANUAL steps 2–3 done by Ronan (workflows verified enabled); CC-006 page fix assigned to the planning session
+## [2026-11-18] implement | CC-034 | Feature test cases folded into test-plan.md (new area TRACK, 4 cases); #46 → In review; PR to develop opened

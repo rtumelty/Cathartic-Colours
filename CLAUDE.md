@@ -19,7 +19,7 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 
 ## 2. Wiki specifics
 - Paths as in the user-level schema: `docs/wiki/{index,log,roadmap,test-plan}.md`, `features/`, `decisions/`, `systems/`.
-- Test plan areas (initial): Main menu · Standard mode · Color Merge mode · Advanced Color Merge mode · Gameplay HUD · Game over · Save/Resume · Audio. Add areas as features land.
+- Test plan areas (initial): Main menu · Standard mode · Color Merge mode · Advanced Color Merge mode · Gameplay HUD · Game over · Save/Resume · Audio · Project tracking (GitHub, since CC-034). Add areas as features land.
 - Systems pages to maintain (`docs/wiki/systems/`): `ecs-frame-order`, `merge-rules` (per mode, plus scoring, spawning and end conditions), `configuration`, `save-system`, `audio-fmod`, `input`, `ui-layout`, `presentation`.
 
 ## 3. Codebase patterns to follow

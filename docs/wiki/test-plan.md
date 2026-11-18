@@ -21,7 +21,7 @@ Each case has an id and these fields:
 | Expected | The observable result that means pass |
 | Roadmap id | The roadmap item the case covers, or `—` for existing behaviour |
 
-**Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio
+**Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio · `TRACK` Project tracking (GitHub)
 
 **Example template (not a real case):**
 
@@ -578,3 +578,47 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Steps | 1. Open `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` in FMOD Studio. 2. Open the Events browser. |
 | Expected | The project lists the five events `Block_Move`, `Block_Merge_Small`, `Block_Merge_Medium`, `Block_Merge_Large` and `GameOver`, assigned to the Master bank. Known to fail until CC-003. |
 | Roadmap id | CC-003 |
+
+## Project tracking (TRACK)
+
+Pass setup: signed in to GitHub as a repo admin, with the [project board](https://github.com/users/rtumelty/projects/1) and the repo's Issues tab open. These cases check the tracking set up in CC-034 ([ADR-002](decisions/ADR-002-issue-tracking.md)), not the game.
+
+### TP-TRACK-01 — Board columns match the items
+
+| Field | Content |
+|---|---|
+| Id | `TP-TRACK-01` |
+| Preconditions | Board view open |
+| Steps | 1. Open the **Board** view. 2. Compare a few items with what you know of them (for example CC-001, CC-006, CC-033). |
+| Expected | Columns are Backlog, Planning, Approved, In progress, In review, Done. Every `CC-nnn` item is in the right column. CC-001 (#3) and its four sub-issues are in Done and closed. |
+| Roadmap id | CC-034 |
+
+### TP-TRACK-02 — Item issue has fields, sub-issues and working links
+
+| Field | Content |
+|---|---|
+| Id | `TP-TRACK-02` |
+| Preconditions | — |
+| Steps | 1. Open issue #12 (CC-006). 2. Follow its feature page link. 3. Follow the `Depends on` links. |
+| Expected | Labels `type:chore`, `severity:high`, `size:L`. Six sub-issues CC-006.1 to CC-006.6, with Risk and Worker in their bodies. The feature page opens once the CC-006 branch is merged (before that it shows 404). `Depends on` opens #46 (CC-034) and #45 (CC-033). |
+| Roadmap id | CC-034 |
+
+### TP-TRACK-03 — Closing an issue moves it to Done
+
+| Field | Content |
+|---|---|
+| Id | `TP-TRACK-03` |
+| Preconditions | — |
+| Steps | 1. Create a scratch issue and add it to the board with Status Backlog. 2. Close it. 3. Check the board. 4. Delete the scratch issue. |
+| Expected | After closing, the item moves to Done without any manual edit ("Item closed" workflow). |
+| Roadmap id | CC-034 |
+
+### TP-TRACK-04 — Merging a PR with `Closes #n` moves the item to Done
+
+| Field | Content |
+|---|---|
+| Id | `TP-TRACK-04` |
+| Preconditions | A PR whose body says `Closes #<issue>` for an item on the board (for example the CC-034 PR and #46) |
+| Steps | 1. Merge the PR. 2. Check the issue and the board. |
+| Expected | The issue is closed and its board item is in Done ("Pull request merged" / "Item closed" workflows). |
+| Roadmap id | CC-034 |
