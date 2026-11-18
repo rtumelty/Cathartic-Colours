@@ -14,3 +14,6 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] implement | CC-001.1 | Wiki structure: features/decisions/systems READMEs, ADR-000 template, docs/raw register, test-plan skeleton (8 areas), index recategorised; 0 broken links
 ## [2026-11-18] implement | CC-001.2 | System pages ecs-frame-order, merge-rules, configuration; frame order verified against attributes by primary
 ## [2026-11-18] plan | roadmap.md | Backlog CC-020–CC-027 added from CC-001.2 findings (RNG, spawn, resume, audio, dead code, guards, mode rules, config)
+## [2026-11-18] implement | CC-001.3 | System pages save-system, audio-fmod, input, ui-layout, presentation; configuration.md grid-colour claim corrected
+## [2026-11-18] plan | roadmap.md | Backlog CC-028–CC-032 added from CC-001.3 findings (UI wiring, restart grid leak, input asset, save robustness, presentation cleanup); CC-003, CC-025 extended
+## [2026-11-18] schema | CLAUDE.md | §2 system-page list matches the eight pages in docs/wiki/systems/ (CC-001 D3)

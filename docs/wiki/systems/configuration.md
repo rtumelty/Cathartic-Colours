@@ -41,7 +41,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | Field | Type | Default | Meaning |
 |---|---|---|---|
 | `backgroundColor` | `Color` | light gray | Camera background (`GameRenderer.SetupUI`) |
-| `gridBackgroundColor` | `Color` | dark gray | Tint of each grid cell sprite (`GameRenderer.CreateVisualGrid`) |
+| `gridBackgroundColor` | `Color` | dark gray | Intended tint of the grid cells; **not applied**, because `GameRenderer.CreateVisualGrid` looks for a `SpriteRenderer` and the `Cell` prefab has only a `MeshRenderer` ([CC-029](../roadmap.md#cc-029), [presentation](presentation.md)) |
 | `uiTreeAsset` | `VisualTreeAsset` | none | In-game UI document assigned by `GameUIManager.SetupUI` |
 | `colorMappings` | `BlockColorMapping[]` (`blockColor`, `renderColor`) | one entry per `BlockColor`: None clear, Red, Green, Blue, Yellow, Magenta, Cyan, White (Unity named colours) | `GetColor(BlockColor)`; logs a warning and returns white if a colour has no mapping. `OnValidate` warns about missing entries |
 

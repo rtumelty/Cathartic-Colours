@@ -35,6 +35,11 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 | [CC-025](#cc-025) | Missing guards on singletons, config and scene name          | Chore   | Low               | S          | Backlog | —              |
 | [CC-026](#cc-026) | Review mode rule gaps (Advanced dead ends, Color Merge size) | Chore   | Medium            | S          | Backlog | —              |
 | [CC-027](#cc-027) | Runtime configuration leaks between menu, presets and resume | Bug     | Low               | S          | Backlog | —              |
+| [CC-028](#cc-028) | In-game UI wiring faults (status label, double restart)      | Bug     | Medium            | S          | Backlog | —              |
+| [CC-029](#cc-029) | Restart stacks duplicate grid cells; grid colour not applied | Bug     | Medium            | S          | Backlog | —              |
+| [CC-030](#cc-030) | Input ignores `GameControls` asset (no gamepad, touch-only swipe) | Chore | Medium          | S          | Backlog | —              |
+| [CC-031](#cc-031) | Save file robustness (versioning, atomic write)              | Bug     | Medium            | S          | Backlog | —              |
+| [CC-032](#cc-032) | Presentation-layer cleanup (jelly material, unused scripts)  | Chore   | Low               | S          | Backlog | —              |
 
 ### Suggested order
 1. **Foundations:** CC-001, CC-003, CC-002, CC-004, CC-005
@@ -54,8 +59,8 @@ Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-00
 | Deliverable | Title | Risk | Worker | Status |
 |---|---|---|---|---|
 | CC-001.1 | Structure, conventions and raw layer | Low | Haiku | Done |
-| CC-001.2 | Core simulation pages (frame order, merge rules, configuration) | Medium | Sonnet | In review |
-| CC-001.3 | Supporting system pages (save, audio, input, UI, presentation) | Medium | Sonnet | Planning |
+| CC-001.2 | Core simulation pages (frame order, merge rules, configuration) | Medium | Sonnet | Done |
+| CC-001.3 | Supporting system pages (save, audio, input, UI, presentation) | Medium | Sonnet | In review |
 | CC-001.4 | Seed test plan and lint | Low/Medium | Sonnet + Haiku | Planning |
 
 Create the full `docs/wiki/` structure (index, log, test plan, `features/`, `decisions/`, `systems/`) and `docs/raw/`. Write system pages for existing behaviour: merge rules per mode, ECS frame order, save system, audio/FMOD, input, UI layout. Seed `test-plan.md` with current areas.
@@ -66,7 +71,7 @@ Game scripts compile into `Assembly-CSharp`, which test assemblies can't referen
 
 ### CC-003
 **FMOD events exist only in `.unsaved/`** · Bug · High · S
-The five events (`Block_Move`, `Block_Merge_Small/Medium/Large`, `GameOver`) were never saved into the FMOD project; only `.unsaved/` and the committed `Build/Desktop/Master.bank` contain them. Rebuilding banks before recovery would ship silent builds. Back up `.unsaved/`, recover and save in FMOD Studio (MANUAL), commit `Metadata/Event/`, add an FMOD `.gitignore` (`.cache/`, `.unsaved/`, `.user/`; decide on `Build/`).
+The five events (`Block_Move`, `Block_Merge_Small/Medium/Large`, `GameOver`) were never saved into the FMOD project; only `.unsaved/` and the committed `Build/Desktop/Master.bank` contain them. Rebuilding banks before recovery would ship silent builds. Back up `.unsaved/`, recover and save in FMOD Studio (MANUAL), commit `Metadata/Event/`, add an FMOD `.gitignore` (`.cache/`, `.unsaved/`, `.user/`; decide on `Build/`). Current state (2026-11-18): the saved `Metadata/` has no `Event/` folder, while `.unsaved/Metadata/Event/` holds the five events. See [audio-fmod](systems/audio-fmod.md#the-unsaved-hazard).
 
 ### CC-004
 **Android build pipeline** · Chore · High · M
@@ -166,7 +171,7 @@ Unused `PendingMergeTag`, `PendingDestructionTag`, `SpawnNextColorRequest`, `Gri
 
 ### CC-025
 **Missing guards on singletons, config and scene name** · Chore · Low · S
-`GameEndConditionSystem` reads singletons it doesn't require. `GameManager.Initialize` throws on a null colour profile. `MainMenuController.gameSceneName` is "Gameplay Scene" but the file is `Gameplay scene.unity` (case differs; whether `LoadScene` tolerates it is unverified). [ecs-frame-order](systems/ecs-frame-order.md#known-issues), [configuration](systems/configuration.md#known-issues)
+`GameEndConditionSystem` reads singletons it doesn't require. `GameManager.Initialize` throws on a null colour profile. `MainMenuController.gameSceneName` is "Gameplay Scene" but the file is `Gameplay scene.unity` (case differs; whether `LoadScene` tolerates it is unverified). `GameRenderer.CleanUp` (also called from `OnDestroy`) uses `entityManager` even if `InitializeGame` never ran. [ecs-frame-order](systems/ecs-frame-order.md#known-issues), [configuration](systems/configuration.md#known-issues), [presentation](systems/presentation.md#known-issues)
 
 ### CC-026
 **Review mode rule gaps** · Chore · Medium · S
@@ -175,3 +180,25 @@ Advanced Color Merge has dead ends: same-colour Mediums, Small+Medium and differ
 ### CC-027
 **Runtime configuration leaks between menu, presets and resume** · Bug · Low · S
 `LoadPreset` doesn't copy tier points. The menu doesn't expose `spawnNextColourSystem`. Resuming replaces the shared runtime config, so the menu then shows the resumed game's settings. [configuration](systems/configuration.md#known-issues)
+
+_CC-028 to CC-032 were found while writing the CC-001.3 system pages (2026-11-18)._
+
+### CC-028
+**In-game UI wiring faults** · Bug · Medium · S
+`GameUI.uxml` has no `status-label`, so the status text never shows. `restart-button` appears twice: the game-over button is hooked twice, so one click raises `OnRestartRequested` twice, and the level-complete button is never hooked. `UnhookEvents` unsubscribes fresh lambdas, so it removes nothing. Found by code reading. [ui-layout](systems/ui-layout.md#known-issues)
+
+### CC-029
+**Restart stacks duplicate grid cells; grid colour never applied** · Bug · Medium · S
+`GameRenderer.CleanUp` doesn't destroy the `Cell` objects, so each restart adds another full grid (two per click, because of CC-028). `CreateVisualGrid` tints a `SpriteRenderer`, but the `Cell` prefab only has a `MeshRenderer`, so `ColorProfile.gridBackgroundColor` is ignored. [presentation](systems/presentation.md#known-issues)
+
+### CC-030
+**Input uses a hard-coded keyboard action instead of `GameControls`** · Chore · Medium · S
+`GameInputHandler` builds its own keyboard-only `Move` action and ignores the project-wide `GameControls.inputactions`, so gamepads don't work. `SwipeDetector` is touch-only, so it can't be tested with a mouse in the editor. Dead-zone rules differ between keyboard and swipe. `SwipeDetector` is in the nested namespace `Gameplay.CatharticColours`. [input](systems/input.md#known-issues)
+
+### CC-031
+**Save file robustness** · Bug · Medium · S
+`version` and `saveTimestamp` are never read (no migration or rejection). The file is written in place, so a crash mid-write can leave it truncated. `colorProfileName` is saved but ignored. Do this before cloud saves (CC-013). [save-system](systems/save-system.md#known-issues)
+
+### CC-032
+**Presentation-layer cleanup** · Chore · Low · S
+`JellyManager` writes to the shared `BlockMaterial.mat` asset, which changes it during editor play, and its smoothing depends on frame rate. `JellyController` is unused. `ScoreParticles.prefab` has stale fields and empty digit systems, so Text mode would throw. [presentation](systems/presentation.md#known-issues)
