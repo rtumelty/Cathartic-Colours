@@ -8,12 +8,12 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 
 | Id                | Title                                                        | Type    | Severity / impact | Complexity | Status  | Depends on     |
 | ----------------- | ------------------------------------------------------------ | ------- | ----------------- | ---------- | ------- | -------------- |
-| [CC-001](#cc-001) | Wiki scaffold and system pages                               | Chore   | Medium            | S          | In review   | [#1](https://github.com/rtumelty/Cathartic-Colours/pull/1) |
-| [CC-002](#cc-002) | Test infrastructure (assembly definitions + CLI test runs)   | Chore   | High              | M          | Backlog | —              |
+| [CC-001](#cc-001) | Wiki scaffold and system pages                               | Chore   | Medium            | S          | Done    | —              |
+| [CC-002](#cc-002) | Test infrastructure: game-code asmdefs + PlayMode tests      | Chore   | High              | M          | Backlog | CC-006         |
 | [CC-003](#cc-003) | FMOD events exist only in `.unsaved/`                        | Bug     | High              | S          | Backlog | —              |
 | [CC-004](#cc-004) | Android build pipeline                                       | Chore   | High              | M          | Backlog | CC-003         |
 | [CC-005](#cc-005) | Triage `points_system` branch                                | Chore   | Low               | S          | Backlog | —              |
-| [CC-006](#cc-006) | Extract pure board simulation from ECS                       | Chore   | High              | L          | Backlog | CC-002         |
+| [CC-006](#cc-006) | Extract pure board simulation from ECS                       | Chore   | High              | L          | Approved | CC-034, CC-033 |
 | [CC-007](#cc-007) | Next-spawn preview                                           | Feature | High              | S          | Backlog | CC-006         |
 | [CC-008](#cc-008) | Game mode rules framework                                    | Feature | High              | L          | Backlog | CC-006         |
 | [CC-009](#cc-009) | Puzzle mode and generator (unique solutions)                 | Feature | High              | XL         | Backlog | CC-006, CC-008 |
@@ -27,11 +27,11 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 | [CC-017](#cc-017) | Performance: profiling baseline, Adaptive Performance / ADPF | Feature | Medium            | M          | Backlog | CC-004         |
 | [CC-018](#cc-018) | Aesthetic rework of gameplay and UI                          | Feature | High              | XL         | Backlog | —              |
 | [CC-019](#cc-019) | Level-complete panel is unreachable                          | Bug     | Low               | S          | Backlog | —              |
-| [CC-020](#cc-020) | Colour roll doesn't advance the stored RNG                   | Bug     | Medium            | S          | Backlog | —              |
-| [CC-021](#cc-021) | Spawn can fail while empty cells remain                      | Bug     | Medium            | S          | Backlog | —              |
-| [CC-022](#cc-022) | Resume replays the resolve/spawn step                        | Bug     | High              | S          | Backlog | —              |
-| [CC-023](#cc-023) | Move sound plays on rejected moves                           | Bug     | Low               | S          | Backlog | —              |
-| [CC-024](#cc-024) | Remove dead ECS code                                         | Chore   | Low               | S          | Backlog | —              |
+| [CC-020](#cc-020) | Colour roll doesn't advance the stored RNG                   | Bug     | Medium            | S          | Approved | in CC-006      |
+| [CC-021](#cc-021) | Spawn can fail while empty cells remain                      | Bug     | Medium            | S          | Approved | in CC-006      |
+| [CC-022](#cc-022) | Resume replays the resolve/spawn step                        | Bug     | High              | S          | Approved | in CC-006      |
+| [CC-023](#cc-023) | Move sound plays on rejected moves                           | Bug     | Low               | S          | Approved | in CC-006      |
+| [CC-024](#cc-024) | Remove dead ECS code                                         | Chore   | Low               | S          | Approved | in CC-006      |
 | [CC-025](#cc-025) | Missing guards on singletons, config and scene name          | Chore   | Low               | S          | Backlog | —              |
 | [CC-026](#cc-026) | Review mode rule gaps (Advanced dead ends, Color Merge size) | Chore   | Medium            | S          | Backlog | —              |
 | [CC-027](#cc-027) | Runtime configuration leaks between menu, presets and resume | Bug     | Low               | S          | Backlog | —              |
@@ -40,20 +40,23 @@ Source of truth for planned work and progress. Ids are `CC-<nnn>` (one sequence 
 | [CC-030](#cc-030) | Input uses a hard-coded keyboard action instead of `GameControls` | Chore | Medium          | S          | Backlog | —              |
 | [CC-031](#cc-031) | Save file robustness (versioning, atomic write)              | Bug     | Medium            | S          | Backlog | —              |
 | [CC-032](#cc-032) | Presentation-layer cleanup (jelly material, unused scripts)  | Chore   | Low               | S          | Backlog | —              |
+| [CC-033](#cc-033) | Upgrade project to Unity 6000.6.9f1                          | Chore   | High              | M          | Backlog | CC-034         |
+| [CC-034](#cc-034) | Move roadmap tracking to GitHub Issues and Projects          | Chore   | High              | M          | Approved | —              |
 
 ### Suggested order
-1. **Foundations:** CC-001, CC-003, CC-002, CC-004, CC-005
-2. **Core refactor:** CC-006
-3. **Gameplay:** CC-007 → CC-008 → CC-009 → CC-010 / CC-011 / CC-012
-4. **Platform and monetisation:** CC-013 → CC-014; CC-015 → CC-016
-5. **Polish:** CC-017 (profile on device), CC-018 (can run in parallel any time; finalise after the new screens from 3–4 exist)
+1. **Foundations:** ~~CC-001~~, CC-034 (tracking), CC-033, CC-003 (needs the machine with the FMOD copy), CC-004, CC-005
+2. **Core refactor:** CC-006 (absorbs CC-020–CC-024 and the simulation part of CC-002), then CC-002 (rest)
+3. **Quick fixes, any time:** CC-028 + CC-029 together (restart/UI); CC-031 before CC-013
+4. **Gameplay:** CC-007 → CC-008 → CC-009 → CC-010 / CC-011 / CC-012
+5. **Platform and monetisation:** CC-013 → CC-014; CC-015 → CC-016
+6. **Polish:** CC-017 (profile on device), CC-018 (can run in parallel any time; finalise after the new screens from 4–5 exist)
 
 ---
 
 ## Foundations
 
 ### CC-001
-**Wiki scaffold and system pages** · Chore · Medium · S · **In review**
+**Wiki scaffold and system pages** · Chore · Medium · S · **Done** (merged 2026-11-18)
 Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-001-wiki-setup` · PR [#1](https://github.com/rtumelty/Cathartic-Colours/pull/1)
 
 | Deliverable | Title | Risk | Worker | Status |
@@ -66,8 +69,8 @@ Links: [feature page](features/CC-001-wiki-scaffold.md) · branch `feature/CC-00
 Create the full `docs/wiki/` structure (index, log, test plan, `features/`, `decisions/`, `systems/`) and `docs/raw/`. Write system pages for existing behaviour: merge rules per mode, ECS frame order, save system, audio/FMOD, input, UI layout. Seed `test-plan.md` with current areas.
 
 ### CC-002
-**Test infrastructure** · Chore · High · M
-Game scripts compile into `Assembly-CSharp`, which test assemblies can't reference. Add assembly definitions for game code (respecting existing namespaces), EditMode and PlayMode test assemblies, one passing test of each kind, and the command-line test run documented in `CLAUDE.md` §4 (Unity path recorded locally).
+**Test infrastructure: game-code asmdefs + PlayMode tests** · Chore · High · M
+_Rescoped 2026-11-18 (CC-006 D1):_ CC-006 creates the `Simulation` assembly, its EditMode test assembly and the command-line EditMode run. What's left here: assembly definitions for the remaining game code (respecting existing namespaces), a PlayMode test assembly, ECS-level system tests for `BoardStepSystem` and the save/restore path, and the PlayMode command-line run.
 
 ### CC-003
 **FMOD events exist only in `.unsaved/`** · Bug · High · S
@@ -84,7 +87,19 @@ Remote branch `points_system` is unmerged. Determine whether it's superseded by 
 ## Core refactor
 
 ### CC-006
-**Extract pure board simulation from ECS** · Chore · High · L
+**Extract pure board simulation from ECS** · Chore · High · L · **Approved**
+Links: [feature page](features/CC-006-pure-simulation.md) · [ADR-001](decisions/ADR-001-pure-board-simulation.md) · branch `feature/CC-006-pure-simulation` · PR —
+Depends on CC-034, then CC-033 (order CC-034 → CC-033 → CC-006). Absorbs CC-020, CC-021, CC-022, CC-023, CC-024 and the simulation part of CC-002.
+
+| Deliverable | Title | Risk | Worker | Status |
+|---|---|---|---|---|
+| CC-006.1 | Simulation assembly and test harness | Medium | Sonnet | Approved |
+| CC-006.2 | Pure board model and rules (parity) | High | Primary + Sonnet (tests) | Approved |
+| CC-006.3 | ECS as a thin wrapper (fixes CC-023, CC-024) | High | Primary | Approved |
+| CC-006.4 | Fix RNG and spawn (CC-020, CC-021) | Medium | Sonnet | Approved |
+| CC-006.5 | Resume without replay (CC-022) | High | Primary | Approved |
+| CC-006.6 | Wiki, test plan and roadmap close-out | Low | Haiku + Sonnet | Approved |
+
 Move slide/merge/spawn rules into a pure, deterministic, Burst-friendly model (e.g. `BoardState` + `Step(board, dir) → (board, events)`), with ECS systems as thin wrappers. Remove presentation coupling from simulation (`InputProcessingSystem` → `JellyManager`, `ScoringSystem` → particle spawner/renderer). Prerequisite for preview, modes, solver/generator and cloud-save robustness. Heavy unit-test coverage.
 
 ## Gameplay
@@ -202,3 +217,18 @@ _CC-028 to CC-032 were found while writing the CC-001.3 system pages (2026-11-18
 ### CC-032
 **Presentation-layer cleanup** · Chore · Low · S
 `JellyManager` writes to the shared `BlockMaterial.mat` asset, which changes it during editor play, and its smoothing depends on frame rate. `JellyController` is unused. `ScoreParticles.prefab` has stale fields and empty digit systems, so Text mode would throw. The Advanced Color Merge top-tier clear emits transparent particles (result colour `None`). [presentation](systems/presentation.md#known-issues)
+
+### CC-033
+**Upgrade project to Unity 6000.6.9f1** · Chore · High · M
+The project is on 6000.3.2f1, but this machine has only 6000.6.9f1, and batchmode test runs with it would upgrade the project anyway. Upgrade deliberately: check package compatibility (Entities 1.4.4, URP, Input System, Test Framework 1.6.0, FMOD for Unity 2.03), update packages, fix API changes, confirm the game runs in all three modes, and record the editor path in project `CLAUDE.md` §4. Blocks CC-006 (its command-line test runs use this editor). Added 2026-11-18.
+
+### CC-034
+**Move roadmap tracking to GitHub Issues and Projects** · Chore · High · M · **Approved**
+Links: [feature page](features/CC-034-github-issues.md) · branch `feature/CC-034-github-issues` · PR —
+Hybrid tracking: one GitHub issue per item (labels for type, severity and size), a Project board for Status, Severity, Size and Phase, and sub-issues for deliverables. The wiki keeps feature pages, ADRs and system pages, and `roadmap.md` shrinks to a strategy page. Removes status commits and `roadmap.md` merge conflicts. Proposed from a side session on 2026-11-18; done before CC-033 and CC-006.
+
+| Deliverable | Title | Risk | Worker | Status |
+|---|---|---|---|---|
+| CC-034.1 | Labels, project, fields, views and automation | Low | Haiku | Approved |
+| CC-034.2 | Import script for existing items (dry run, idempotent) | Low | Haiku | Approved |
+| CC-034.3 | Wiki and workflow switch-over, ADR-002, CLAUDE.md files | Medium | Primary | Approved |

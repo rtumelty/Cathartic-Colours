@@ -23,3 +23,10 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] implement | CC-001.4 | test-plan.md: TP-OVER-05 added (editor-only grid cell count after restart, CC-029); old TP-OVER-05 renumbered TP-OVER-06; references updated
 ## [2026-11-18] decision | CC-001 D3 | Wording clarified at Ronan's request: two new system pages (configuration, presentation) plus scoring/spawn/end folded into merge-rules; decision unchanged
 ## [2026-11-18] approve | CC-001 | CC-001.4 approved; all deliverables Done; CC-001 → In review, PR feature/CC-001-wiki-setup → develop
+## [2026-11-18] implement | CC-001 | PR #1 merged; CC-001 → Done (status batched with CC-006 planning)
+## [2026-11-18] plan | roadmap.md | CC-033 added (Unity 6000.6.9f1 upgrade, blocks CC-006); CC-002 rescoped to game-code asmdefs + PlayMode (simulation part moves to CC-006); suggested order updated
+## [2026-11-18] plan | CC-006 | Feature page and ADR-001 (Proposed) written: 6 deliverables, absorbs CC-020–CC-024; awaiting approval
+## [2026-11-18] plan | CC-034 | GitHub Issues + Projects migration planned from a side-session proposal (id CC-034, ADR-002, since CC-033 and ADR-001 were taken); ordered before CC-033 and CC-006; awaiting approval
+## [2026-11-18] approve | CC-034 | Plan, D1–D4 and model routing approved by Ronan
+## [2026-11-18] approve | CC-006 | Plan approved; D3 changed: struct rule sets renamed *MergeRules behind IMergeRules (I prefix only on the interface); order CC-034 → CC-033 → CC-006; ADR-001 Accepted
+## [2026-11-18] lint | .gitignore | Obsidian ignore rules didn't match docs/.obsidian; fixed to **/.obsidian and docs/.obsidian/workspace.json untracked
