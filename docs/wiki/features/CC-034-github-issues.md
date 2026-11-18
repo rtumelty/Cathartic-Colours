@@ -8,6 +8,7 @@
 | Status | In progress |
 | Branch | `feature/CC-034-github-issues` (from `develop`, created by the planning session on approval) |
 | PR | — |
+| Project board | [Cathartic Colours Roadmap](https://github.com/users/rtumelty/projects/1) (user project #1, private) |
 | Roadmap | [CC-034](../roadmap.md#cc-034) |
 | Depends on | — (planned before CC-033 and CC-006) |
 | Decision | ADR-002 (written in CC-034.3) |
@@ -45,8 +46,19 @@ Direction agreed by Ronan in a side session on 2026-11-18. This page is the deta
 - Record the project number and URL in project `CLAUDE.md` §6 (as part of .3) and in this page
 
 **DoD (beyond template)**
-- [ ] `gh label list` shows all labels; `gh project field-list` shows Status (6 options), Severity, Size, Phase
-- [ ] Views and workflows exist, created by the agent or by Ronan following the MANUAL steps
+- [x] `gh label list` shows all labels; `gh project field-list` shows Status (6 options), Severity, Size, Phase
+- [ ] Views and workflows exist, created by the agent or by Ronan following the MANUAL steps (views created; Backlog sort and the two workflows are MANUAL steps 2–3)
+
+**API check (2026-11-18).** GraphQL introspection of the live schema:
+- Views: `createProjectV2View` and `updateProjectV2View` exist. They set name, layout, filter and visible fields (`configuration.visibleFieldIds` is the only configuration input). They can't set sort or group-by. A new board view groups by Status on its own.
+- Workflows: the only workflow mutation is `deleteProjectV2Workflow`. `ProjectV2Workflow.enabled` can be read but not set, so enabling a workflow is a web-UI step.
+
+**Result (2026-11-18).** Done by the Haiku worker, checked by the primary against the live API:
+- Labels: `type:feature|bug|chore`, `severity:critical|high|medium|low`, `size:S|M|L|XL` (11). GitHub's default labels are kept.
+- Project: user project **#1** "Cathartic Colours Roadmap", <https://github.com/users/rtumelty/projects/1>, linked to `rtumelty/Cathartic-Colours`, private (the default; see D4 note under Divergences).
+- Fields: built-in `Status` options replaced with Backlog, Planning, Approved, In progress, In review, Done. New single-selects: `Severity` (Critical, High, Medium, Low), `Size` (S, M, L, XL), `Phase` (the six phases).
+- Views: 1 "Backlog by severity" (table, filter `status:Backlog`), 2 "Board" (board, columns by Status), 3 "Bugs" (table, filter `label:type:bug`). Both tables show Title, Status, Labels, Sub-issues progress, Severity, Size, Phase (visible fields set by the primary at review).
+- Workflows found: "Auto-add sub-issues to project" on; "Item closed", "Pull request merged", "Auto-close issue", "Item added to project" and "Pull request linked to issue" off.
 
 ### CC-034.2 — Import script for existing items
 **Risk:** Low · **Worker:** Haiku · **Review:** primary, line by line before any live run
@@ -90,7 +102,12 @@ No game code, so no Unity tests. Verification:
 
 ## MANUAL (Ronan)
 1. **Approve the live import** after reviewing the dry-run output (CC-034.2).
-2. **Only if the API can't do it** (decided in CC-034.1): create the three views and enable the two built-in workflows in the project's web UI, following the click paths the session writes.
+2. **Sort the Backlog view by Severity** (the API can't set sort; CC-034.1). Open <https://github.com/users/rtumelty/projects/1/views/1> → click the ▾ beside the **Backlog by severity** tab → **Sort by** → **Severity** (ascending, so Critical comes first) → click **Save** on the tab (it shows a dot until saved).
+3. **Enable the two workflows** (the API can't enable workflows; CC-034.1). Open the project → **⋯** (top right) → **Workflows**:
+   - **Item closed** → **Edit** → *When* "Issue, Pull request" closed → *Set value* **Status: Done** → **Save and turn on workflow**.
+   - **Pull request merged** → **Edit** → *Set value* **Status: Done** → **Save and turn on workflow**.
+   Check the *Set value* dropdown in both: the Status options were replaced, so a stale default may show as empty.
+   Leave the other workflows as they are.
 
 ## Decisions
 All approved by Ronan 2026-11-18.
@@ -100,7 +117,9 @@ All approved by Ronan 2026-11-18.
 - **D4:** The project is a user-level Project (owner rtumelty) linked to the repo. Issues are public, like the repo.
 
 ## Divergences
-_None yet._
+- **CC-034.1 (minor):** views were created through the API instead of by Ronan. The plan made the MANUAL route conditional on the API not supporting it. Only the Backlog sort and the two workflows remain MANUAL.
+- **CC-034.1 (minor):** the primary set visible fields on both table views at review (one API call) instead of sending it back to the worker.
+- **D4 note (open question):** D4 covers issue visibility (public) but not the board's. The project was left **private** (the default), so the board link in the wiki works only for Ronan. Make it public in project Settings → Visibility if it should match the issues.
 
 ## Feature test plan
 1. Open the project board: every CC item is in the right Status column; CC-001 is in Done (closed).

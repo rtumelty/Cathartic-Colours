@@ -229,6 +229,6 @@ Hybrid tracking: one GitHub issue per item (labels for type, severity and size),
 
 | Deliverable | Title | Risk | Worker | Status |
 |---|---|---|---|---|
-| CC-034.1 | Labels, project, fields, views and automation | Low | Haiku | In progress |
+| CC-034.1 | Labels, project, fields, views and automation | Low | Haiku | In review |
 | CC-034.2 | Import script for existing items (dry run, idempotent) | Low | Haiku | Approved |
 | CC-034.3 | Wiki and workflow switch-over, ADR-002, CLAUDE.md files | Medium | Primary | Approved |

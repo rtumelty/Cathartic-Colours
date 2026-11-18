@@ -34,3 +34,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] lint | .gitignore | Obsidian ignore rules didn't match docs/.obsidian; fixed to **/.obsidian and docs/.obsidian/workspace.json untracked
 ## [2026-11-18] implement | develop | 940c674 (Burst guidance, pushed to the CC-001 branch after PR #1 was squash-merged) brought into develop
 ## [2026-11-18] implement | CC-034 | Status → In progress; feature session started
+## [2026-11-18] implement | CC-034.1 | Labels (11), user project #1 with Status/Severity/Size/Phase fields, three views created by API; API cannot set view sort or enable workflows, so Backlog sort and Item closed / PR merged workflows are MANUAL (Ronan)
+## [2026-11-18] diverge | CC-034.1 | Views created by agent, not Ronan (API supports it); primary set table visible fields at review; board visibility (private) raised as open question on D4
