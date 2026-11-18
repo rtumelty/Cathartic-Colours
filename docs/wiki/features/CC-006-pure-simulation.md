@@ -2,15 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Type | Chore |
-| Severity / impact | High |
-| Complexity | L |
-| Status | Approved |
+| Issue | [#12](https://github.com/rtumelty/Cathartic-Colours/issues/12) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-006-pure-simulation` (from `develop`, created by the planning session on approval) |
 | PR | — |
-| Roadmap | [CC-006](../roadmap.md#cc-006) |
-| Depends on | [CC-034](../roadmap.md#cc-034) (GitHub Issues tracking) and [CC-033](../roadmap.md#cc-033) (Unity 6000.6.9f1 upgrade), both merged first |
-| Absorbs | [CC-020](../roadmap.md#cc-020), [CC-021](../roadmap.md#cc-021), [CC-022](../roadmap.md#cc-022), [CC-023](../roadmap.md#cc-023), [CC-024](../roadmap.md#cc-024); part of [CC-002](../roadmap.md#cc-002) |
+| Depends on | [CC-034](https://github.com/rtumelty/Cathartic-Colours/issues/46) (GitHub Issues tracking) and [CC-033](https://github.com/rtumelty/Cathartic-Colours/issues/45) (Unity 6000.6.9f1 upgrade), both merged first |
+| Absorbs | [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32), [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33), [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34), [CC-023](https://github.com/rtumelty/Cathartic-Colours/issues/35), [CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36); part of [CC-002](https://github.com/rtumelty/Cathartic-Colours/issues/8) |
 | Decision | [ADR-001](../decisions/ADR-001-pure-board-simulation.md) |
 
 ## Goal
@@ -30,7 +26,7 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 ## Deliverables
 
 ### CC-006.1 — Simulation assembly and test harness
-**Risk:** Medium · **Worker:** Sonnet · **Review:** primary
+**Sub-issue:** [#13](https://github.com/rtumelty/Cathartic-Colours/issues/13) · **Risk:** Medium · **Worker:** Sonnet · **Review:** primary
 
 - `Assets/Scripts/Simulation/CatharticColours.Simulation.asmdef` (references `Unity.Mathematics`, `Unity.Collections`; auto-referenced so `Assembly-CSharp` sees it)
 - `Assets/Tests/EditMode/CatharticColours.Simulation.Tests.asmdef` (EditMode only, references the simulation assembly, NUnit/Test Framework)
@@ -44,7 +40,7 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 - [ ] `GameConfiguration` and `ColorProfile` assets still load with their values (checked by opening the assets in batchmode, or by test)
 
 ### CC-006.2 — Pure board model and rules (parity)
-**Risk:** High · **Worker:** primary implements the core; Sonnet writes the characterisation tests from the wiki spec without looking at the new implementation · **Review:** primary
+**Sub-issue:** [#14](https://github.com/rtumelty/Cathartic-Colours/issues/14) · **Risk:** High · **Worker:** primary implements the core; Sonnet writes the characterisation tests from the wiki spec without looking at the new implementation · **Review:** primary
 
 - `Block` (colour, size, indicator flag), `BoardState` (width, height, `NativeArray<Block>` cells, `IDisposable`), `SimEvent` (moved, merged with position/tier/colour, indicator resolved, indicator spawned, game over), `StepResult` (accepted, score delta, game over)
 - The three rule sets move into `Simulation` as structs over `Block`: `StandardMergeRules`, `ColorMergeRules` and `AdvancedColorMergeRules`, implementing `IMergeRules`, with `MergeRulesFactory`. `IMergeUtility`, the `*MergeUtility` classes and `MergeUtilityFactory` are removed, and project `CLAUDE.md` §3 is updated to match (ADR-001 §1).
@@ -67,7 +63,7 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 - [ ] `Step` and the rule structs compile under Burst: a `[BurstCompile]` static test entry point calls `Step` in an EditMode test
 
 ### CC-006.3 — ECS as a thin wrapper
-**Risk:** High · **Worker:** primary · **Review:** primary
+**Sub-issue:** [#15](https://github.com/rtumelty/Cathartic-Colours/issues/15) · **Risk:** High · **Worker:** primary · **Review:** primary
 
 - `BoardStepSystem` (Simulation group) replaces `InputProcessingSystem`, `BlockMovementSystem`, `ResolveNewBlocksSystem`, `SpawnColorSystem` and `GameEndConditionSystem`. It reads the `MoveDirectionComponent`, builds a `BoardState` from block entities, calls `Step`, writes entities back, updates `GameStateComponent`/`ScoreComponent`, and creates `AudioEventComponent`/`MergeEventComponent` entities from `SimEvent`s, only for accepted moves (fixes **CC-023**).
 - `ScoringSystem` → `MergeEffectsSystem` (particles only); jelly wobble triggered from presentation, not from simulation (ADR-001 §3–4)
@@ -83,7 +79,7 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 - [ ] [ecs-frame-order](../systems/ecs-frame-order.md) rewritten for the new system set; [presentation](../systems/presentation.md) and [merge-rules](../systems/merge-rules.md) updated
 
 ### CC-006.4 — Fix RNG and spawn (CC-020, CC-021)
-**Risk:** Medium · **Worker:** Sonnet · **Review:** primary
+**Sub-issue:** [#16](https://github.com/rtumelty/Cathartic-Colours/issues/16) · **Risk:** Medium · **Worker:** Sonnet · **Review:** primary
 
 - **CC-020:** the colour roll advances the stored `Random`, so colour and next position come from successive draws
 - **CC-021:** spawn picks uniformly from the list of empty cells; it fails only when there are none
@@ -92,7 +88,7 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 **DoD (beyond template):** behaviour change noted in merge-rules.md; the old "about 13% failure" note replaced.
 
 ### CC-006.5 — Resume without replay (CC-022)
-**Risk:** High (save semantics) · **Worker:** primary · **Review:** primary
+**Sub-issue:** [#17](https://github.com/rtumelty/Cathartic-Colours/issues/17) · **Risk:** High (save semantics) · **Worker:** primary · **Review:** primary
 
 - The save describes the idle state after a move (`waitingForInput = true`); on restore `WaitingForInput` is forced to true, so files written by older builds also resume correctly. No new or removed fields, and `version` stays `"1.0"` (versioning is CC-031).
 - First frame after resume runs no step; the saved indicator stays where it was.
@@ -101,10 +97,10 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 **DoD (beyond template):** [save-system](../systems/save-system.md) updated; CC-022 known issue removed and its test case added.
 
 ### CC-006.6 — Wiki, test plan and roadmap close-out
-**Risk:** Low · **Worker:** Haiku (lint, index, roadmap), Sonnet (test-plan cases) · **Review:** primary
+**Sub-issue:** [#18](https://github.com/rtumelty/Cathartic-Colours/issues/18) · **Risk:** Low · **Worker:** Haiku (lint, index, roadmap), Sonnet (test-plan cases) · **Review:** primary
 
 - Test plan: update the cases affected by CC-020–CC-023 and the frame-order changes; add the CC-022 resume case; mark the regression pass
-- Roadmap: CC-020–CC-024 → Done (absorbed by CC-006); CC-002 description confirmed as rescoped
+- Board: close CC-020–CC-024 (#32–#36) as completed by CC-006 with `gh issue close`; confirm the CC-002 (#8) description matches the rescope
 - Lint pass on the pages touched; log `lint`
 
 ## Tests summary
@@ -134,7 +130,7 @@ All approved by Ronan 2026-11-18 (D3 with the naming change).
 - **D5:** CC-022 is fixed without a save format change; versioning stays with CC-031.
 
 ## Divergences
-- 2026-11-18 (planning session, before work started): plan aligned with the project `CLAUDE.md` §3 Burst rule (commit 940c674, brought into `develop` late). `BoardStepSystem` is Burst-compiled, config comes through an unmanaged singleton, the factory dispatches by `switch` without boxing, and a Burst compile check is added to the CC-006.2 DoD. Scope, order and model routing are unchanged. Flagged to Ronan.
+- 2026-11-18 (planning session, before work started): plan aligned with the project `CLAUDE.md` §3 Burst rule (commit 940c674, brought into `develop` late). `BoardStepSystem` is Burst-compiled, config comes through an unmanaged singleton, the factory dispatches by `switch` without boxing, and a Burst compile check is added to the CC-006.2 DoD. Scope, order and model routing are unchanged. Approved by Ronan on 2026-11-18.
 
 ## Feature test plan
 1. Command line: EditMode run passes (all simulation tests).

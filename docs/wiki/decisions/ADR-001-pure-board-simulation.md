@@ -4,7 +4,7 @@
 |---|---|
 | Status | Accepted |
 | Date | 2026-11-18 |
-| Roadmap id | [CC-006](../roadmap.md#cc-006) |
+| Roadmap id | [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12) |
 | Supersedes | — |
 
 ## Context
