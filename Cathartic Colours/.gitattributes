@@ -1,2 +1,2 @@
-Assets/Plugins/FMOD/**/*.bundle text eol=lf
-Assets/Plugins/FMOD/**/Info.plist text eol=lf
+Packages/com.fmod.fmod-for-unity.v204/**/*.bundle text eol=lf
+Packages/com.fmod.fmod-for-unity.v204/**/Info.plist text eol=lf

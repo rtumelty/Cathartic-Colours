@@ -204,7 +204,32 @@ Settings cleaned with the strip:
 - FMOD 2.03 warnings: UAC1002 (`Settings.cs` legacy settings lack `[Serializable]`) and UAC0009 (`DEVELOPMENT_BUILD` deprecated, in `fmod.cs`, `RuntimeManager.cs` and `Platform.cs`).
 - Batchmode opens need `-ignorecompilererrors` until this is fixed. Without it the editor exits with code 1 before writing `ProjectVersion.txt`.
 
+Android Build Support was installed by Ronan through the Hub (2026-11-18): `Data/PlaybackEngines/AndroidPlayer` with `SDK`, `NDK` and `OpenJDK`. No build was attempted.
+
+## CC-033.2 results
+
+### FMOD 2.04 import
+- **Source:** `fmodstudio20400.tgz` from Ronan, a UPM tarball (`com.fmod.fmod-for-unity.v204` 2.4.0, `VERSION.number` 0x00020400). The agent installed it at Ronan's request; MANUAL step 1 is not needed.
+- **Form:** embedded package at `Cathartic Colours/Packages/com.fmod.fmod-for-unity.v204/` (421 files) ([ADR-003](../decisions/ADR-003-fmod-embedded-package.md)). The lock records it as `embedded` and the manifest is unchanged.
+- **Removed:** all of `Assets/Plugins/` (the 2.03.11 integration, 449 tracked files). No 2.03 files remain anywhere else (no `Assets/Gizmos/FMOD` or `Editor Default Resources/FMOD`).
+- **Settings:** `FMODStudioSettings.asset` moved with its `.meta` to `Assets/Resources/FMOD/`, where 2.04 loads it. All 13 script GUIDs in it (Settings and 12 platform classes) match 2.04 scripts, so no sub-asset breaks. The scenes' `StudioListener` GUID (`86c6…`) also matches. All 27 non-FMOD script GUIDs in scenes, prefabs and assets resolve in the package cache.
+- **Git rules:** the `.gitattributes` `eol=lf` rules and the `.gitignore` lib rule point at the package folder. The event cache rule is now `Assets/Resources/FMOD/FMODStudioCache.asset*`.
+- **API:** the game's only FMOD call, `RuntimeManager.PlayOneShot(string, Vector3)` in `AudioSystem.cs`, is unchanged in 2.04, so `FMODEventPaths` still lines up.
+
+### Compile on 6000.6.9f1
+Batchmode open without `-ignorecompilererrors`: exit 0, **0 `error CS`**.
+
+| Warnings | Before (2.03 on 6.6, first open) | After (2.04) |
+|---|---|---|
+| `Assets/Scripts` | unknown (game assemblies didn't compile past FMOD) | 1: CS0414 `JellyManager.wobbleActive` assigned but never used (`JellyManager.cs:26`). The code predates the upgrade, so the warning isn't upgrade-related and stays out of scope |
+| FMOD package | CS0619 error; UAC1002 ×4 (`Settings.cs` legacy), UAC0009 ×4 | UAC0009 ×4 (`DEVELOPMENT_BUILD` deprecated: `fmod.cs:29`, `RuntimeManager.cs:313`, `Platform.cs:492,504`). Recorded, not fixed (vendor code) |
+
+**API changes in game code: none.** Entities 1.4.4 → 6.6.0 needed no source changes, and there are no obsolete-API warnings in `Assets/Scripts`. The third D4 commit (code fixes) is therefore empty, and CC-033.2 is one commit.
+
+FMOD may migrate `FMODStudioSettings.asset` (its `CurrentVersion` is still 2.03's 131857) the first time the editor GUI opens it. Any resulting change is committed after MANUAL step 2.
+
 ## Divergences
+- **CC-033.2, D2 (minor):** FMOD 2.04 came as a UPM tarball, not a `.unitypackage`, so it's an embedded package under `Packages/`, not `Assets/Plugins/FMOD` (Ronan chose this, ADR-003). The agent did the import, not Ronan (Ronan, 2026-11-18). CC-033.2 started before CC-033.1 was approved, at Ronan's request.
 - **CC-033.1, D3 tool (minor):** Unity Hub 4.0.1 (Store build) dropped `-- --headless install-modules` in favour of the standalone Unity CLI. The agent installed Unity CLI 1.0.1 with Ronan's OK (in `%LOCALAPPDATA%\Unity\bin`, agent-skills setup skipped). Module install with `--accept-eula` (also approved) then failed because UAC elevation was refused from the agent shell. Ronan installs the Android module through the Hub GUI instead (Ronan, 2026-11-18). The OpenJDK module id is `android-open-jdk-17.0.18+8`.
 - **CC-033.1, D1 (minor):** the Visual Studio integration was removed rather than kept (Ronan prefers Rider). The worker's evidence kept ugui, physics2d and terrain as URP-core dependencies, based on the 6000.3 lock. The primary's review against the 6.6 built-in graph found no kept dependents, so they were removed.
 

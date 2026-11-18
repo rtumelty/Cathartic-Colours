@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.fmod.fmod-for-unity.v204": {
+      "version": "file:com.fmod.fmod-for-unity.v204",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.burst": {
       "version": "2.0.0",
       "depth": 1,

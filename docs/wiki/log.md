@@ -55,3 +55,6 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] approve | CC-033 | Plan, D1–D4 and routing approved by Ronan; #45 Approved, sub-issues #51–#53 created
 ## [2026-11-18] implement | CC-033.1 | Packages stripped (manifest 60 → 17, evidence on the feature page); project upgraded to 6000.6.9f1 in batchmode; resolution clean; URP 17.6 settings migration reviewed; FMOD 2.03 CS0619 left for CC-033.2
 ## [2026-11-18] diverge | CC-033.1 | Hub CLI headless install gone: Unity CLI installed, elevation refused, Android module via Hub GUI (Ronan); Visual Studio integration removed (Ronan); ugui/physics2d/terrain removed on the 6.6 dependency graph
+## [2026-11-18] decision | ADR-003 | FMOD for Unity 2.04 as an embedded UPM package in Packages/com.fmod.fmod-for-unity.v204 (Ronan); settings in Assets/Resources/FMOD
+## [2026-11-18] implement | CC-033.2 | FMOD 2.04 embedded, 2.03 Assets/Plugins removed, settings moved with GUIDs intact; batchmode compile 0 errors; no game-code API changes needed; Android module installed by Ronan via Hub
+## [2026-11-18] diverge | CC-033.2 | UPM tarball instead of .unitypackage (embedded package, ADR-003); agent imported instead of MANUAL step 1; started before CC-033.1 approval at Ronan's request

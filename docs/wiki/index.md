@@ -17,6 +17,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [ADR template](decisions/ADR-000-template.md) — copy this to start a new ADR (ADR-000 is a template, not a decision).
 - [ADR-001 Pure board simulation core](decisions/ADR-001-pure-board-simulation.md) — rules move into a pure `Simulation` assembly with struct `*MergeRules` strategies behind `IMergeRules`; one `BoardStepSystem` wraps it. Status: Accepted.
 - [ADR-002 Track roadmap items in GitHub Issues and a Project board](decisions/ADR-002-issue-tracking.md) — hybrid tracking: issues, sub-issues and board for status and fields; the wiki keeps knowledge. Status: Accepted.
+- [ADR-003 FMOD for Unity as an embedded UPM package](decisions/ADR-003-fmod-embedded-package.md) — FMOD 2.04 lives in `Packages/com.fmod.fmod-for-unity.v204/` (committed vendor code), settings in `Assets/Resources/FMOD/`. Status: Accepted.
 
 ## Systems
 - [System page format](systems/README.md) — how system pages describe current behaviour, cite sources and link known issues.

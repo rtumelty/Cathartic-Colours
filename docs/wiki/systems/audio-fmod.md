@@ -13,7 +13,8 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); FMO
 | `Assets/Scripts/ECS/Systems/AudioSystem.cs` | Plays and destroys audio event entities |
 | `Assets/Scripts/ECS/Systems/BlockMovementSystem.cs` | Emits move and merge sounds |
 | `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs` | Emits the game-over sound |
-| `Assets/Plugins/FMOD/Resources/FMODStudioSettings.asset` | FMOD for Unity settings |
+| `Packages/com.fmod.fmod-for-unity.v204/` | FMOD for Unity 2.04.00, an embedded UPM package ([ADR-003](../decisions/ADR-003-fmod-embedded-package.md)); was `Assets/Plugins/FMOD/` (2.03.11) before CC-033 |
+| `Assets/Resources/FMOD/FMODStudioSettings.asset` | FMOD for Unity settings (the event cache `FMODStudioCache.asset` beside it is gitignored) |
 | `Assets/Scenes/MainMenu.unity`, `Assets/Scenes/Gameplay scene.unity` | Each has an FMOD `StudioListener` component (on the camera object) |
 | `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` | FMOD Studio project file |
 | `Cathartic Colours - FMOD/Build/Desktop/Master.bank`, `Master.strings.bank` | Built banks that Unity reads |
@@ -24,7 +25,7 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); FMO
 - `AudioEventComponent` holds one field, `FixedString64Bytes EventPath` (`Assets/Scripts/ECS/Components/AudioEventComponent.cs`).
 - `AudioSystem` is `partial struct AudioSystem : ISystem` in `SimulationSystemGroup`, with no ordering attributes and no `RequireForUpdate`. Each frame it queries every `AudioEventComponent`, calls `RuntimeManager.PlayOneShot(path.ToString(), Vector3.zero)` and queues `DestroyEntity` on an `EntityCommandBuffer` (`Assets/Scripts/ECS/Systems/AudioSystem.cs`). All sounds therefore play at the origin; there is no 3D positioning, parameter setting or event-instance handle.
 - It is unordered against the systems that create events, so a sound may play in the frame it was created or one frame later ([ecs-frame-order.md](ecs-frame-order.md)).
-- `RuntimeManager.PlayOneShot(string, Vector3)` catches `EventNotFoundException` and logs the warning `"[FMOD] Event not found: <path>"` (`Assets/Plugins/FMOD/src/RuntimeManager.cs`). Whether an unknown path actually reaches that exception inside `PathToGUID` was not checked, so treat the missing-event behaviour as unverified.
+- `RuntimeManager.PlayOneShot(string, Vector3)` catches `EventNotFoundException` and logs the warning `"[FMOD] Event not found: <path>"` (`Packages/com.fmod.fmod-for-unity.v204/src/RuntimeManager.cs`). Whether an unknown path actually reaches that exception inside `PathToGUID` was not checked, so treat the missing-event behaviour as unverified.
 
 ### Event paths and where they are emitted
 `Assets/Scripts/ECS/Utilities/FMODEventPaths.cs` (`static class`, each member a `FixedString64Bytes` property):
@@ -42,14 +43,14 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); FMO
 No other script or scene references FMOD events: there are no `StudioEventEmitter` components, no music and no UI sounds (search of `Assets/Scripts` and scenes; the only FMOD components in the two scenes are `StudioListener`).
 
 ### FMOD for Unity settings
-`Assets/Plugins/FMOD/Resources/FMODStudioSettings.asset` (the main `FMODUnity.Settings` object):
+`Assets/Resources/FMOD/FMODStudioSettings.asset` (the main `FMODUnity.Settings` object):
 
 | Setting | Value | Meaning |
 |---|---|---|
 | `HasSourceProject` | 1 | A Studio project is linked |
 | `sourceProjectPath` | `../Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` | Relative to the Unity project folder |
 | `sourceBankPath` | `../Cathartic Colours - FMOD/Build` | Bank source folder; per-platform subfolder is appended (see below) |
-| `ImportType` | 0 (`StreamingAssets`) | Banks are loaded from streaming assets in builds; the other option is AssetBundle (`Assets/Plugins/FMOD/src/Settings.cs`) |
+| `ImportType` | 0 (`StreamingAssets`) | Banks are loaded from streaming assets in builds; the other option is AssetBundle (`Packages/com.fmod.fmod-for-unity.v204/src/Settings.cs`) |
 | `TargetAssetPath` | `FMODBanks` | Only used for the AssetBundle import type |
 | `BankLoadType` | 0 (`All`) | Load the master banks and all banks listed in `Banks` at start-up |
 | `MasterBanks` | `Master` | Loads `Master.strings` then `Master` (`RuntimeManager.BanksToLoad`) |
@@ -61,9 +62,9 @@ No other script or scene references FMOD events: there are no `StudioEventEmitte
 | `AndroidUseOBB` / `AndroidPatchBuild` | 0 / 0 | |
 | `Platforms` | 12 entries (Default, Play In Editor, Windows, Mac, Linux, Android, iOS, tvOS, visionOS, WebGL, Mobile Low, Mobile High) | Only `Default` and `PlayInEditor` have `active: 1`; no platform overrides a `BuildDirectory` (every `BuildDirectory` has `HasValue: 0`) |
 
-Only start-up bank loading for `ImportType.StreamingAssets` is done by `RuntimeManager.LoadBanks` (`Assets/Plugins/FMOD/src/RuntimeManager.cs`). In the Editor the plugin reads banks straight from the source bank path; in a player build the Unity build step copies them to StreamingAssets (standard FMOD for Unity behaviour; not exercised in this repo). `Assets/StreamingAssets` does not exist on disk, and the Unity `.gitignore` ignores `.bank` files under `Assets/StreamingAssets/` (`Cathartic Colours/.gitignore`).
+Only start-up bank loading for `ImportType.StreamingAssets` is done by `RuntimeManager.LoadBanks` (`Packages/com.fmod.fmod-for-unity.v204/src/RuntimeManager.cs`). In the Editor the plugin reads banks straight from the source bank path; in a player build the Unity build step copies them to StreamingAssets (standard FMOD for Unity behaviour; not exercised in this repo). `Assets/StreamingAssets` does not exist on disk, and the Unity `.gitignore` ignores `.bank` files under `Assets/StreamingAssets/` (`Cathartic Colours/.gitignore`).
 
-Platform build folders: the only Studio platform is `Desktop`, and `Assets/Plugins/FMOD/src/Platform.cs` (line 876) defaults a `BuildDirectory` to "Desktop" for a desktop-type platform (which Unity platform classes use it was not checked). The Studio project has only a `Desktop` platform, so there is **no mobile build output**: see Known issues, [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10). The Android native libraries are present under `Assets/Plugins/FMOD/platforms/android/lib/`.
+Platform build folders: the only Studio platform is `Desktop`, and `Packages/com.fmod.fmod-for-unity.v204/src/Platform.cs` (line 720) defaults a `BuildDirectory` to "Desktop" for a desktop-type platform (which Unity platform classes use it was not checked). The Studio project has only a `Desktop` platform, so there is **no mobile build output**: see Known issues, [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10). The Android native libraries are present under `Packages/com.fmod.fmod-for-unity.v204/platforms/android/lib/`.
 
 ### FMOD Studio project layout
 `Cathartic Colours - FMOD/` (FMOD Studio 2.03, `serializationModel="Studio.02.03.00"`):
