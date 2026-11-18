@@ -39,3 +39,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] approve | CC-034.1 | Approved by Ronan; CC-034.2 started
 ## [2026-11-18] implement | CC-034.2 | tools/roadmap-import.ps1 (dry run by default, -Apply, -Ids, -ShowBodies); primary review fixed phase rule (CC-013), paging and write pacing; dry run: 34 items, 13 sub-issues, 47 creates, 6 closes, 0 errors; live run awaiting Ronan
 ## [2026-11-18] diverge | CC-034.2 | Minor specifics: phase from heading then suggested order (default Quick fixes); absorbed items get "Part of"; wiki links made absolute
+## [2026-11-18] implement | CC-034.2 | Live import (approved by Ronan): 47 issues #3–#49 (34 items, 13 sub-issues), 6 closed, all on project #1; rerun 0 changes; CC-006 = #12 (subs #13–#18), CC-034 = #46

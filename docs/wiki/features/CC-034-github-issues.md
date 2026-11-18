@@ -69,9 +69,20 @@ Direction agreed by Ronan in a side session on 2026-11-18. This page is the deta
 - **`-DryRun` by default:** prints every action. A live run needs `-Apply`.
 
 **DoD (beyond template)**
-- [ ] Dry-run output reviewed by the primary and shown to Ronan
-- [ ] **Ronan approves the live run** (it posts about 34 public issues); a second live run produces no changes
-- [ ] Spot-check: CC-006 has 6 sub-issues and `Depends on` links to CC-033's issue
+- [x] Dry-run output reviewed by the primary and shown to Ronan
+- [x] **Ronan approves the live run** (it posts about 34 public issues); a second live run produces no changes
+- [x] Spot-check: CC-006 has 6 sub-issues and `Depends on` links to CC-033's issue
+
+**Result (2026-11-18).** Live run approved by Ronan.
+- **First `-Apply`:** created 47 issues (#3–#49): 34 items and 13 sub-issues. It closed 6 Done issues, added all 47 to the project, set 149 field values and linked 13 sub-issues. Pass 2 rewrote the bodies of CC-002, CC-006 and CC-033, whose dependencies were created after them. 0 errors.
+- **Second `-Apply`:** created 0, updated 0, unchanged 47.
+- **Spot-check:**
+  - CC-006 is #12, labelled chore/high/L, with sub-issues #13–#18.
+  - CC-006's `Depends on: #46, #45` points to CC-034 and CC-033.
+  - CC-001 is #3, closed.
+  - CC-034 is #46. Its PR will say `Closes #46`.
+  - Board counts: Backlog 26, Approved 13, In progress 2, Done 6.
+- **Not ours:** issue #2 "Test" and one project item with no content and no Status, both created by Ronan at 16:31 before the import. Left untouched.
 
 ### CC-034.3 — Wiki and workflow switch-over
 **Risk:** Medium · **Worker:** primary · **Review:** primary
@@ -136,3 +147,4 @@ All approved by Ronan 2026-11-18.
 - 2026-11-18: Approved by Ronan (plan, D1–D4, model routing)
 - 2026-11-18: In progress (feature session started)
 - 2026-11-18: CC-034.1 approved by Ronan; CC-034.2 started
+- 2026-11-18: CC-034.2 live import approved by Ronan and run; rerun idempotent
