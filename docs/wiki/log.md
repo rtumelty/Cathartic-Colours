@@ -33,3 +33,19 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] approve | CC-006 | Plan approved; D3 changed: struct rule sets renamed *MergeRules behind IMergeRules (I prefix only on the interface); order CC-034 → CC-033 → CC-006; ADR-001 Accepted
 ## [2026-11-18] lint | .gitignore | Obsidian ignore rules didn't match docs/.obsidian; fixed to **/.obsidian and docs/.obsidian/workspace.json untracked
 ## [2026-11-18] implement | develop | 940c674 (Burst guidance, pushed to the CC-001 branch after PR #1 was squash-merged) brought into develop
+## [2026-11-18] implement | CC-034 | Status → In progress; feature session started
+## [2026-11-18] implement | CC-034.1 | Labels (11), user project #1 with Status/Severity/Size/Phase fields, three views created by API; API cannot set view sort or enable workflows, so Backlog sort and Item closed / PR merged workflows are MANUAL (Ronan)
+## [2026-11-18] diverge | CC-034.1 | Views created by agent, not Ronan (API supports it); primary set table visible fields at review; board visibility (private) raised as open question on D4
+## [2026-11-18] approve | CC-034.1 | Approved by Ronan; CC-034.2 started
+## [2026-11-18] implement | CC-034.2 | tools/roadmap-import.ps1 (dry run by default, -Apply, -Ids, -ShowBodies); primary review fixed phase rule (CC-013), paging and write pacing; dry run: 34 items, 13 sub-issues, 47 creates, 6 closes, 0 errors; live run awaiting Ronan
+## [2026-11-18] diverge | CC-034.2 | Minor specifics: phase from heading then suggested order (default Quick fixes); absorbed items get "Part of"; wiki links made absolute
+## [2026-11-18] implement | CC-034.2 | Live import (approved by Ronan): 47 issues #3–#49 (34 items, 13 sub-issues), 6 closed, all on project #1; rerun 0 changes; CC-006 = #12 (subs #13–#18), CC-034 = #46
+## [2026-11-18] approve | CC-034.2 | Approved by Ronan; #48 closed; CC-034.3 (#49) started
+## [2026-11-18] decision | ADR-002 | Hybrid tracking accepted: GitHub issues, sub-issues and project #1 hold status and fields; the wiki keeps knowledge
+## [2026-11-18] implement | CC-034.3 | roadmap.md shrunk to strategy page + id-to-issue table; 83 roadmap.md#cc-nnn links → issue URLs; feature headers link issues (status/fields removed); index statuses removed; features/systems READMEs, ADR template, test plan updated
+## [2026-11-18] schema | ~/.claude/CLAUDE.md | (not in git) §1.5, §2.1 approval via gh + sub-issues, feature sessions move statuses, Closes #n; §2.2 sub-issue statuses; §3 DoD; §4 status never committed; §5 tree, Roadmap items on GitHub (id rule, sub-issues, new finds, field table), lint checks; duplicate §2.1 bullet removed
+## [2026-11-18] schema | CLAUDE.md | §6: planning hand-off via gh, tracking (board #1, fields, labels, views), new-finds commands, status changes via gh, gh on Windows
+## [2026-11-18] lint | docs/wiki | 139 relative links, 0 broken by CC-034.3; 2 already broken (index → CC-006 page and ADR-001, which exist only on feature/CC-006-pure-simulation); no status values left in wiki pages; 34/34 ids in the id-to-issue table
+## [2026-11-18] diverge | CC-034.3 | CC-006 feature page is not on this branch, so its issue header and link rewrite are left to the planning or CC-006 session (raised with Ronan); feature headers drop status/fields
+## [2026-11-18] approve | CC-034.3 | Approved by Ronan; #49 closed; MANUAL steps 2–3 done by Ronan (workflows verified enabled); CC-006 page fix assigned to the planning session
+## [2026-11-18] implement | CC-034 | Feature test cases folded into test-plan.md (new area TRACK, 4 cases); #46 → In review; PR to develop opened

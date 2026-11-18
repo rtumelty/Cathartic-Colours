@@ -130,12 +130,12 @@ Source: `Assets/Scripts/ECS/Systems/ScoringSystem.cs`, `Assets/Scripts/ECS/Compo
 ### End conditions
 Source: `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs`.
 
-- `GameStateComponent` has `WaitingForInput`, `GameOver`, `LevelComplete`, `MoveCount` and `Random`. Only `GameOver` is set by the end-condition logic; `LevelComplete` is never set ([CC-019](../roadmap.md#cc-019)).
+- `GameStateComponent` has `WaitingForInput`, `GameOver`, `LevelComplete`, `MoveCount` and `Random`. Only `GameOver` is set by the end-condition logic; `LevelComplete` is never set ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)).
 - The system runs every frame and returns if `GameOver` is already true. Otherwise `GameOver` is set when **both** hold:
   1. No cell of the `Width x Height` grid is empty (the white indicator counts as occupied), and
   2. No block has a 4-neighbour for which the current mode's `CanMerge(block, neighbour)` is true.
 - On game over it also sets `WaitingForInput = true` and creates a `GameOver` audio event. `InputProcessingSystem` ignores moves while `GameOver` is true.
-- The rule is identical for all three modes; only `CanMerge` differs. It does not look at the score or the move count, and clearing the board does not end the game. (The PuzzleScript prototype declares a win when the board is cleared, `CatharticColours.pz`, RULES; the Unity game has no equivalent, see [CC-019](../roadmap.md#cc-019).)
+- The rule is identical for all three modes; only `CanMerge` differs. It does not look at the score or the move count, and clearing the board does not end the game. (The PuzzleScript prototype declares a win when the board is cleared, `CatharticColours.pz`, RULES; the Unity game has no equivalent, see [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31).)
 - UI: `GameUIManager.UpdateGameState` shows the status "Grid Full!" and the game-over panel when `GameOver` is true (`Assets/Scripts/Gameplay/GameUIManager.cs`).
 
 ## Interactions with other systems
@@ -144,14 +144,14 @@ Source: `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs`.
 - Merge events drive particles and score display; audio events drive FMOD one-shots; the save system stores blocks, score and random state. See [save-system.md](save-system.md), [audio-fmod.md](audio-fmod.md) and [presentation.md](presentation.md).
 
 ## Known issues
-- `IMergeUtility` covers merge rules only; spawn policy, end conditions, scoring and move mechanics are hard-coded in systems. [CC-008](../roadmap.md#cc-008)
-- The spawn colour is chosen only on the next move. [CC-007](../roadmap.md#cc-007)
-- Rules are executed inside ECS systems that also call presentation code (`ScoringSystem`). [CC-006](../roadmap.md#cc-006)
-- `LevelComplete` is never set. [CC-019](../roadmap.md#cc-019)
-- Advanced Color Merge has unmergeable dead ends: two Medium blocks of the same colour, a Small and a Medium, and Small blocks of different colours never merge (`Assets/Scripts/ECS/Utilities/AdvancedColorMergeUtility.cs`, `CanMerge`). [CC-026](../roadmap.md#cc-026)
-- Color Merge result size is the moving block's size and `CanMerge` ignores size; this works only because blocks are always Small in that mode (`Assets/Scripts/ECS/Utilities/ColorMergeUtility.cs`). [CC-026](../roadmap.md#cc-026)
-- In `BlockMovementSystem` the "target was destroyed, move into the space" branch and the `destroyedBlocks.Contains(entity)` skip are unreachable: destroyed blocks are removed from the occupancy map and are always ahead of the mover in sort order (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`). [CC-024](../roadmap.md#cc-024)
-- Random colour/position correlation (stored `Random` not advanced by `ResolveNewBlocksSystem`), and `SpawnColorSystem` can fail to spawn when empty cells remain; both described in [ecs-frame-order.md](ecs-frame-order.md#known-issues) (`Assets/Scripts/ECS/Systems/ResolveNewBlocksSystem.cs`, `Assets/Scripts/ECS/Systems/SpawnColorSystem.cs`). [CC-020](../roadmap.md#cc-020), [CC-021](../roadmap.md#cc-021)
+- `IMergeUtility` covers merge rules only; spawn policy, end conditions, scoring and move mechanics are hard-coded in systems. [CC-008](https://github.com/rtumelty/Cathartic-Colours/issues/20)
+- The spawn colour is chosen only on the next move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
+- Rules are executed inside ECS systems that also call presentation code (`ScoringSystem`). [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)
+- `LevelComplete` is never set. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
+- Advanced Color Merge has unmergeable dead ends: two Medium blocks of the same colour, a Small and a Medium, and Small blocks of different colours never merge (`Assets/Scripts/ECS/Utilities/AdvancedColorMergeUtility.cs`, `CanMerge`). [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38)
+- Color Merge result size is the moving block's size and `CanMerge` ignores size; this works only because blocks are always Small in that mode (`Assets/Scripts/ECS/Utilities/ColorMergeUtility.cs`). [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38)
+- In `BlockMovementSystem` the "target was destroyed, move into the space" branch and the `destroyedBlocks.Contains(entity)` skip are unreachable: destroyed blocks are removed from the occupancy map and are always ahead of the mover in sort order (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`). [CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36)
+- Random colour/position correlation (stored `Random` not advanced by `ResolveNewBlocksSystem`), and `SpawnColorSystem` can fail to spawn when empty cells remain; both described in [ecs-frame-order.md](ecs-frame-order.md#known-issues) (`Assets/Scripts/ECS/Systems/ResolveNewBlocksSystem.cs`, `Assets/Scripts/ECS/Systems/SpawnColorSystem.cs`). [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32), [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33)
 
 ## Related test cases
 - [Standard](../test-plan.md#standard-mode-std): TP-STD-01 to TP-STD-07. [Color Merge](../test-plan.md#color-merge-mode-cm): TP-CM-01 to TP-CM-06. [Advanced Color Merge](../test-plan.md#advanced-color-merge-mode-acm): TP-ACM-01 to TP-ACM-07.

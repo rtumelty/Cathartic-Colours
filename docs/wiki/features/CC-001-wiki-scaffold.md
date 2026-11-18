@@ -2,13 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Type | Chore |
-| Severity / impact | Medium |
-| Complexity | S |
-| Status | In review |
+| Issue | [#3](https://github.com/rtumelty/Cathartic-Colours/issues/3) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-001-wiki-setup` (from `develop`) |
 | PR | [#1](https://github.com/rtumelty/Cathartic-Colours/pull/1) |
-| Roadmap | [CC-001](../roadmap.md#cc-001) |
 
 ## Goal
 Give every later feature a complete, accurate wiki to plan against: the full folder structure, a raw-sources layer, system pages that describe the game **as it works today**, and a seeded manual test plan.

@@ -63,7 +63,7 @@ No other script or scene references FMOD events: there are no `StudioEventEmitte
 
 Only start-up bank loading for `ImportType.StreamingAssets` is done by `RuntimeManager.LoadBanks` (`Assets/Plugins/FMOD/src/RuntimeManager.cs`). In the Editor the plugin reads banks straight from the source bank path; in a player build the Unity build step copies them to StreamingAssets (standard FMOD for Unity behaviour; not exercised in this repo). `Assets/StreamingAssets` does not exist on disk, and the Unity `.gitignore` ignores `.bank` files under `Assets/StreamingAssets/` (`Cathartic Colours/.gitignore`).
 
-Platform build folders: the only Studio platform is `Desktop`, and `Assets/Plugins/FMOD/src/Platform.cs` (line 876) defaults a `BuildDirectory` to "Desktop" for a desktop-type platform (which Unity platform classes use it was not checked). The Studio project has only a `Desktop` platform, so there is **no mobile build output**: see Known issues, [CC-004](../roadmap.md#cc-004). The Android native libraries are present under `Assets/Plugins/FMOD/platforms/android/lib/`.
+Platform build folders: the only Studio platform is `Desktop`, and `Assets/Plugins/FMOD/src/Platform.cs` (line 876) defaults a `BuildDirectory` to "Desktop" for a desktop-type platform (which Unity platform classes use it was not checked). The Studio project has only a `Desktop` platform, so there is **no mobile build output**: see Known issues, [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10). The Android native libraries are present under `Assets/Plugins/FMOD/platforms/android/lib/`.
 
 ### FMOD Studio project layout
 `Cathartic Colours - FMOD/` (FMOD Studio 2.03, `serializationModel="Studio.02.03.00"`):
@@ -90,21 +90,21 @@ Platform build folders: the only Studio platform is `Desktop`, and `Assets/Plugi
 | `.unsaved/.user/Metadata/` | Per-user state (asset, mixer and workspace) |
 | `.unsaved/metadataFileMapping.data` | FMOD Studio's mapping of unsaved files |
 
-The five event names equal the five `FMODEventPaths` constants. Until FMOD Studio saves the project (Ctrl+S), the events exist only in `.unsaved/`; rebuilding banks from the saved project alone would produce banks with no events, and the next clean checkout would not contain them. This is the CC-003 hazard: [CC-003](../roadmap.md#cc-003). Project instructions say to restore and save them before any audio work (`CLAUDE.md` section 5).
+The five event names equal the five `FMODEventPaths` constants. Until FMOD Studio saves the project (Ctrl+S), the events exist only in `.unsaved/`; rebuilding banks from the saved project alone would produce banks with no events, and the next clean checkout would not contain them. This is the CC-003 hazard: [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9). Project instructions say to restore and save them before any audio work (`CLAUDE.md` section 5).
 
 The built banks in `Build/Desktop/` nevertheless appear to contain the events: the prefix-compressed string table in `Master.strings.bank` includes the tokens `event:/`, `Block_M`, `erge_`, `Large`, `Medium`, `Small`, `ove` and `GameOver`, and `Master.bank` is 88 KB. This was inferred from raw text in the bank files, not from FMOD tooling, so treat it as unverified. If it holds, sound works today because Unity reads the already-built banks, while the Studio project itself cannot reproduce them.
 
 ## Interactions with other systems
 - Event entities are created inside the simulation: [ecs-frame-order.md](ecs-frame-order.md) (event entity table, unordered `AudioSystem`) and [merge-rules.md](merge-rules.md) (which merges happen).
 - No presentation code plays sound; there is no audio setting in the menu or in `GameConfiguration` ([configuration.md](configuration.md)).
-- Android build and FMOD mobile platform setup are future work: [CC-004](../roadmap.md#cc-004).
+- Android build and FMOD mobile platform setup are future work: [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10).
 
 ## Known issues
-- The five FMOD events exist only in `.unsaved/`; the saved project has none. [CC-003](../roadmap.md#cc-003)
-- No Android/mobile bank build or FMOD mobile platform configuration: only `Build/Desktop/` exists and no platform sets a `BuildDirectory`. [CC-004](../roadmap.md#cc-004)
-- `Block_Move` plays whenever a move command exists, including rejected moves (game over). [CC-023](../roadmap.md#cc-023)
+- The five FMOD events exist only in `.unsaved/`; the saved project has none. [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9)
+- No Android/mobile bank build or FMOD mobile platform configuration: only `Build/Desktop/` exists and no platform sets a `BuildDirectory`. [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)
+- `Block_Move` plays whenever a move command exists, including rejected moves (game over). [CC-023](https://github.com/rtumelty/Cathartic-Colours/issues/35)
 - `AudioSystem` is unordered against the systems that create events, so playback timing is not deterministic. [ecs-frame-order.md](ecs-frame-order.md)
-- There is no `Metadata/Event/` folder and the `.fspro` is an empty stub, so a bank build from a fresh clone of the saved project would contain no events (`Cathartic Colours - FMOD/Metadata/`). Part of [CC-003](../roadmap.md#cc-003).
+- There is no `Metadata/Event/` folder and the `.fspro` is an empty stub, so a bank build from a fresh clone of the saved project would contain no events (`Cathartic Colours - FMOD/Metadata/`). Part of [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9).
 - Note (design, confirmed by Ronan 2026-11-18): the merge sound is selected from the moving block's size, i.e. the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This is a naming choice, not an issue (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `GetMergeAudioPath`).
 
 ## Related test cases
