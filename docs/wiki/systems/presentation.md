@@ -121,4 +121,4 @@ Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); th
 
 ## Related test cases
 - [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-02 (camera fit), TP-HUD-06 (wobble, particles, instant moves).
-- [Color Merge](../test-plan.md#color-merge-mode-cm): TP-CM-04 (white clear particles). [Advanced Color Merge](../test-plan.md#advanced-color-merge-mode-acm): TP-ACM-07 (transparent clear particles, CC-032). [Game over](../test-plan.md#game-over-over): TP-OVER-04 (restart, CC-029).
+- [Color Merge](../test-plan.md#color-merge-mode-cm): TP-CM-04 (white clear particles). [Advanced Color Merge](../test-plan.md#advanced-color-merge-mode-acm): TP-ACM-07 (transparent clear particles, CC-032). [Game over](../test-plan.md#game-over-over): TP-OVER-04 (restart), TP-OVER-05 (duplicate grid cells, CC-029).

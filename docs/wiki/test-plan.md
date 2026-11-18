@@ -441,19 +441,29 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Expected | The panel disappears. The board is empty apart from one white block at (2, 2). Score reads 0 and Moves reads 0. The game accepts moves again. One click currently restarts twice (CC-028) and leaves old grid cells behind (CC-029); the visible effect is not confirmed, so record anything unusual. |
 | Roadmap id | — |
 
-### TP-OVER-05 — No resume offered after a finished game
+### TP-OVER-05 — Restart does not duplicate grid cells (editor only)
 
 | Field | Content |
 |---|---|
 | Id | `TP-OVER-05` |
-| Preconditions | The game restarted in TP-OVER-04, no move made since |
+| Preconditions | Running in the Unity editor (Play mode). The Standard 4x4 game from TP-OVER-02 was the first game since the gameplay scene loaded, and Restart was clicked once in TP-OVER-04. On a device build, mark this case "not applicable" |
+| Steps | 1. In the Hierarchy, expand the object that carries `GameRenderer` (the GameManager prefab instance). 2. Type `Cell_` in the Hierarchy search box and count the results. |
+| Expected | Exactly 16 `Cell_<x>_<y>` objects (one per cell of the 4x4 board). Known to fail until CC-029: restart keeps the old cells and the single click restarts twice (CC-028), so code reading predicts 48 today (16 + 2 × 16); record the actual count. |
+| Roadmap id | CC-029 |
+
+### TP-OVER-06 — No resume offered after a finished game
+
+| Field | Content |
+|---|---|
+| Id | `TP-OVER-06` |
+| Preconditions | The game restarted in TP-OVER-04 (and checked in TP-OVER-05), no move made since |
 | Steps | 1. Tap the footer Main Menu button. 2. Look at the main menu. |
 | Expected | The main menu shows no Resume button, because the save file is deleted when the game ends and no move has been made since. |
 | Roadmap id | — |
 
 ## Save/Resume (SAVE)
 
-Pass setup: start on the main menu with no Resume button (the state after TP-OVER-05). Use the Standard 6x6 preset. TP-SAVE-06 needs a build running on a device.
+Pass setup: start on the main menu with no Resume button (the state after TP-OVER-06). Use the Standard 6x6 preset. TP-SAVE-06 needs a build running on a device.
 
 ### TP-SAVE-01 — Resume button appears after a move
 

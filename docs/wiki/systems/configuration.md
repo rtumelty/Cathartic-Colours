@@ -113,4 +113,4 @@ Wiring:
 
 ## Related test cases
 - [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-06 (defaults, presets, sliders, start).
-- [Game over](../test-plan.md#game-over-over): TP-OVER-04 (restart). [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-02 (resume restores the saved configuration).
+- [Game over](../test-plan.md#game-over-over): TP-OVER-04, TP-OVER-05 (restart, duplicate cells CC-029). [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-02 (resume restores the saved configuration).

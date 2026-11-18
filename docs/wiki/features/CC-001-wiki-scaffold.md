@@ -85,7 +85,7 @@ _Specifics (2026-11-18):_ primary checked the bug-level findings directly in cod
 - [x] Lint pass logged with findings and fixes; zero broken relative links
 - [x] Index, log, roadmap updated
 
-_Specifics (2026-11-18):_ 50 cases (MENU 6, STD 9, CM 6, ACM 7, HUD 6, OVER 5, SAVE 6, AUDIO 5), with a shared notation paragraph before the first area. Five cases describe desired behaviour for known issues and say "Known to fail until <id>" (CC-030, CC-028, CC-022, CC-023, CC-003, CC-032). Primary review corrected the particle colour, wobble length, restart notes and coordinates against code. Review also found that the Advanced Color Merge top-tier clear emits transparent particles (folded into CC-032) and that `configuration.md` described a header restart button that doesn't exist (corrected). Lint: see log. CC-001 stays In progress until Ronan approves CC-001.4; it then moves to In review with the PR.
+_Specifics (2026-11-18):_ 51 cases (MENU 6, STD 9, CM 6, ACM 7, HUD 6, OVER 6, SAVE 6, AUDIO 5), with a shared notation paragraph before the first area. Seven cases describe desired behaviour for known issues and say "Known to fail until <id>" (CC-030, CC-028, CC-022, CC-023, CC-003, CC-032, CC-029). TP-OVER-05 (editor-only cell count, CC-029) was added at Ronan's request after review; the old TP-OVER-05 became TP-OVER-06. Primary review corrected the particle colour, wobble length, restart notes and coordinates against code. Review also found that the Advanced Color Merge top-tier clear emits transparent particles (folded into CC-032) and that `configuration.md` described a header restart button that doesn't exist (corrected). Lint: see log. CC-001 stays In progress until Ronan approves CC-001.4; it then moves to In review with the PR.
 
 ## Tests
 This is a documentation-only change, so no unit or system tests are added, and the "compiles / test suite passes" DoD items don't apply. Verification instead:
@@ -113,7 +113,7 @@ _Environment (done by the planning session, 2026-11-18): Git for Windows 2.56 in
 All confirmed by Ronan 2026-11-18.
 - **D1:** `ADR-000-template.md` is a template, not a decision, so it doesn't take ADR-001. Real ADRs start at `ADR-001`.
 - **D2:** `CatharticColours.pz` stays at the repo root and is registered in `docs/raw/README.md` rather than moved, so existing references don't break.
-- **D3:** Three system pages beyond the six listed in project `CLAUDE.md` §2 (`configuration`, `presentation`, scoring/spawn folded into `merge-rules`). Project `CLAUDE.md` §2 is updated to match (log op `schema`).
+- **D3:** Two system pages beyond the six listed in project `CLAUDE.md` §2 (`configuration`, `presentation`); scoring, spawn and end conditions are folded into `merge-rules`. _(Wording clarified 2026-11-18 at Ronan's request; the decision is unchanged.)_ Project `CLAUDE.md` §2 is updated to match (log op `schema`).
 
 ## Divergences
 - 2026-11-18 (minor): plan and roadmap named the branch `feature/CC-001-wiki-scaffold`; the real branch is `feature/CC-001-wiki-setup`. References corrected; feature page filename unchanged.
