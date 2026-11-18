@@ -1,0 +1,5 @@
+# Repo-level ignores. Unity project ignores live in "Cathartic Colours/.gitignore".
+
+# Obsidian: per-machine UI state
+.obsidian/workspace*.json
+.obsidian/cache
