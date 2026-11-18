@@ -9,3 +9,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] approve | CC-001 | Plan, decisions D1–D3 and model routing approved by Ronan
 ## [2026-11-18] schema | CLAUDE.md | Hand-off workflow: planning session commits roadmap to develop, creates and pushes the feature branch with the plan, kickoff names the branch; added §6 Sessions and environment
 ## [2026-11-18] schema | CLAUDE.md | §6: feature sessions run locally only with Remote Control; no cloud sessions
+## [2026-11-18] diverge | CC-001 | Branch is feature/CC-001-wiki-setup, not feature/CC-001-wiki-scaffold as planned; references corrected (minor)
+## [2026-11-18] implement | CC-001 | Status → In progress; feature session started

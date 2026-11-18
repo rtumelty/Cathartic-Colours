@@ -5,8 +5,8 @@
 | Type | Chore |
 | Severity / impact | Medium |
 | Complexity | S |
-| Status | Approved |
-| Branch | `feature/CC-001-wiki-scaffold` (from `develop`) |
+| Status | In progress |
+| Branch | `feature/CC-001-wiki-setup` (from `develop`) |
 | PR | — |
 | Roadmap | [CC-001](../roadmap.md#cc-001) |
 
@@ -108,7 +108,7 @@ All confirmed by Ronan 2026-11-18.
 - **D3:** Three system pages beyond the six listed in project `CLAUDE.md` §2 (`configuration`, `presentation`, scoring/spawn folded into `merge-rules`). Project `CLAUDE.md` §2 is updated to match (log op `schema`).
 
 ## Divergences
-_None yet._
+- 2026-11-18 (minor): plan and roadmap named the branch `feature/CC-001-wiki-scaffold`; the real branch is `feature/CC-001-wiki-setup`. References corrected; feature page filename unchanged.
 
 ## Feature test plan
 Docs-only: Ronan opens `docs/wiki/index.md` in Obsidian, follows every link, and spot-checks two system pages against the code.
@@ -116,3 +116,4 @@ Docs-only: Ronan opens `docs/wiki/index.md` in Obsidian, follows every link, and
 ## Status log
 - 2026-11-18: Planned
 - 2026-11-18: Approved by Ronan (plan, D1–D3, model routing)
+- 2026-11-18: In progress (feature session started; develop merged in)
