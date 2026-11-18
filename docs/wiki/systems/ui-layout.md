@@ -88,7 +88,7 @@ Elements in the UXML that no code queries: `root`, `header` (menu), `title`, `me
 - `GameUI.uxml` structure: `root` contains `header` (title, `move-count`, `score-label`), `game-over-panel`, `level-complete-panel`, then a wrapper holding `footer` (`instruction-text` container, `controls-hint`, `footer-main-menu-button`).
 - Both panels use class `modal-panel` (`GameUI.uss`): `position: absolute`, full size, centred content, `rgba(0,0,0,0.8)` background, `display: none`.
 - `InitializeUIState` sets both to `DisplayStyle.None` at set-up. After that `GameRenderer.Update` calls `UpdateUI`, which calls `GameUIManager.UpdateGameState(gameState, score)` **every frame** (`GameRenderer.cs`, `Update`/`UpdateUI`). That method sets `gameOverPanel.style.display` to `Flex` while `GameOver` is true and `None` otherwise, and the same for `levelCompletePanel` with `LevelComplete`.
-- The game-over panel therefore appears the frame after `GameEndConditionSystem` sets `GameOver`, and disappears when a restart recreates the state. `LevelComplete` is never set by any system, so the level-complete panel never appears ([CC-019](../roadmap.md#cc-019)).
+- The game-over panel therefore appears the frame after `GameEndConditionSystem` sets `GameOver`, and disappears when a restart recreates the state. `LevelComplete` is never set by any system, so the level-complete panel never appears ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)).
 - Panels sit above the board (they are UI overlay); they do not block keyboard or touch input ([input.md](input.md)).
 
 ### Text updates
@@ -140,12 +140,12 @@ The camera is only fitted when a layout event fires; `RestartGame` does not call
 - The three main-menu buttons and the menu flow: [configuration.md](configuration.md).
 
 ## Known issues
-- The level-complete panel (and the next-level button) can never appear. [CC-019](../roadmap.md#cc-019)
-- Aesthetic rework of gameplay and UI is planned. [CC-018](../roadmap.md#cc-018)
-- Scene-name capitalisation (`"Gameplay Scene"` vs `Gameplay scene.unity`) and missing guards. [CC-025](../roadmap.md#cc-025)
-- `status-label` does not exist in `GameUI.uxml`, so the status text is never displayed although `GameUIManager.UpdateGameState` writes it every frame (`Assets/Scripts/Gameplay/GameUIManager.cs`, `CacheUIElements`; `Assets/UI/GameUI.uxml`). [CC-028](../roadmap.md#cc-028)
-- `restart-button` is not unique in `GameUI.uxml`; `Q<Button>("restart-button")` returns the game-over panel's button, and `HookUpEvents` then subscribes the same element a second time through `gameOverPanel.Q`, so one click raises `OnRestartRequested` twice (two `RestartGame` runs). The level-complete panel's restart button is never hooked (`Assets/Scripts/Gameplay/GameUIManager.cs`, `HookUpEvents`). Derived from code reading; not run. [CC-028](../roadmap.md#cc-028)
-- `UnhookEvents` unsubscribes with new lambda instances (`clicked -= () => ...`), which never match the subscribed ones, so those handlers are not removed (`Assets/Scripts/Gameplay/GameUIManager.cs`, `UnhookEvents`). Harmless while the whole UI is destroyed with the scene. [CC-028](../roadmap.md#cc-028)
+- The level-complete panel (and the next-level button) can never appear. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
+- Aesthetic rework of gameplay and UI is planned. [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30)
+- Scene-name capitalisation (`"Gameplay Scene"` vs `Gameplay scene.unity`) and missing guards. [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
+- `status-label` does not exist in `GameUI.uxml`, so the status text is never displayed although `GameUIManager.UpdateGameState` writes it every frame (`Assets/Scripts/Gameplay/GameUIManager.cs`, `CacheUIElements`; `Assets/UI/GameUI.uxml`). [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40)
+- `restart-button` is not unique in `GameUI.uxml`; `Q<Button>("restart-button")` returns the game-over panel's button, and `HookUpEvents` then subscribes the same element a second time through `gameOverPanel.Q`, so one click raises `OnRestartRequested` twice (two `RestartGame` runs). The level-complete panel's restart button is never hooked (`Assets/Scripts/Gameplay/GameUIManager.cs`, `HookUpEvents`). Derived from code reading; not run. [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40)
+- `UnhookEvents` unsubscribes with new lambda instances (`clicked -= () => ...`), which never match the subscribed ones, so those handlers are not removed (`Assets/Scripts/Gameplay/GameUIManager.cs`, `UnhookEvents`). Harmless while the whole UI is destroyed with the scene. [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40)
 
 ## Related test cases
 - [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-04, TP-MENU-06. [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-01 to TP-HUD-05 (TP-HUD-03 status label, CC-028).

@@ -41,7 +41,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | Field | Type | Default | Meaning |
 |---|---|---|---|
 | `backgroundColor` | `Color` | light gray | Camera background (`GameRenderer.SetupUI`) |
-| `gridBackgroundColor` | `Color` | dark gray | Intended tint of the grid cells; **not applied**, because `GameRenderer.CreateVisualGrid` looks for a `SpriteRenderer` and the `Cell` prefab has only a `MeshRenderer` ([CC-029](../roadmap.md#cc-029), [presentation](presentation.md)) |
+| `gridBackgroundColor` | `Color` | dark gray | Intended tint of the grid cells; **not applied**, because `GameRenderer.CreateVisualGrid` looks for a `SpriteRenderer` and the `Cell` prefab has only a `MeshRenderer` ([CC-029](https://github.com/rtumelty/Cathartic-Colours/issues/41), [presentation](presentation.md)) |
 | `uiTreeAsset` | `VisualTreeAsset` | none | In-game UI document assigned by `GameUIManager.SetupUI` |
 | `colorMappings` | `BlockColorMapping[]` (`blockColor`, `renderColor`) | one entry per `BlockColor`: None clear, Red, Green, Blue, Yellow, Magenta, Cyan, White (Unity named colours) | `GetColor(BlockColor)`; logs a warning and returns white if a colour has no mapping. `OnValidate` warns about missing entries |
 
@@ -92,7 +92,7 @@ Wiring:
 3. **New game.** `StartGame` calls `SceneManager.LoadScene(gameSceneName)`.
 4. **Gameplay scene.** `GameRenderer.Awake` registers itself in `GameManager` and calls `LoadConfigs`, which initializes `GameManager` from the prefab's fallback assets if the menu was skipped (for example when running the gameplay scene directly in the editor). `GameRenderer.Start` calls `SetupUI` (camera background from the profile, then `GameUIManager.SetupUI`, which assigns `ActiveColorProfile.UITreeAsset` to its `UIDocument`) and `InitializeGame`.
 5. **`GameRenderer.InitializeGame`** reads `gridWidth`/`gridHeight`, then creates the ECS state: `GridConfigComponent`, `GameStateComponent` (`WaitingForInput = true`, random seed from `DateTime.Now.Ticks`), `ScoreComponent`, `GameModeComponent` (from `gameMode`), the mode tag and (if enabled) `SpawnColorSystemTag` on the game-state entity; then the visual grid cells, then either the initial indicator block or the restored save. Details of the entities are in [ecs-frame-order.md](ecs-frame-order.md).
-6. **Restart.** The game-over Restart button raises `GameUIManager.OnRestartRequested` (twice per click: `root.Q("restart-button")` and the game-over panel query find the same button, see [CC-028](../roadmap.md#cc-028)); there is no restart button in the header; `GameRenderer.RestartGame` runs `CleanUp` then `InitializeGame` with the same runtime configuration. "Next level" also calls `RestartGame` (its handler is a TODO).
+6. **Restart.** The game-over Restart button raises `GameUIManager.OnRestartRequested` (twice per click: `root.Q("restart-button")` and the game-over panel query find the same button, see [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40)); there is no restart button in the header; `GameRenderer.RestartGame` runs `CleanUp` then `InitializeGame` with the same runtime configuration. "Next level" also calls `RestartGame` (its handler is a TODO).
 
 ### Resume from save (entry point only)
 - `MainMenuController.ResumeGame` loads the save file; if it loads, it sets `PlayerPrefs` key `LoadFromSave` to "true" and loads the gameplay scene.
@@ -105,11 +105,11 @@ Wiring:
 - `GameUIManager` uses the profile's UI tree ([ui-layout.md](ui-layout.md)); `PointsParticleSpawner` and `GameRenderer` use the profile's colours ([presentation.md](presentation.md)); resume restores configuration ([save-system.md](save-system.md)).
 
 ## Known issues
-- Simulation and presentation reach each other through the static `GameManager` (`ScoringSystem`, `InputProcessingSystem`). [CC-006](../roadmap.md#cc-006)
-- `MainMenuController.gameSceneName` is "Gameplay Scene" in the scene, but the scene file is `Gameplay scene.unity` (different capitalisation; the field's code default is "GameScene"). Not verified whether `SceneManager.LoadScene` tolerates the case difference (`Assets/Scenes/MainMenu.unity`, `Assets/Scripts/Gameplay/MainMenuController.cs`). [CC-025](../roadmap.md#cc-025)
-- `LoadPreset` copies mode, size and spawn flag but not tier points, so presets cannot change scoring; the menu never exposes tier points or `spawnNextColourSystem` (`Assets/Scripts/Gameplay/MainMenuController.cs`, `LoadPreset`). [CC-027](../roadmap.md#cc-027)
-- Menu edits mutate the shared static runtime copy immediately, and `InitializeFromSave` replaces it; a resumed game's configuration therefore becomes the menu's current configuration after returning to the menu (`Assets/Scripts/Gameplay/GameManager.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-027](../roadmap.md#cc-027)
-- `GameManager.Initialize` does not guard a null colour profile (`Object.Instantiate(null)` throws) (`Assets/Scripts/Gameplay/GameManager.cs`). [CC-025](../roadmap.md#cc-025)
+- Simulation and presentation reach each other through the static `GameManager` (`ScoringSystem`, `InputProcessingSystem`). [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)
+- `MainMenuController.gameSceneName` is "Gameplay Scene" in the scene, but the scene file is `Gameplay scene.unity` (different capitalisation; the field's code default is "GameScene"). Not verified whether `SceneManager.LoadScene` tolerates the case difference (`Assets/Scenes/MainMenu.unity`, `Assets/Scripts/Gameplay/MainMenuController.cs`). [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
+- `LoadPreset` copies mode, size and spawn flag but not tier points, so presets cannot change scoring; the menu never exposes tier points or `spawnNextColourSystem` (`Assets/Scripts/Gameplay/MainMenuController.cs`, `LoadPreset`). [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
+- Menu edits mutate the shared static runtime copy immediately, and `InitializeFromSave` replaces it; a resumed game's configuration therefore becomes the menu's current configuration after returning to the menu (`Assets/Scripts/Gameplay/GameManager.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
+- `GameManager.Initialize` does not guard a null colour profile (`Object.Instantiate(null)` throws) (`Assets/Scripts/Gameplay/GameManager.cs`). [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
 
 ## Related test cases
 - [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-06 (defaults, presets, sliders, start).

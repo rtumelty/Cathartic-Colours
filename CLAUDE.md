@@ -19,7 +19,7 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 
 ## 2. Wiki specifics
 - Paths as in the user-level schema: `docs/wiki/{index,log,roadmap,test-plan}.md`, `features/`, `decisions/`, `systems/`.
-- Test plan areas (initial): Main menu · Standard mode · Color Merge mode · Advanced Color Merge mode · Gameplay HUD · Game over · Save/Resume · Audio. Add areas as features land.
+- Test plan areas (initial): Main menu · Standard mode · Color Merge mode · Advanced Color Merge mode · Gameplay HUD · Game over · Save/Resume · Audio · Project tracking (GitHub, since CC-034). Add areas as features land.
 - Systems pages to maintain (`docs/wiki/systems/`): `ecs-frame-order`, `merge-rules` (per mode, plus scoring, spawning and end conditions), `configuration`, `save-system`, `audio-fmod`, `input`, `ui-layout`, `presentation`.
 
 ## 3. Codebase patterns to follow
@@ -44,6 +44,22 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 - **FMOD:** always **save the FMOD project** (Ctrl+S) before building banks or committing. Unsaved changes live in `.unsaved/` and are not part of the project. (As of Nov 2026 the game's five events exist only in `.unsaved/` — restore and save them before any audio work.)
 
 ## 6. Sessions and environment
-- **Planning session:** one long-running session owns the roadmap, refinement and feature plans (user-level §2.1). On approval it commits and pushes the roadmap/index/log updates to `develop`, then creates `feature/CC-<nnn>-<slug>`, commits the feature page there and pushes it. The kickoff prompt names that branch.
+- **Planning session:** one long-running session owns the roadmap, refinement and feature plans (user-level §2.1). On approval it sets the issue to Approved and creates the deliverable sub-issues with `gh`. It then creates `feature/CC-<nnn>-<slug>` from `develop`, commits the feature page (with its index/log entries and any ADRs) there and pushes it. It commits to `develop` only when `roadmap.md` strategy changes. The kickoff prompt names the branch, the feature page and the issue number.
+- **Tracking (since CC-034, [ADR-002](docs/wiki/decisions/ADR-002-issue-tracking.md)):**
+  - Board: **user project #1**, <https://github.com/users/rtumelty/projects/1> (node id `PVT_kwHOAGm39c4BsNZC`), linked to the repo.
+  - Fields: `Status`, `Severity`, `Size`, `Phase` (Foundations, Core refactor, Quick fixes, Gameplay, Platform and monetisation, Polish).
+  - Labels: `type:feature|bug|chore`, `severity:critical|high|medium|low`, `size:S|M|L|XL`.
+  - Views: Board, Backlog by severity, Bugs. Workflows set Done when an item is closed or its PR is merged.
+  - `roadmap.md` is only the strategy page plus an id-to-issue table. Wiki links to an item point at its issue URL.
+- **New finds:** create the issue, then put it on the board. Next id = highest `CC-` issue title + 1. Then add a row to the `roadmap.md` id-to-issue table in the next commit made for another reason.
+  ```
+  gh issue list --repo rtumelty/Cathartic-Colours --search "CC- in:title" --state all --limit 500 --json title --jq '.[].title' | sort | tail -1
+  gh issue create --repo rtumelty/Cathartic-Colours --title "CC-nnn: <title>" --label type:bug,severity:medium,size:S --body "<description, wiki links, Depends on: #n>"
+  gh project item-add 1 --owner rtumelty --url <issue url>
+  gh project item-edit --project-id PVT_kwHOAGm39c4BsNZC --id <item id> --field-id <field id> --single-select-option-id <option id>
+  ```
+  Field and option ids: `gh project field-list 1 --owner rtumelty --format json`.
+- **Status changes** are `gh project item-edit` calls (Status field), never commits. Close an issue with `gh issue close <n> --reason completed` when it's Done.
+- **`gh` on Windows:** `C:\Program Files\GitHub CLI\gh.exe`, signed in as rtumelty with the `project` scope. Refresh `PATH` as for git (below). In PowerShell 5.1, pass GraphQL through `gh api graphql --input <file>` or Git Bash, not inline `-f query=...`: PowerShell mangles the quotes.
 - **Feature sessions run locally only**, on Ronan's machine in this folder, with Remote Control enabled so he can follow them from other devices. Don't use or suggest cloud sessions: they can't see the user-level `~/.claude/CLAUDE.md` and have no Unity editor, FMOD Studio or Android SDK. Still push the planning commits and the feature branch before a session starts, so `origin` stays the source of truth.
 - **Local git (Windows):** Git for Windows at `C:\Program Files\Git\cmd`. Global `core.sshCommand` points at `C:/Windows/System32/OpenSSH/ssh.exe` so git uses the Windows ssh-agent key for the `git@github.com` remote. If `git` isn't found in an agent shell, refresh `PATH` from the Machine and User environment rather than asking Ronan.
