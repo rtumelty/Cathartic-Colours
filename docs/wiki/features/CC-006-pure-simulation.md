@@ -64,6 +64,7 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 **DoD (beyond template)**
 - [ ] Every rule in merge-rules.md has at least one test; tests were written from the spec (noted in the test file header)
 - [ ] No `UnityEngine.Object`, `GameManager` or Entities reference in the simulation assembly
+- [ ] `Step` and the rule structs compile under Burst: a `[BurstCompile]` static test entry point calls `Step` in an EditMode test
 
 ### CC-006.3 — ECS as a thin wrapper
 **Risk:** High · **Worker:** primary · **Review:** primary
@@ -71,6 +72,7 @@ Architecture per [ADR-001](../decisions/ADR-001-pure-board-simulation.md). Order
 - `BoardStepSystem` (Simulation group) replaces `InputProcessingSystem`, `BlockMovementSystem`, `ResolveNewBlocksSystem`, `SpawnColorSystem` and `GameEndConditionSystem`. It reads the `MoveDirectionComponent`, builds a `BoardState` from block entities, calls `Step`, writes entities back, updates `GameStateComponent`/`ScoreComponent`, and creates `AudioEventComponent`/`MergeEventComponent` entities from `SimEvent`s, only for accepted moves (fixes **CC-023**).
 - `ScoringSystem` → `MergeEffectsSystem` (particles only); jelly wobble triggered from presentation, not from simulation (ADR-001 §3–4)
 - Explicit ordering for every remaining system, including `AudioSystem`
+- **Burst (ADR-001 §5):** `BoardStepSystem` is `[BurstCompile]`. Tier points and the spawn toggle come from an unmanaged `ScoringConfigComponent` singleton created at game start, not from `GameManager`. Systems left managed, with their reasons on this page: `AudioSystem`, `SaveGameSystem`, `MergeEffectsSystem`.
 - **CC-024:** remove `MovingBlockTag`, `PendingMergeTag`, `PendingDestructionTag`, `SpawnNextColorRequest`, `GridCellComponent`, the three unused mode tags, the unreachable branches, the no-op copy-back, and the per-frame `File.Exists` in `SaveGameSystem` (delete only when game over first becomes true)
 - `SaveGameManager.RestoreBlocks` no longer adds `MovingBlockTag`
 
@@ -132,7 +134,7 @@ All approved by Ronan 2026-11-18 (D3 with the naming change).
 - **D5:** CC-022 is fixed without a save format change; versioning stays with CC-031.
 
 ## Divergences
-_None yet._
+- 2026-11-18 (planning session, before work started): plan aligned with the project `CLAUDE.md` §3 Burst rule (commit 940c674, brought into `develop` late). `BoardStepSystem` is Burst-compiled, config comes through an unmanaged singleton, the factory dispatches by `switch` without boxing, and a Burst compile check is added to the CC-006.2 DoD. Scope, order and model routing are unchanged. Flagged to Ronan.
 
 ## Feature test plan
 1. Command line: EditMode run passes (all simulation tests).

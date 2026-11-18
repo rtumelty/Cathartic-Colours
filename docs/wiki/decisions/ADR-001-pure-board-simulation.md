@@ -33,11 +33,12 @@ Consequences today: no rule can be unit-tested; bugs CC-020–CC-024 live in the
 Option B. It's the smallest change that makes rules testable and reusable, and blittable data keeps the solver fast later.
 
 Specifics:
-1. **Rules stay strategies, renamed to fit struct use.** The rule sets become structs named `StandardMergeRules`, `ColorMergeRules` and `AdvancedColorMergeRules`. The `I` prefix stays only on the real interface they implement, `IMergeRules`, which serves as the generic constraint. `IMergeUtility`, the `*MergeUtility` classes and `MergeUtilityFactory` are removed. `MergeRulesFactory` picks by `GameMode` for non-generic callers. `Step` is generic over the rule type (`where TRules : struct, IMergeRules`), so a later Burst caller pays no virtual call. (Naming per Ronan's D3 feedback, 2026-11-18.)
+1. **Rules stay strategies, renamed to fit struct use.** The rule sets become structs named `StandardMergeRules`, `ColorMergeRules` and `AdvancedColorMergeRules`. The `I` prefix stays only on the real interface they implement, `IMergeRules`, which serves as the generic constraint. `IMergeUtility`, the `*MergeUtility` classes and `MergeUtilityFactory` are removed. `Step` is generic over the rule type (`where TRules : struct, IMergeRules`). `MergeRulesFactory` is a `switch` on `GameMode` that calls `Step<TRules>` with the matching struct: no boxing and no managed interface reference, so it is Burst-safe. (Naming per Ronan's D3 feedback, 2026-11-18.)
 2. **One move system.** `BoardStepSystem` replaces the five Simulation-group systems above. `AudioSystem`, `SaveGameSystem` and `EndFrameSystem` stay. `MovingBlockTag` is removed: the simulation decides which blocks move.
 3. **Score in the simulation.** Tier points are passed into `Step` (copied from `GameConfiguration`), and `StepResult` carries the score delta. `ScoringSystem` becomes `MergeEffectsSystem` (Presentation group): it only turns `MergeEventComponent`s into particles and destroys them. Score no longer depends on a particle spawner existing.
 4. **Presentation is driven by events.** Jelly wobble and particles react to state or events; no simulation code references `GameManager` presentation objects.
-5. **Determinism.** `Step` uses only its inputs (board, direction, rules, tier points, `Unity.Mathematics.Random`). Same inputs give the same result and the same random state.
+5. **Burst** (project `CLAUDE.md` §3, "Favour Burst-compatible solutions"). `BoardStepSystem` and `EndFrameSystem` are `[BurstCompile]`. Tier points and the spawn toggle reach the simulation through an unmanaged singleton (`ScoringConfigComponent`, created from `GameConfiguration` at game start), never through `GameManager`. Three systems stay managed, for stated reasons: `AudioSystem` (FMOD `RuntimeManager`), `SaveGameSystem` (file I/O and `JsonUtility`) and `MergeEffectsSystem` (particle MonoBehaviour).
+6. **Determinism.** `Step` uses only its inputs (board, direction, rules, tier points, `Unity.Mathematics.Random`). Same inputs give the same result and the same random state.
 
 ## Consequences
 - Rules are covered by EditMode unit tests in a `CatharticColours.Simulation.Tests` assembly. ECS glue is checked by the manual test plan until CC-002 brings PlayMode tests.
@@ -47,4 +48,4 @@ Specifics:
 - Follow-ups: CC-007 (preview reads the next indicator from the simulation), CC-008 (generalises the strategy beyond merges), CC-009 (solver calls `Step`, possibly Burst-compiled).
 
 ## Status
-Accepted, 2026-11-18, with the CC-006 plan. Decision §1 naming changed at Ronan's request: the struct rule sets drop the `Utility` names, and only the interface keeps the `I` prefix.
+Accepted, 2026-11-18, with the CC-006 plan. Decision §1 naming changed at Ronan's request: the struct rule sets drop the `Utility` names, and only the interface keeps the `I` prefix. §5 (Burst) added the same day to match the project `CLAUDE.md` §3 rule, which reached `develop` after the plan was written.
