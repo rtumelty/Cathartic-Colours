@@ -7,3 +7,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] plan | index.md | Minimal index created (full scaffold under CC-001)
 ## [2026-11-18] plan | CC-001 | Feature page written: 4 deliverables, routing Haiku/Sonnet/Sonnet/Sonnet+Haiku; awaiting approval
 ## [2026-11-18] approve | CC-001 | Plan, decisions D1–D3 and model routing approved by Ronan
+## [2026-11-18] schema | CLAUDE.md | Hand-off workflow: planning session commits roadmap to develop, creates and pushes the feature branch with the plan, kickoff names the branch; added §6 Sessions and environment
+## [2026-11-18] schema | CLAUDE.md | §6: feature sessions run locally only with Remote Control; no cloud sessions

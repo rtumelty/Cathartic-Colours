@@ -41,3 +41,8 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 ## 5. Editor-only and external-tool work
 - Scene/prefab wiring, UXML layout changes with complex bindings and all FMOD Studio edits are `MANUAL (Ronan)` unless trivially safe.
 - **FMOD:** always **save the FMOD project** (Ctrl+S) before building banks or committing. Unsaved changes live in `.unsaved/` and are not part of the project. (As of Nov 2026 the game's five events exist only in `.unsaved/` — restore and save them before any audio work.)
+
+## 6. Sessions and environment
+- **Planning session:** one long-running session owns the roadmap, refinement and feature plans (user-level §2.1). On approval it commits and pushes the roadmap/index/log updates to `develop`, then creates `feature/CC-<nnn>-<slug>`, commits the feature page there and pushes it. The kickoff prompt names that branch.
+- **Feature sessions run locally only**, on Ronan's machine in this folder, with Remote Control enabled so he can follow them from other devices. Don't use or suggest cloud sessions: they can't see the user-level `~/.claude/CLAUDE.md` and have no Unity editor, FMOD Studio or Android SDK. Still push the planning commits and the feature branch before a session starts, so `origin` stays the source of truth.
+- **Local git (Windows):** Git for Windows at `C:\Program Files\Git\cmd`. Global `core.sshCommand` points at `C:/Windows/System32/OpenSSH/ssh.exe` so git uses the Windows ssh-agent key for the `git@github.com` remote. If `git` isn't found in an agent shell, refresh `PATH` from the Machine and User environment rather than asking Ronan.
