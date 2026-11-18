@@ -100,7 +100,7 @@ Depends on CC-034, then CC-033 (order CC-034 → CC-033 → CC-006). Absorbs CC-
 | CC-006.5 | Resume without replay (CC-022) | High | Primary | Approved |
 | CC-006.6 | Wiki, test plan and roadmap close-out | Low | Haiku + Sonnet | Approved |
 
-Move slide/merge/spawn rules into a pure, deterministic, Burst-friendly model (e.g. `BoardState` + `Step(board, dir) → (board, events)`), with ECS systems as thin wrappers. Remove presentation coupling from simulation (`InputProcessingSystem` → `JellyManager`, `ScoringSystem` → particle spawner/renderer). Prerequisite for preview, modes, solver/generator and cloud-save robustness. Heavy unit-test coverage.
+Move slide/merge/spawn rules into a pure, deterministic, Burst-compatible model (e.g. `BoardState` + `Step(board, dir) → (board, events)`), with ECS systems as thin wrappers. Goal: all simulation systems `[BurstCompile]` (today only `EndFrameSystem` is; the managed `IMergeUtility` and `GameManager` calls block the rest). Remove presentation coupling from simulation (`InputProcessingSystem` → `JellyManager`, `ScoringSystem` → particle spawner/renderer). Prerequisite for preview, modes, solver/generator and cloud-save robustness. Heavy unit-test coverage.
 
 ## Gameplay
 
@@ -110,7 +110,7 @@ Let players see what will spawn next. Today the indicator's colour is only chose
 
 ### CC-008
 **Game mode rules framework** · Feature · High · L
-`IMergeUtility` covers merge rules only. Generalise `GameMode` into composable rules: spawn policy, end conditions, timers, grid mutations, scoring modifiers. Existing three modes re-expressed on the framework with no behaviour change.
+`IMergeUtility` covers merge rules only. Generalise `GameMode` into composable, swappable rules: spawn policy, end conditions, scoring, timers, grid mutations. The rule mechanism must be Burst-compatible (e.g. enum switch, generic struct implementations or function pointers, not a managed interface). Existing three modes re-expressed on the framework with no behaviour change.
 
 ### CC-009
 **Puzzle mode and generator** · Feature · High · XL
