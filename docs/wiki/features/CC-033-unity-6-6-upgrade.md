@@ -132,8 +132,81 @@ Verification:
   2. the FMOD 2.04 import
   3. the code fixes
 
+## CC-033.1 results
+
+### Packages before and after
+Manifest: 60 entries → 17. Lock: 31 resolved packages on 6000.6.9f1. Package resolution has no errors (third batchmode open: no package changes).
+
+| Package | Before (6000.3.2f1) | After (6000.6.9f1) | Note |
+|---|---|---|---|
+| com.unity.entities | 1.4.4 | 6.6.0 | Core package in 6.6 (built-in version) |
+| com.unity.render-pipelines.universal | 17.3.0 | 17.6.0 | Built-in version |
+| com.unity.test-framework | 1.6.0 | 1.8.0 | Built-in version |
+| com.unity.inputsystem | 1.17.0 | 1.20.1 | Bumped by the editor on resolve (minor) |
+| com.unity.ide.rider | 3.0.38 | 3.1.0 | Bumped by the editor on resolve (minor) |
+| Kept modules (12) | 1.0.0 | 1.0.0 | androidjni, animation, assetbundle, audio, imgui, jsonserialize, particlesystem, physics, ui, uielements, unityanalytics, unitywebrequest |
+| Transitive, now in the lock | — | — | collections 6.6.0, burst 2.0.0, render-pipelines.core / shadergraph / universal-config 17.6.0, scriptablebuildpipeline 3.0.3, test-framework.performance 6.6.0, graph-authoring 1.0.0, modules.hierarchy / hierarchycore |
+
+### D1 evidence
+Evidence came from a scan of `Assets/` (scripts, scene/prefab classIDs and script GUIDs, asset types, asmdefs, FMOD sources) and `ProjectSettings/`, plus the 6000.6.9f1 built-in `package.json` dependency graph. Project contents: 44 scripts, 3 scenes, 4 prefabs, 4 `.anim` + 1 `.controller`, 1 `.inputactions`, UXML/USS/TSS, 1 ShaderGraph. There are no textures, sprites, `.psd`, `.aseprite`, tiles, sprite shapes, timelines, video or audio files.
+
+**Kept**
+
+| Package | Evidence |
+|---|---|
+| entities | 26 `using Unity.Entities;` in `Assets/Scripts` |
+| render-pipelines.universal | Renderer2D/UniversalRP assets, `Light2D` and `UniversalAdditionalCameraData` in scenes, `JellyShader.shadergraph` |
+| inputsystem | `GameInputHandler.cs` (`PlayerInput`, `InputActionAsset`), `Assets/Input/GameControls.inputactions` |
+| test-framework | Plan: CC-033.3 `-runTests` smoke runs |
+| ide.rider | Plan: IDE integration (Ronan uses Rider) |
+| modules.androidjni | FMOD `RuntimeManager.cs:194,199` `AndroidJavaClass` |
+| modules.unitywebrequest | FMOD `RuntimeManager.cs:903` `UnityWebRequest.Get` (Android bank loading). Also an entities dependency |
+| modules.jsonserialize | `JsonUtility` in `SaveGameSystem.cs` and `SaveGameManager.cs` |
+| modules.particlesystem | `PointsParticleSpawner.cs`, `ScoreParticles.prefab` (classID 198/199) |
+| modules.animation | `Block.prefab` Animator (95) with `Block.controller` and 4 clips |
+| modules.physics | `Cell.prefab` BoxCollider (65). Also an entities and uielements dependency |
+| modules.uielements | `UIDocument` in 3 scripts, UXML/USS/PanelSettings |
+| modules.audio, assetbundle, unityanalytics | entities dependencies (6.6) |
+| modules.imgui, ui | uielements dependencies (6.6) |
+
+**Removed**
+
+| Package | Evidence |
+|---|---|
+| feature.2d and its set: 2d.animation, 2d.aseprite, 2d.psdimporter, 2d.sprite, 2d.spriteshape, 2d.tilemap, 2d.tilemap.extras, 2d.tooling | No sprites, `.psd`, `.aseprite`, tiles or sprite shapes. No SpriteSkin, Tilemap (1839735485) or SpriteShapeController. Light2D and the 2D Renderer ship in URP |
+| 2d.enhancers, ai.assistant, ai.generators, ai.inference | Plan rule: pre-release, no use |
+| collab-proxy | Project uses git. `VersionControlSettings` is Visible Meta Files |
+| multiplayer.center | Editor onboarding window. `MultiplayerManager` roles disabled |
+| performance.profile-analyzer, project-auditor | Plan rule: dev tools (re-add in CC-017 if needed) |
+| ide.visualstudio | Ronan uses Rider (Ronan, 2026-11-18) |
+| timeline, modules.director | No PlayableDirector (320) or `.playable`. FMOD Timeline code is behind `#if UNITY_TIMELINE_EXIST` |
+| visualscripting | No graphs or `Unity.VisualScripting` use. FMOD `BoltIntegration.cs` is behind `#if UNITY_VISUALSCRIPTING_EXIST` |
+| ugui, modules.physics2d | No Canvas (223), `UnityEngine.UI`, 2D colliders or Physics2D calls. On 6.6, URP core no longer depends on ugui, so nothing kept pulls either in. FMOD guards on `UNITY_UI_EXIST` / `UNITY_PHYSICS2D_EXIST` |
+| modules.terrain, terrainphysics | No terrain. On 6.6, URP core no longer depends on terrain |
+| modules.ai, umbra | No NavMesh API or occlusion baking. Scenes hold only the default NavMeshSettings (196) and OcclusionCullingSettings (29), which load without the modules |
+| modules.accessibility, adaptiveperformance, cloth, imageconversion, screencapture, tilemap, vectorgraphics, vehicles, video, vr, wind, xr, unitywebrequestassetbundle / audio / texture / www | No API, component or asset use. No kept package depends on them (URP gates XR and adaptive performance behind versionDefines) |
+| modules.physicscore2d, tetgen, timelinefoundation | Added by the 6.6 upgrader to keep old monolithic-module behaviour. No kept package depends on them, and there's no 2D physics, light-probe tetrahedralization or Timeline. After removal the third open did not re-add them |
+
+Settings cleaned with the strip:
+- `ProjectSettings/Packages/com.unity.ai.assistant/Settings.json` deleted.
+- The `com.unity.dt.app-ui` entry removed from `EditorBuildSettings` `m_configObjects` (app-ui came via ai.inference).
+- `ProjectAuditorSettings.asset` and `PhysicsCoreProjectSettings2D.asset` are re-created by the editor itself even with their packages and modules absent, so they are kept as editor-generated settings.
+- `ProjectSettings/Packages/com.unity.dedicated-server/` is left as it is (unrelated, not stripped here).
+
+### Re-serialisation review
+- `ProjectVersion.txt` → 6000.6.9f1 (8c45277fb9c5).
+- `UniversalRenderPipelineGlobalSettings.asset`: URP's own 17.6 migration (`m_AssetVersion` 9 → 11, renamed and added resource types, `m_EnableRenderGraph` and `m_EnableRenderCompatibilityMode` removed). Render Graph is now mandatory. There are no custom renderer features, but watch rendering in the MANUAL step 2 pass.
+- `EditorBuildSettings.asset`: app-ui entry removed, `m_UseUCBPForAssetBundles` dropped (format).
+- No scene, prefab or other asset changed.
+
+### Left for CC-033.2
+- `Assets\Plugins\FMOD\src\RuntimeManager.cs(666,45): error CS0619: 'Object.GetInstanceID()' is obsolete: 'Use GetEntityId instead.'` (FMOD 2.03.11). This is the only `error CS`. Game assemblies didn't compile past it, so game-code errors are still unknown.
+- FMOD 2.03 warnings: UAC1002 (`Settings.cs` legacy settings lack `[Serializable]`) and UAC0009 (`DEVELOPMENT_BUILD` deprecated, in `fmod.cs`, `RuntimeManager.cs` and `Platform.cs`).
+- Batchmode opens need `-ignorecompilererrors` until this is fixed. Without it the editor exits with code 1 before writing `ProjectVersion.txt`.
+
 ## Divergences
-—
+- **CC-033.1, D3 tool (minor):** Unity Hub 4.0.1 (Store build) dropped `-- --headless install-modules` in favour of the standalone Unity CLI. The agent installed Unity CLI 1.0.1 with Ronan's OK (in `%LOCALAPPDATA%\Unity\bin`, agent-skills setup skipped). Module install with `--accept-eula` (also approved) then failed because UAC elevation was refused from the agent shell. Ronan installs the Android module through the Hub GUI instead (Ronan, 2026-11-18). The OpenJDK module id is `android-open-jdk-17.0.18+8`.
+- **CC-033.1, D1 (minor):** the Visual Studio integration was removed rather than kept (Ronan prefers Rider). The worker's evidence kept ugui, physics2d and terrain as URP-core dependencies, based on the 6000.3 lock. The primary's review against the 6.6 built-in graph found no kept dependents, so they were removed.
 
 ## Feature test plan
 1. Open the project in 6000.6.9f1. There is no upgrade prompt and no Console errors. → TP-TOOL-01

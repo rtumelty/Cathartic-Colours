@@ -53,3 +53,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] approve | CC-006 | Burst alignment of plan and ADR-001 §5 approved by Ronan
 ## [2026-11-18] plan | CC-033 | Feature page written: 3 deliverables (strip packages + Android module + editor upgrade; FMOD 2.04 + API fixes; test-runner smoke run + docs), routing Sonnet/primary/Haiku
 ## [2026-11-18] approve | CC-033 | Plan, D1–D4 and routing approved by Ronan; #45 Approved, sub-issues #51–#53 created
+## [2026-11-18] implement | CC-033.1 | Packages stripped (manifest 60 → 17, evidence on the feature page); project upgraded to 6000.6.9f1 in batchmode; resolution clean; URP 17.6 settings migration reviewed; FMOD 2.03 CS0619 left for CC-033.2
+## [2026-11-18] diverge | CC-033.1 | Hub CLI headless install gone: Unity CLI installed, elevation refused, Android module via Hub GUI (Ronan); Visual Studio integration removed (Ronan); ugui/physics2d/terrain removed on the 6.6 dependency graph
