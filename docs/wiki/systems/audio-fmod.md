@@ -66,6 +66,14 @@ Only start-up bank loading for `ImportType.StreamingAssets` is done by `RuntimeM
 
 Platform build folders: the only Studio platform is `Desktop`, and `Packages/com.fmod.fmod-for-unity.v204/src/Platform.cs` (line 720) defaults a `BuildDirectory` to "Desktop" for a desktop-type platform (which Unity platform classes use it was not checked). The Studio project has only a `Desktop` platform, so there is **no mobile build output**: see Known issues, [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10). The Android native libraries are present under `Packages/com.fmod.fmod-for-unity.v204/platforms/android/lib/`.
 
+### Local changes to the FMOD package
+The package folder is vendor code ([ADR-003](../decisions/ADR-003-fmod-embedded-package.md)). These are the only local changes to it, so the next FMOD update can redo or drop them:
+- **`.meta` files re-saved in the Unity 6.6 format (CC-033, 2026-11-19).** 56 files that FMOD 2.04 ships in an older format, below Unity 6.6's minimum, so the editor warned "Open and re-save the file to upgrade" on every open:
+  - 29 native plugin metas under `platforms/` (PluginImporter version 1 → 3)
+  - 27 editor icon metas under `images/` (TextureImporter version 2 or 9 → 10)
+
+  They were re-saved with `AssetDatabase.ForceReserializeAssets(…, ReserializeMetadata)` from a throwaway editor script. Each plugin keeps the platforms it's enabled for. The only change there is that `libresonanceaudio.so` drops `LinuxUniversal`, a platform Unity 6.6 no longer has. After an FMOD update, check the first editor open for this warning and repeat the re-save if it appears.
+
 ### FMOD Studio project layout
 `Cathartic Colours - FMOD/` (FMOD Studio 2.03, `serializationModel="Studio.02.03.00"`):
 

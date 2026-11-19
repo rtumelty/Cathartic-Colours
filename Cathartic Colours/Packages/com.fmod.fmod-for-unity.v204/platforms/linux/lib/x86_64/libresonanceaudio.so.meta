@@ -1,16 +1,21 @@
 fileFormatVersion: 2
 guid: bca6f630c310b4945b52486d2ed1da0a
 PluginImporter:
-  serializedVersion: 1
+  externalObjects: {}
+  serializedVersion: 3
   iconMap: {}
   executionOrder: {}
+  defineConstraints: []
   isPreloaded: 0
   isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
   platformData:
     Android:
       enabled: 0
       settings:
         CPU: ARMv7
+        Is16KbAligned: true
     Any:
       enabled: 0
       settings:
@@ -21,22 +26,10 @@ PluginImporter:
         CPU: x86_64
         DefaultValueInitialized: true
         OS: Linux
-    Linux:
-      enabled: 0
-      settings:
-        CPU: None
     Linux64:
       enabled: 1
       settings:
         CPU: x86_64
-    LinuxUniversal:
-      enabled: 1
-      settings:
-        CPU: x86_64
-    OSXIntel:
-      enabled: 0
-      settings:
-        CPU: None
     OSXUniversal:
       enabled: 0
       settings:

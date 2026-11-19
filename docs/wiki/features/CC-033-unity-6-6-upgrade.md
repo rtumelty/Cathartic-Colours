@@ -238,6 +238,19 @@ Ronan committed three changes to `develop` while CC-033 was in review: the FMOD 
 - **Check:** batchmode open of a clean checkout of the merge (no `Library/`): exit 0, 0 `error CS`, same warnings as CC-033.2. Two first-import `LogError`s ("Host type is not matching any asset type") come from Unity's own render-pipelines.core package files.
 - **Leftovers from the feature branch's working folder:** develop had also picked up `fmodstudioL.dll`, `Assets/Resources/FMOD.meta` and the FMOD event cache. The DLL and `.meta` are byte-identical to this branch's copies. The event cache was untracked again, because it's gitignored here (ADR-003).
 
+### Outdated `.meta` formats (2026-11-19)
+In the editor, Ronan saw many warnings that files were "below the supported minimum" format. A batchmode open listed 57 such `.meta` files:
+- 56 in the FMOD package, as FMOD 2.04 ships them: 29 plugin metas under `platforms/` and 27 icon metas under `images/`.
+- `Assets/UI/MainMenu.uxml.meta`, which had been saved without an importer block.
+
+All 57 were re-saved in the 6.6 format by a throwaway editor script calling `AssetDatabase.ForceReserializeAssets` with `ReserializeMetadata`. The script was deleted and never committed. Other FMOD metas that the script also touched, but that weren't flagged, were reverted.
+
+The plugin metas were then checked for which platforms each one is enabled for. They're unchanged, except that `libresonanceaudio.so` drops `LinuxUniversal`, which Unity 6.6 no longer has. A fresh batchmode open then reported 0 outdated files and 0 compile errors.
+
+This is a change to vendor code that ADR-003 allows when a Unity upgrade forces it. It's recorded in [audio-fmod](../systems/audio-fmod.md#local-changes-to-the-fmod-package).
+
+The editor also re-saved `ProjectSettings/PackageManagerSettings.asset` in the 6.6 registry format, committed as a format-only change. Unity IAP generated `Assets/Resources/BillingMode.json` (`{"androidStore":"GooglePlay"}`), its store setting for Android, committed separately.
+
 ## Divergences
 - **CC-033, merge (minor):** `develop` gained three commits from Ronan during review (saved FMOD Studio project, Mobile banks, Android build profiles, Unity IAP) and was merged into this branch. Unity IAP stays by Ronan's decision (planned for CC-016), which brings ugui and the 2D physics modules back as its dependencies.
 - **CC-033.2, D2 (minor):** FMOD 2.04 came as a UPM tarball, not a `.unitypackage`, so it's an embedded package under `Packages/`, not `Assets/Plugins/FMOD` (Ronan chose this, ADR-003). The agent did the import, not Ronan (Ronan, 2026-11-18). CC-033.2 started before CC-033.1 was approved, at Ronan's request.
