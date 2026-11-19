@@ -117,3 +117,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-004.3 | Device install: adb install -r of version code 73 on Ronan's phone succeeded; app launched, no fatal errors in logcat
 ## [2026-11-19] implement | CC-004 MANUAL 2 | Ronan: device smoke test passed on version code 73 (three modes, swipes, Mobile-bank sound, resume)
 ## [2026-11-19] approve | CC-004.3 | Approved by Ronan; #63 Done; feature test plan folded in (TP-DROID-01 to 04); PR to develop opened, #10 In review
+## [2026-11-19] approve | CC-004 | PR #67 squash-merged into develop as 74d2f0b, identical to the branch tip; #10 and sub-issues #61-#63 Done; APK installed and launched on a Samsung SM-S911B
+## [2026-11-19] plan | roadmap | Review after CC-004: Foundations phase finished and removed from the order (phases renumbered); Core refactor (CC-002) is next
