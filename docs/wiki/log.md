@@ -49,3 +49,17 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] diverge | CC-034.3 | CC-006 feature page is not on this branch, so its issue header and link rewrite are left to the planning or CC-006 session (raised with Ronan); feature headers drop status/fields
 ## [2026-11-18] approve | CC-034.3 | Approved by Ronan; #49 closed; MANUAL steps 2–3 done by Ronan (workflows verified enabled); CC-006 page fix assigned to the planning session
 ## [2026-11-18] implement | CC-034 | Feature test cases folded into test-plan.md (new area TRACK, 4 cases); #46 → In review; PR to develop opened
+## [2026-11-18] implement | CC-034 | PR #50 merged; squash 3096558 matches the branch tip; #46 closed by hand, since "Closes #n" only fires on merges into the default branch (master)
+## [2026-11-18] approve | CC-006 | Burst alignment of plan and ADR-001 §5 approved by Ronan
+## [2026-11-18] plan | CC-033 | Feature page written: 3 deliverables (strip packages + Android module + editor upgrade; FMOD 2.04 + API fixes; test-runner smoke run + docs), routing Sonnet/primary/Haiku
+## [2026-11-18] approve | CC-033 | Plan, D1–D4 and routing approved by Ronan; #45 Approved, sub-issues #51–#53 created
+## [2026-11-18] implement | CC-033.1 | Packages stripped (manifest 60 → 17, evidence on the feature page); project upgraded to 6000.6.9f1 in batchmode; resolution clean; URP 17.6 settings migration reviewed; FMOD 2.03 CS0619 left for CC-033.2
+## [2026-11-18] diverge | CC-033.1 | Hub CLI headless install gone: Unity CLI installed, elevation refused, Android module via Hub GUI (Ronan); Visual Studio integration removed (Ronan); ugui/physics2d/terrain removed on the 6.6 dependency graph
+## [2026-11-18] decision | ADR-003 | FMOD for Unity 2.04 as an embedded UPM package in Packages/com.fmod.fmod-for-unity.v204 (Ronan); settings in Assets/Resources/FMOD
+## [2026-11-18] implement | CC-033.2 | FMOD 2.04 embedded, 2.03 Assets/Plugins removed, settings moved with GUIDs intact; batchmode compile 0 errors; no game-code API changes needed; Android module installed by Ronan via Hub
+## [2026-11-18] diverge | CC-033.2 | UPM tarball instead of .unitypackage (embedded package, ADR-003); agent imported instead of MANUAL step 1; started before CC-033.1 approval at Ronan's request
+## [2026-11-19] implement | CC-033 | Merged develop (saved FMOD Studio project, Mobile banks, Android build profiles, Unity IAP 5.5.1) into the feature branch; FMOD settings now migrated to 2.04; event cache untracked again
+## [2026-11-19] implement | CC-033 | 57 .meta files below Unity 6.6's minimum format re-saved (56 in the FMOD package, MainMenu.uxml.meta); plugin platform flags unchanged; local package change recorded in systems/audio-fmod
+## [2026-11-19] implement | CC-033.3 | EditMode and PlayMode -runTests on 6000.6.9f1 both exit 0 with a results XML (0 tests); ProjectSettings re-saved in the 6.6 format; test plan area TOOL added (TP-TOOL-01..03)
+## [2026-11-19] schema | CLAUDE.md | §1 Unity 6000.6.9f1, Entities 6.6.0, URP 17.6.0, Unity IAP, FMOD for Unity 2.04; §4 editor path and close-the-editor note; §5 FMOD Studio 2.04 migration note replaces the stale .unsaved note
+## [2026-11-19] diverge | CC-033.3 | Primary wrote the docs, Haiku ran the tests; corrected the merge note: Unity 6.6 writes a trailing i on integer hex arrays
