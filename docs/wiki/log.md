@@ -119,3 +119,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] approve | CC-004.3 | Approved by Ronan; #63 Done; feature test plan folded in (TP-DROID-01 to 04); PR to develop opened, #10 In review
 ## [2026-11-19] approve | CC-004 | PR #67 squash-merged into develop as 74d2f0b, identical to the branch tip; #10 and sub-issues #61-#63 Done; APK installed and launched on a Samsung SM-S911B
 ## [2026-11-19] plan | roadmap | Review after CC-004: Foundations phase finished and removed from the order (phases renumbered); Core refactor (CC-002) is next
+## [2026-11-19] plan | CC-039, CC-040 | Found during CC-004: CC-039 (#68, version codes go backwards between branch and develop builds, filed by the CC-004 session) placed in or before CC-036; CC-040 (#69, commit the settings files Unity 6.6 re-saves on every build) added to Quick fixes; audio-fmod device-test known issue closed (sound confirmed on a device)

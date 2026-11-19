@@ -66,7 +66,7 @@ No other script or scene references FMOD events: there are no `StudioEventEmitte
 
 Only start-up bank loading for `ImportType.StreamingAssets` is done by `RuntimeManager.LoadBanks` (`Packages/com.fmod.fmod-for-unity.v204/src/RuntimeManager.cs`). In the Editor the plugin reads banks straight from the source bank path; in a player build the Unity build step copies them to StreamingAssets (standard FMOD for Unity behaviour; not exercised in this repo). `Assets/StreamingAssets` does not exist on disk, and the Unity `.gitignore` ignores `.bank` files under `Assets/StreamingAssets/` (`Cathartic Colours/.gitignore`).
 
-Platform build folders (checked 2026-11-19 in the package source; not run on a device):
+Platform build folders (checked 2026-11-19 in the package source, and on a device in CC-004):
 - `Platform.cs` line 720 defaults a platform's `BuildDirectory` to `Desktop`. A property is read from the first platform up the parent chain that is `active` and has the value (`PropertyAccessor.Get`, `Platform.cs` line 584), so the editor and Windows builds read `Build/Desktop/`.
 - `PlatformMobileLow.cs` lines 21-25 declare the Android and iOS runtime platforms as the Mobile platform template (`PlatformMobileHigh` inherits it, `PlatformMobileHigh.cs` line 13). Neither sets a build directory.
 - Before CC-004, the Android entry was inactive with no `BuildDirectory`, so an Android build packed the **Desktop** banks (checked by MD5 of the APK's `assets/Master.bank`). Since [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10), the `PlatformAndroid` entry has `active: 1` and `BuildDirectory: Mobile` (the same as adding an Android override in the FMOD settings window), and the APK's `Master.bank` is byte-identical to `Build/Mobile/Master.bank`. While the editor's build target is Android, play-in-editor reads the Mobile banks too.
@@ -131,10 +131,9 @@ Notes:
 ## Interactions with other systems
 - Event entities are created inside the simulation: [ecs-frame-order.md](ecs-frame-order.md) (event entity table, unordered `AudioSystem`) and [merge-rules.md](merge-rules.md) (which merges happen).
 - No presentation code plays sound; there is no audio setting in the menu or in `GameConfiguration` ([configuration.md](configuration.md)).
-- Android builds pack the Mobile banks (verified in [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)).
+- Android builds pack the Mobile banks, and sound plays on a device (verified in [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10): Ronan's smoke test on a Samsung SM-S911B, 2026-11-19).
 
 ## Known issues
-- Android: no device test of audio yet; it's part of the CC-004 device smoke test. [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)
 - `AudioSystem` is unordered against the systems that create events, so playback timing is not deterministic. [ecs-frame-order.md](ecs-frame-order.md)
 - Note (design, confirmed by Ronan 2026-11-18): the merge sound is selected from the moving block's size, i.e. the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This is a naming choice, not an issue (`Assets/Scripts/ECS/Systems/BoardStepSystem.cs`, `MergeAudioPath`).
 
