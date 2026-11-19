@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<objects serializationModel="Studio.02.03.00">
+<objects serializationModel="Studio.02.04.00">
 	<object class="Event" id="{a66670e5-8286-4c6a-b616-e673794f49f8}">
 		<property name="name">
 			<value>Block_Move</value>
@@ -174,14 +174,14 @@
 	</object>
 	<object class="MixerBusPanner" id="{f283df3d-a8a9-408b-97f5-96042b697547}" />
 	<object class="AutomationCurve" id="{d201f890-6a22-4484-8cd0-c08dcb6cb5cb}">
-		<relationship name="parameter">
-			<destination>{a4d9f421-4ee7-4f68-948d-2ddc1bf057c8}</destination>
-		</relationship>
 		<relationship name="automationPoints">
 			<destination>{9a0d1a65-f741-4fc6-8035-7ab8d7157232}</destination>
-			<destination>{343edf8a-9312-4ff6-90fe-36d49dabfeed}</destination>
 			<destination>{bd81cd01-8dfd-4d2a-9628-a00277282eb0}</destination>
+			<destination>{343edf8a-9312-4ff6-90fe-36d49dabfeed}</destination>
 			<destination>{31e27fe7-dde2-4db4-a382-04ed2d04724a}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{a4d9f421-4ee7-4f68-948d-2ddc1bf057c8}</destination>
 		</relationship>
 	</object>
 	<object class="MixerBusFader" id="{48423c81-ead4-40e8-9cba-50f869c444b1}" />
@@ -197,6 +197,14 @@
 			<value>-0.351302326</value>
 		</property>
 	</object>
+	<object class="AutomationPoint" id="{bd81cd01-8dfd-4d2a-9628-a00277282eb0}">
+		<property name="position">
+			<value>0.44</value>
+		</property>
+		<property name="value">
+			<value>0</value>
+		</property>
+	</object>
 	<object class="AutomationPoint" id="{343edf8a-9312-4ff6-90fe-36d49dabfeed}">
 		<property name="position">
 			<value>0.02</value>
@@ -206,14 +214,6 @@
 		</property>
 		<property name="curveShape">
 			<value>-0.264817029</value>
-		</property>
-	</object>
-	<object class="AutomationPoint" id="{bd81cd01-8dfd-4d2a-9628-a00277282eb0}">
-		<property name="position">
-			<value>0.44</value>
-		</property>
-		<property name="value">
-			<value>0</value>
 		</property>
 	</object>
 	<object class="AutomationPoint" id="{31e27fe7-dde2-4db4-a382-04ed2d04724a}">
