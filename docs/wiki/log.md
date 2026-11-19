@@ -91,3 +91,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] approve | CC-006.6 | Approved by Ronan; #18 Done; PR #56 opened to develop, #12 In review
 ## [2026-11-19] approve | CC-006 | PR #56 squash-merged into develop as 2a4177d, identical to the branch tip; #12, sub-issues #13-#18 and absorbed CC-020 to CC-024 (#32-#36) Done
 ## [2026-11-19] plan | roadmap | Review after CC-006: CC-025 (#37) narrowed (singleton guard done in CC-006; teardown ObjectDisposedException added); strikethrough removed from the phase order, since status lives on the board
+## [2026-11-19] schema | CLAUDE.md, roadmap | roadmap.md holds open work only (Ronan): merged items removed from the phase order and id-to-issue table (CC-001, CC-006, CC-020 to CC-024, CC-033, CC-034); CC-035 placed after CC-008

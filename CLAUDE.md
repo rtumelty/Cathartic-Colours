@@ -52,7 +52,7 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
   - Fields: `Status`, `Severity`, `Size`, `Phase` (Foundations, Core refactor, Quick fixes, Gameplay, Platform and monetisation, Polish).
   - Labels: `type:feature|bug|chore`, `severity:critical|high|medium|low`, `size:S|M|L|XL`.
   - Views: Board, Backlog by severity, Bugs. Workflows set Done when an item is closed or its PR is merged.
-  - `roadmap.md` is only the strategy page plus an id-to-issue table. Wiki links to an item point at its issue URL.
+  - `roadmap.md` is only the strategy page plus an id-to-issue table, and holds **open work only** (Ronan, 2026-11-19): the post-merge review removes a merged item from the phase order and the table. Finished items are found on the board or with `gh issue list --state closed`. Wiki links to an item point at its issue URL.
 - **New finds:** create the issue, then put it on the board. Next id = highest `CC-` issue title + 1. Then add a row to the `roadmap.md` id-to-issue table in the next commit made for another reason.
   ```
   gh issue list --repo rtumelty/Cathartic-Colours --search "CC- in:title" --state all --limit 500 --json title --jq '.[].title' | sort | tail -1

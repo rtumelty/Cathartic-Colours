@@ -3,7 +3,7 @@
 Catalogue of every wiki page. Read this first; update it on every change.
 
 ## Planning
-- [Roadmap](roadmap.md) — release goal, phases, suggested order, and the id-to-issue table. Status and fields live on the [project board](https://github.com/users/rtumelty/projects/1) ([ADR-002](decisions/ADR-002-issue-tracking.md)).
+- [Roadmap](roadmap.md) — release goal and the open work only: phases, recommended order and the id-to-issue table. Status and fields live on the [project board](https://github.com/users/rtumelty/projects/1) ([ADR-002](decisions/ADR-002-issue-tracking.md)).
 
 ## Features
 - [Feature page format](features/README.md) — filename, header table, sections and conventions for feature pages.
