@@ -1,7 +1,7 @@
 // Written from docs/wiki/systems/merge-rules.md ("Spawning") and the CC-006.2 API contract,
 // without reading the simulation implementation.
 //
-// Spawn positions are predicted by replaying the spec's tries on a fresh Unity.Mathematics.Random(seed)
+// Spawn positions are predicted by replaying the spec's draw on a fresh Unity.Mathematics.Random(seed)
 // (see TestBoards.ReplaySpawn), so the tests do not depend on what the implementation does internally.
 using NUnit.Framework;
 using Unity.Mathematics;
@@ -158,7 +158,7 @@ namespace Simulation.Tests
             for (uint seed = 1; seed <= 100; seed++)
             {
                 var replay = TestBoards.ReplaySpawn(seed, 4, 4, c => c.x < 3);
-                Assert.IsTrue(replay.Found, "test setup: 12 of 16 cells are free, so a 32-try search cannot fail for seed " + seed);
+                Assert.IsTrue(replay.Found, "test setup: 12 of 16 cells are free, so the spawn cannot fail for seed " + seed);
 
                 using (var run = StepRun.Execute(GameMode.Standard, WallColumnBoard, TestBoards.Right, TestBoards.WithSpawn, seed))
                 {
@@ -166,7 +166,7 @@ namespace Simulation.Tests
                     Assert.IsFalse(run.Result.SpawnFailed, "seed " + seed);
                     var spawned = run.Of(SimEventType.IndicatorSpawned);
                     Assert.AreEqual(1, spawned.Count, "seed " + seed);
-                    Assert.AreEqual(replay.Cell, spawned[0].Position, "seed " + seed + ": spawn cell from the spec's tries");
+                    Assert.AreEqual(replay.Cell, spawned[0].Position, "seed " + seed + ": spawn cell from the spec's single draw");
                     Assert.AreEqual(BlockColor.White, spawned[0].Color, "seed " + seed);
                     Assert.IsTrue(run.Board[spawned[0].Position] == Block.Indicator, "seed " + seed + ": the new block is Block.Indicator");
                     Assert.AreEqual(1, TestBoards.CountIndicators(run.Board), "seed " + seed);
@@ -183,7 +183,7 @@ namespace Simulation.Tests
             for (uint seed = 1; seed <= 300; seed++)
             {
                 var replay = TestBoards.ReplaySpawn(seed, 4, 1, c => c.x == 3);
-                if (!replay.Found) continue; // bounded-retry failures are covered by the CC-021 pin tests
+                Assert.IsTrue(replay.Found, "test setup: one free cell");
 
                 using (var run = StepRun.Execute(GameMode.Standard, "Rs Gs Bs .", TestBoards.Left, TestBoards.WithSpawn, seed))
                 {

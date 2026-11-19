@@ -95,10 +95,6 @@ namespace ECS.Systems
             // False for the rest of this frame marks "a move happened" for SaveGameSystem; EndFrameSystem sets it back.
             gameState.WaitingForInput = false;
 
-            // Known issue CC-021: when the spawn fails, the move is not saved (fixed in CC-006.4).
-            if (result.SpawnFailed)
-                gameState.WaitingForInput = true;
-
             if (result.GameOver)
             {
                 gameState.GameOver = true;

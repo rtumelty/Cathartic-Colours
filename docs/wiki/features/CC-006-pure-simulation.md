@@ -159,6 +159,10 @@ All approved by Ronan 2026-11-18 (D3 with the naming change).
   - **Restored indicator slide** (found in .2) is gone with `MovingBlockTag`.
   - Unity changed `Assets/Materials/BlockMaterial.mat` (wobble values from playing the game in the editor). Not part of this work and not committed.
 
+- **CC-006.4** (2026-11-19, Sonnet worker, reviewed by primary): 207 EditMode tests pass. The colour roll now advances the stored random state (CC-020), and the spawn counts the empty cells and picks one with a single draw in cell index order, failing only on a full board (CC-021). The `Pins_` tests became `Fixes_` tests in `FixedBugTests.cs`; tests that only made sense for the old try-based spawn (the 72-try boundary and the 13% helper check) were removed, and two tests that skipped or searched seeds for the old failure now check every seed.
+  - **Wrapper change that goes with the fix:** `BoardStepSystem` no longer marks a move as unsaved when the spawn fails. With the fix that happens only on a full board that still has a merge, and that move should be saved.
+  - **Test seeds** are spread as `(i + 1) * 2654435761u`: small seeds give small first draws, and seed 0 is rejected by `Unity.Mathematics.Random`.
+
 ## Feature test plan
 1. Command line: EditMode run passes (all simulation tests).
 2. Editor: new game in each mode; play 10 moves, including at least one merge per tier reachable early. Score, particles, sounds and jelly wobble as before.

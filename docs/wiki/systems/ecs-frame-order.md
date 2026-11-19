@@ -95,7 +95,6 @@ A move takes one ECS frame, starting from `WaitingForInput == true`, `GameOver =
 1. **Outside ECS.** A keyboard action (`GameInputHandler.OnMove`) or a swipe (`GameInputHandler.OnSwipe`) calls `SendMoveCommand`, which creates a `MoveDirectionComponent` entity unless one already exists.
 2. **`BoardStepSystem`.** Resets `CurrentFrameScore` to 0. With no move command it stops. If `WaitingForInput` is false or `GameOver` is true, the move is **rejected**: nothing changes and no events are created. Otherwise it copies the block entities into a `BoardState`, calls `MergeRulesFactory.Step` (slide, merge, score, resolve the indicator, spawn the next, end check; see [merge-rules.md](merge-rules.md)) and, if the step was accepted:
    - stores the new random state, increments `MoveCount`, sets `LastMoveDirection` and sets `WaitingForInput = false` (the "a move happened" signal for `SaveGameSystem`);
-   - if the spawn failed, sets `WaitingForInput = true` again, so the move is not saved ([CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33));
    - if the board is now game over, sets `GameOver = true` and `WaitingForInput = true`;
    - adds the score delta to `ScoreComponent`;
    - writes the board back to the entities (see Entity identity) and creates the audio and merge event entities.
@@ -116,8 +115,6 @@ New game: `GameRenderer.InitializeGame` creates the singletons and one white ind
 ## Known issues
 - The indicator's colour is only chosen on the following move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
 - `GameStateComponent.LevelComplete` is never set by any system. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
-- The colour roll uses a copy of the random state that is not written back, so the new indicator's position is correlated with the colour just rolled (`Assets/Scripts/Simulation/BoardSimulation.cs`, `ResolveIndicators`). Pinned by `Pins_CC020_…` tests. [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32)
-- The spawn picks its cell by up to `Width * Height * 2` random tries; with few empty cells it can fail while empty cells remain (about 13% for one empty cell on a 6x6 grid). `BoardStepSystem` then sets `WaitingForInput = true` and `SaveGameSystem` skips saving that move (`Assets/Scripts/Simulation/BoardSimulation.cs`, `SpawnIndicator`). Pinned by `Pins_CC021_…` tests. [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33)
 - The save is written with `waitingForInput = false` and restored as is, so the first frame after resume looks like a move frame to `SaveGameSystem` (it saves again). Since CC-006.3 nothing else happens in that frame: there is no longer a resolve or spawn step that runs without a move. The save-semantics fix is [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34) (CC-006.5).
 
 ## Related test cases

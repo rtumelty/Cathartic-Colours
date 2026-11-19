@@ -21,8 +21,6 @@ namespace Simulation.Tests
         public bool Found;
         public int2 Cell;
         public uint FinalState;
-        public int FirstX;
-        public int FirstY;
     }
 
     internal static class TestBoards
@@ -240,30 +238,26 @@ namespace Simulation.Tests
         }
 
         /// <summary>
-        /// Replays the spawn tries of the spec from a fresh <c>Random(seed)</c>: up to width*height*2 tries,
-        /// each drawing x = NextInt(0, width) then y = NextInt(0, height); the first free cell wins.
+        /// Replays the spawn of the spec from a fresh <c>Random(seed)</c>: first <paramref name="colourDraws"/>
+        /// colour rolls (NextInt(0, 3)), then one draw NextInt(0, emptyCount) picking among the free cells in
+        /// index order (x + y * width). Found is false when there is no free cell (and nothing is drawn).
         /// </summary>
-        public static SpawnReplay ReplaySpawn(uint seed, int width, int height, System.Func<int2, bool> isFree)
+        public static SpawnReplay ReplaySpawn(uint seed, int width, int height, System.Func<int2, bool> isFree, int colourDraws = 0)
         {
             var r = new Unity.Mathematics.Random(seed);
+            for (int i = 0; i < colourDraws; i++)
+                r.NextInt(0, 3);
+
+            var free = new List<int2>();
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    if (isFree(new int2(x, y))) free.Add(new int2(x, y));
+
             var res = new SpawnReplay();
-            int tries = width * height * 2;
-            for (int i = 0; i < tries; i++)
+            if (free.Count > 0)
             {
-                int x = r.NextInt(0, width);
-                int y = r.NextInt(0, height);
-                if (i == 0)
-                {
-                    res.FirstX = x;
-                    res.FirstY = y;
-                }
-                if (isFree(new int2(x, y)))
-                {
-                    res.Found = true;
-                    res.Cell = new int2(x, y);
-                    res.FinalState = r.state;
-                    return res;
-                }
+                res.Found = true;
+                res.Cell = free[r.NextInt(0, free.Count)];
             }
             res.FinalState = r.state;
             return res;

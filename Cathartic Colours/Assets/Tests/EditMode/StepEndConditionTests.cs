@@ -135,12 +135,7 @@ namespace Simulation.Tests
             // Row "Rs Gs ." in the mode where Rs and Gs cannot merge (Standard, Advanced) ... for Color Merge use equal colours.
             string board = mode == GameMode.ColorMerge ? "Rs Rs ." : "Rs Gs .";
             // Nothing can move left on this row (x0 at the wall, neighbours cannot merge), so the free cell stays x2.
-            uint seed = 0;
-            for (uint s = 1; s <= 1000; s++)
-            {
-                if (TestBoards.ReplaySpawn(s, 3, 1, c => c.x == 2).Found) { seed = s; break; }
-            }
-            Assert.AreNotEqual(0u, seed, "test setup: a seed whose spawn tries hit the free cell");
+            const uint seed = 1u;
 
             using (var run = StepRun.Execute(mode, board, TestBoards.Left, TestBoards.WithSpawn, seed))
             {

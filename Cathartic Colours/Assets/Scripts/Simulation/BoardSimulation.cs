@@ -25,7 +25,7 @@ namespace Simulation
 
             result.Accepted = true;
             result.ScoreDelta = Slide(ref board, direction, rules, settings.Points, events);
-            ResolveIndicators(ref board, random, events);
+            ResolveIndicators(ref board, ref random, events);
 
             if (settings.SpawnEnabled)
                 result.SpawnFailed = !SpawnIndicator(ref board, ref random, events);
@@ -165,11 +165,10 @@ namespace Simulation
         }
 
         /// <summary>
-        /// Every indicator becomes a Small Red, Green or Blue block. The colours are drawn from a copy of the
-        /// random state that is not written back (known issue CC-020: the spawn that follows draws from the
-        /// same state, so the colour and the next position are correlated).
+        /// Every indicator becomes a Small Red, Green or Blue block, one random draw each. The draws advance the
+        /// stored random state, so the spawn that follows draws from the next state (fixed in CC-006.4, CC-020).
         /// </summary>
-        private static void ResolveIndicators(ref BoardState board, Random random, NativeList<SimEvent> events)
+        private static void ResolveIndicators(ref BoardState board, ref Random random, NativeList<SimEvent> events)
         {
             for (int i = 0; i < board.Cells.Length; i++)
             {
@@ -189,24 +188,34 @@ namespace Simulation
         }
 
         /// <summary>
-        /// Places a new indicator on a random empty cell: up to Width * Height * 2 tries of a random x then a
-        /// random y. Returns false if no try hit an empty cell (known issue CC-021: this can happen while empty
-        /// cells remain).
+        /// Places a new indicator on a uniformly random empty cell using exactly one draw, counting empty cells
+        /// in index order (x + y * Width). Returns false, drawing nothing, only when the board has no empty cell
+        /// (fixed in CC-006.4, CC-021).
         /// </summary>
         private static bool SpawnIndicator(ref BoardState board, ref Random random, NativeList<SimEvent> events)
         {
-            int maxAttempts = board.Width * board.Height * 2;
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            int emptyCount = 0;
+            for (int i = 0; i < board.Cells.Length; i++)
             {
-                var position = new int2(random.NextInt(0, board.Width), random.NextInt(0, board.Height));
-                if (!board[position].IsEmpty)
+                if (board.Cells[i].IsEmpty)
+                    emptyCount++;
+            }
+            if (emptyCount == 0)
+                return false;
+
+            int pick = random.NextInt(0, emptyCount);
+            for (int i = 0; i < board.Cells.Length; i++)
+            {
+                if (!board.Cells[i].IsEmpty)
+                    continue;
+                if (pick-- > 0)
                     continue;
 
-                board[position] = Block.Indicator;
+                board.Cells[i] = Block.Indicator;
                 events.Add(new SimEvent
                 {
                     Type = SimEventType.IndicatorSpawned,
-                    Position = position,
+                    Position = new int2(i % board.Width, i / board.Width),
                     Color = BlockColor.White,
                     Size = BlockSize.Small
                 });

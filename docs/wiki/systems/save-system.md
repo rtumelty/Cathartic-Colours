@@ -37,7 +37,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Frame
 | `gameOver` | bool | `GameStateComponent.GameOver` | Written back |
 | `levelComplete` | bool | `GameStateComponent.LevelComplete` | Written back |
 | `moveCount` | int | `GameStateComponent.MoveCount` | Written back |
-| `randomState` | uint | `GameStateComponent.Random.state` | `new Random(randomState)` (see [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32): the stored state is not advanced by colour picks) |
+| `randomState` | uint | `GameStateComponent.Random.state` | `new Random(randomState)` |
 | `totalScore` | int | `ScoreComponent.TotalScore` | Written back |
 | `currentFrameScore` | int | `ScoreComponent.CurrentFrameScore` | Written back into `ScoreComponent`, but nothing reads it later (`BoardStepSystem` resets it every frame) |
 | `blocks` | `SavedBlock[]` | every entity with `BlockComponent` (`QueryBuilder().WithAll<BlockComponent>()`) | `RestoreBlocks` creates one entity per element |
@@ -69,7 +69,7 @@ There is no validation of restored data: grid positions outside the saved width/
 | else if `GameOver || LevelComplete`, and it was not so last frame | `DeleteSaveGame` (private; deletes the file if it exists, `try/catch` with `Debug.LogError`). Runs once when the game ends, not every frame (field `endedLastFrame`, since CC-006.3) |
 | otherwise (idle: `WaitingForInput` and not over) | nothing |
 
-In practice (see the frame walk-through in [ecs-frame-order.md](ecs-frame-order.md#one-player-move-frame-by-frame)): `WaitingForInput` is false only in the one frame in which `BoardStepSystem` accepted a move, because `EndFrameSystem` (last in the Presentation group, after `SaveGameSystem`) sets it back to true. So the file is written **once per accepted move**, after the move, merges, scoring, indicator resolve and new indicator spawn have all happened in that frame. If the spawn fails to place an indicator, `BoardStepSystem` sets `WaitingForInput = true` and that move is not saved ([CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33)).
+In practice (see the frame walk-through in [ecs-frame-order.md](ecs-frame-order.md#one-player-move-frame-by-frame)): `WaitingForInput` is false only in the one frame in which `BoardStepSystem` accepted a move, because `EndFrameSystem` (last in the Presentation group, after `SaveGameSystem`) sets it back to true. So the file is written **once per accepted move**, after the move, merges, scoring, indicator resolve and new indicator spawn have all happened in that frame.
 
 The file is deleted when `GameOver` becomes true (set by `BoardStepSystem`, which also sets `WaitingForInput = true`). `LevelComplete` is never set by any system ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)), so that branch is never taken. Starting a new game, restarting, or returning to the menu does not delete the file: a save survives until the next saved move overwrites it or the game ends. Leaving a game from the footer "Main Menu" button leaves the last post-move save in place, and the menu then offers Resume.
 
@@ -99,9 +99,7 @@ There is none. `version` is written as `"1.0"` and never read; there is no forma
 ## Known issues
 - The save is written with `waitingForInput = false` and restored as is, so the first frame after resume saves the file again. Since CC-006.3 there is no resolve or spawn step that runs without a move, so the board and indicator no longer change on resume; the save-semantics fix is CC-006.5. [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34)
 - `SaveGameSystem` has its own `DeleteSaveGame`; `SaveGameManager.DeleteSaveGame` is unused and the file path is duplicated in two places. (The per-frame `File.Exists` check was removed in CC-006.3.)
-- A move whose indicator spawn fails is not saved. [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33)
 - The `LevelComplete` delete branch is unreachable. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
-- The stored RNG state is not advanced by colour picks, so resuming reproduces the same next roll. [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32)
 - The resumed configuration replaces the shared static runtime configuration. [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
 - Cloud saves and sync do not exist yet. [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25)
 - `version` and `saveTimestamp` are written but never read, so there is no way to reject or migrate an incompatible save file (`Assets/Scripts/SaveSystem/SaveData.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)

@@ -51,7 +51,7 @@ namespace Simulation
         /// <summary>The board is in game over after this step.</summary>
         public bool GameOver;
 
-        /// <summary>Spawning was enabled but no indicator was placed.</summary>
+        /// <summary>Spawning was enabled but the board had no empty cell, so no indicator was placed.</summary>
         public bool SpawnFailed;
     }
 }
