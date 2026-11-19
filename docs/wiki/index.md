@@ -8,6 +8,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 ## Features
 - [Feature page format](features/README.md) — filename, header table, sections and conventions for feature pages.
 - [CC-001 Wiki scaffold and system pages](features/CC-001-wiki-scaffold.md) — plan for the full wiki structure, system pages and seeded test plan. Issue [#3](https://github.com/rtumelty/Cathartic-Colours/issues/3).
+- [CC-004 Android build pipeline (development builds)](features/CC-004-android-dev-builds.md) — app id, commit-count version code, APK development profile, command-line build script, device install. Issue [#10](https://github.com/rtumelty/Cathartic-Colours/issues/10). The page is on `feature/CC-004-android-dev-builds`.
 - [CC-006 Extract pure board simulation from ECS](features/CC-006-pure-simulation.md) — pure, tested simulation assembly with ECS as a thin wrapper; absorbs CC-020–CC-024. Issue [#12](https://github.com/rtumelty/Cathartic-Colours/issues/12). The page is on `feature/CC-006-pure-simulation`.
 - [CC-033 Upgrade project to Unity 6000.6.9f1](features/CC-033-unity-6-6-upgrade.md) — editor upgrade, unused packages stripped, FMOD for Unity 2.04, Android module, test-runner smoke run. Issue [#45](https://github.com/rtumelty/Cathartic-Colours/issues/45).
 - [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Issue [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46).
