@@ -1,4 +1,5 @@
-﻿using ECS.Components;
+﻿using Simulation;
+using ECS.Components;
 using Unity.Collections;
 using Unity.Entities;
 

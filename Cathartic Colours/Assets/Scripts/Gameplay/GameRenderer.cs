@@ -1,3 +1,4 @@
+using Simulation;
 using System.Collections.Generic;
 using Data;
 using ECS.Components;
@@ -194,7 +195,7 @@ namespace Gameplay
             });
 
             var gameModeEntity = entityManager.CreateEntity();
-            entityManager.AddComponentData(gameModeEntity, new ECS.Components.GameModeComponent
+            entityManager.AddComponentData(gameModeEntity, new GameModeComponent
             {
                 Mode = config.gameMode
             });
@@ -202,13 +203,13 @@ namespace Gameplay
             // Set game mode tags
             switch (config.gameMode)
             {
-                case ECS.Components.GameMode.Standard:
+                case GameMode.Standard:
                     entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
                     break;
-                case ECS.Components.GameMode.ColorMerge:
+                case GameMode.ColorMerge:
                     entityManager.AddComponent<ColorMergeSystemTag>(gameStateEntity);
                     break;
-                case ECS.Components.GameMode.AdvancedColorMerge:
+                case GameMode.AdvancedColorMerge:
                     entityManager.AddComponent<AdvancedColorMergeSystemTag>(gameStateEntity);
                     break;
             }
@@ -424,7 +425,7 @@ namespace Gameplay
             query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
             entityManager.DestroyEntity(query);
 
-            query = entityManager.CreateEntityQuery(typeof(ECS.Components.GameModeComponent));
+            query = entityManager.CreateEntityQuery(typeof(GameModeComponent));
             entityManager.DestroyEntity(query);
 
             // Clean up visuals

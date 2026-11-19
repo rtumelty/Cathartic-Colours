@@ -132,6 +132,9 @@ All approved by Ronan 2026-11-18 (D3 with the naming change).
 ## Divergences
 - 2026-11-18 (planning session, before work started): plan aligned with the project `CLAUDE.md` §3 Burst rule (commit 940c674, brought into `develop` late). `BoardStepSystem` is Burst-compiled, config comes through an unmanaged singleton, the factory dispatches by `switch` without boxing, and a Burst compile check is added to the CC-006.2 DoD. Scope, order and model routing are unchanged. Approved by Ronan on 2026-11-18.
 
+## Implementation notes
+- **CC-006.1** (2026-11-19): enums moved with values and underlying types unchanged; `GameConfiguration` and `ColorProfile` assets are byte-for-byte unchanged after a batchmode import (they store the enums as integers). Four smoke tests pin the enum values that saves and assets depend on. Fully-qualified `ECS.Components.GameMode` uses in `GameConfiguration` and `GameRenderer` were shortened. The CLI run writes `TestResults/` inside the Unity project folder, so `TestResults/` is now gitignored at the repo root. The only compiler warning is the existing CS0414 on `JellyManager.wobbleActive`.
+
 ## Feature test plan
 1. Command line: EditMode run passes (all simulation tests).
 2. Editor: new game in each mode; play 10 moves, including at least one merge per tier reachable early. Score, particles, sounds and jelly wobble as before.

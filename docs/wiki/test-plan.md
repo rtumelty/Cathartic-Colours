@@ -590,8 +590,8 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Id | `TP-TOOL-02` |
 | Preconditions | Editor closed |
 | Steps | 1. Run the EditMode `-runTests` command from project `CLAUDE.md` §4. 2. Run the same command with `-testPlatform PlayMode`. |
-| Expected | Each run exits with code 0 and writes its results XML. With no test assemblies yet, each XML reports 0 test cases. Once tests exist (CC-006), every test passes. |
-| Roadmap id | CC-033 |
+| Expected | Each run exits with code 0 and writes its results XML. The EditMode XML reports the `CatharticColours.Simulation.Tests` cases (CC-006), all passed; PlayMode reports 0 test cases until CC-002 adds PlayMode tests. |
+| Roadmap id | CC-033, CC-006 |
 
 ### TP-TOOL-01 — Project opens on 6000.6.9f1 without errors
 

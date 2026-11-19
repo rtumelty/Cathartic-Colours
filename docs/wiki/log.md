@@ -68,3 +68,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] plan | CC-003, CC-004 | Rescoped after Ronan's develop commits (FMOD project saved, Mobile banks, Android build profiles); CC-033 keeps com.unity.purchasing (Ronan)
 ## [2026-11-19] approve | CC-033 | PR #54 squash-merged into develop as 73ee1cc, identical to the branch tip; #45 and sub-issues #51-#53 Done
 ## [2026-11-19] plan | roadmap | Review after CC-033: Foundations continues with CC-003, CC-004, CC-005; CC-006 is unblocked (its branch needs develop merged in); audio-fmod hazard marked resolved pending CC-003
+## [2026-11-19] implement | CC-006.1 | CatharticColours.Simulation assembly (block, size, tier and mode enums, namespace Simulation) and EditMode test assembly; 4 smoke tests pass from the CLI; assets unchanged; TestResults/ gitignored
+## [2026-11-19] schema | CLAUDE.md | §3 Simulation namespace and the ADR-001 pattern (rules in the pure simulation, ECS wraps it); §4 test-run and Assembly-CSharp notes updated for the Simulation tests

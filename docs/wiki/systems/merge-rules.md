@@ -18,12 +18,13 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 | `Assets/Scripts/Data/GameConfiguration.cs` | Tier point values (`GetPointsForTier`) |
 | `Assets/Scripts/ECS/Systems/SpawnColorSystem.cs`, `ResolveNewBlocksSystem.cs` | Indicator spawn and colour resolve |
 | `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs` | Game over |
-| `Assets/Scripts/ECS/Components/BlockComponent.cs` | `BlockColor`, `BlockSize`, `BlockComponent` |
+| `Assets/Scripts/Simulation/BlockColor.cs`, `BlockSize.cs`, `ScoreTier.cs`, `GameMode.cs` | Block and mode enums (namespace `Simulation`, assembly `CatharticColours.Simulation`, since CC-006) |
+| `Assets/Scripts/ECS/Components/BlockComponent.cs` | `BlockComponent` |
 
 ## How it works
 
 ### Data model
-- `BlockColor` values: None 0, Red 1, Green 2, Yellow 3, Blue 4, Magenta 5, Cyan 6, White 7. Primaries are Red/Green/Blue (single bit); secondaries are Yellow (R+G), Magenta (R+B), Cyan (G+B); White is all three bits (`Assets/Scripts/ECS/Components/BlockComponent.cs`).
+- `BlockColor` values: None 0, Red 1, Green 2, Yellow 3, Blue 4, Magenta 5, Cyan 6, White 7. Primaries are Red/Green/Blue (single bit); secondaries are Yellow (R+G), Magenta (R+B), Cyan (G+B); White is all three bits (`Assets/Scripts/Simulation/BlockColor.cs`).
 - `BlockSize`: None 0, Small 1, Medium 2, Large 3.
 - A block has `Color`, `Size`, `GridPosition` and `IsNextColorIndicator` (the white placeholder for the next spawn). All three merge utilities refuse to merge any indicator block.
 

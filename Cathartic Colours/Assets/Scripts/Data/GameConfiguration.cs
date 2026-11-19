@@ -1,3 +1,4 @@
+using Simulation;
 using ECS.Components;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace Data
     public class GameConfiguration : ScriptableObject
     {
         [Header("Gameplay Settings")] 
-        public ECS.Components.GameMode gameMode = ECS.Components.GameMode.Standard;
+        public GameMode gameMode = GameMode.Standard;
 
         [Header("Grid Settings")]
         [SerializeField] public int gridWidth = 6;
