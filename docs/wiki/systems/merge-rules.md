@@ -25,7 +25,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 ### Data model
 - `BlockColor` values: None 0, Red 1, Green 2, Yellow 3, Blue 4, Magenta 5, Cyan 6, White 7. Primaries are Red/Green/Blue (single bit); secondaries are Yellow (R+G), Magenta (R+B), Cyan (G+B); White is all three bits (`Assets/Scripts/Simulation/BlockColor.cs`).
 - `BlockSize`: None 0, Small 1, Medium 2, Large 3.
-- A block has `Color`, `Size`, `GridPosition` and `IsNextColorIndicator` (the white placeholder for the next spawn). All three merge utilities refuse to merge any indicator block.
+- A block (`Simulation.Block`) has `Color`, `Size` and `IsIndicator` (the white placeholder for the next spawn); an empty cell has `Size` `None`. Its cell is its index in `BoardState`. The ECS `BlockComponent` holds the same data plus `GridPosition`, with the flag named `IsNextColorIndicator`. All three rule structs refuse to merge any indicator block.
 
 ### The merge strategy
 Each mode's rules are a struct implementing `IMergeRules` in the `Simulation` assembly (since CC-006.2, replacing the `IMergeUtility` classes). `MergeRulesFactory` switches on `GameMode`: `AdvancedColorMergeRules` for `AdvancedColorMerge`, `ColorMergeRules` for `ColorMerge`, and `StandardMergeRules` for `Standard` and any other value. `BoardStepSystem` calls `MergeRulesFactory.Step(GameModeComponent.Mode, …)`, which runs the generic `BoardSimulation.Step<TRules>` with the matching struct. Everything below is the behaviour of `Step` (`Assets/Scripts/Simulation/BoardSimulation.cs`), pinned by the EditMode tests in `Assets/Tests/EditMode/`; it is the same as the five ECS systems it replaced in CC-006.3.
@@ -99,7 +99,7 @@ Rows only; one row of a grid of width 4 (`x = 0..3`), `.` = empty, the move is r
 **Advanced Color Merge**
 - `[. . Rs Rs]` right -> `[. . . Rm]` (Tier1). `[. . Rs Gs]` right: different colours at Small do not merge; Rs stays.
 - `[. . Rm Bm]` right: two different primaries at Medium -> `[. . . Ml]` (Magenta Large, 1 OR 4 = 5). Tier2, 50 points.
-- `[. . Gm Ml]` right: Large secondary Magenta meets the Medium primary it lacks (Green) -> `[. . . Wl]`. Tier3, 100 points. The mirror `[. . Ml Gm]` right is also legal: Medium Green at x3 is the blocked target, Ml at x2 is the mover.
+- `[. . Gm Ml]` right: Large secondary Magenta meets the Medium primary it lacks (Green) -> `[. . . Wl]`. Tier3, 100 points. The mirror `[. . Ml Gm]` right is also legal: Gm at x3 cannot move (wall) and is the merge target; Ml at x2 is the mover.
 - `[. . Wl Wl]` right -> `[. . . .]` both destroyed. Tier4, 200 points.
 - `[. . Rm Rm]` right: no merge (same colour at Medium has no rule); Rm at x2 stays.
 

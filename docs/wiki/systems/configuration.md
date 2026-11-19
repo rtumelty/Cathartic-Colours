@@ -24,7 +24,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 
 | Field | Type | Default | Meaning |
 |---|---|---|---|
-| `gameMode` | `GameMode` (`Standard`, `ColorMerge`, `AdvancedColorMerge`) | `Standard` | Selects the merge utility ([merge-rules.md](merge-rules.md)) and the `GameModeComponent` |
+| `gameMode` | `GameMode` (`Standard`, `ColorMerge`, `AdvancedColorMerge`) | `Standard` | Selects the merge rule struct through `MergeRulesFactory` ([merge-rules.md](merge-rules.md)), via the `GameModeComponent` |
 | `gridWidth` | int | 6 | Grid columns |
 | `gridHeight` | int | 6 | Grid rows |
 | `spawnNextColourSystem` | bool | true | Copied into `ScoringConfigComponent.Settings.SpawnEnabled` by `GameRenderer.InitializeGame`; when true, each move spawns the next indicator |

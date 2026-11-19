@@ -48,4 +48,6 @@ Specifics:
 - Follow-ups: CC-007 (preview reads the next indicator from the simulation), CC-008 (generalises the strategy beyond merges), CC-009 (solver calls `Step`, possibly Burst-compiled).
 
 ## Status
+Implemented in CC-006 (2026-11-19). In implementation `ClearMoveDirectionSystem` was also made `[BurstCompile]` (trivial, no managed calls), so the Burst set in §5 is `BoardStepSystem`, `ClearMoveDirectionSystem` and `EndFrameSystem`.
+
 Accepted, 2026-11-18, with the CC-006 plan. Decision §1 naming changed at Ronan's request: the struct rule sets drop the `Utility` names, and only the interface keeps the `I` prefix. §5 (Burst) added the same day to match the project `CLAUDE.md` §3 rule, which reached `develop` after the plan was written.

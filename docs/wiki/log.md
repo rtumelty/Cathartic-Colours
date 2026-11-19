@@ -82,3 +82,6 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-006.4 | Colour roll advances the random state (CC-020); spawn picks uniformly from empty cells with one draw, fails only on a full board (CC-021); BoardStepSystem saves such moves; Fixes_ tests replace Pins_; 207 EditMode tests pass
 ## [2026-11-19] approve | CC-006.4 | Approved by Ronan; #16 Done
 ## [2026-11-19] implement | CC-006.5 | Save records the idle state after a move; restore always waits for input (older saves too); no format change; TP-SAVE-03 updated, TP-SAVE-07 added; save-system and ecs-frame-order CC-022 items removed
+## [2026-11-19] approve | CC-006.5 | Approved by Ronan (TP-SAVE cases pass); #17 Done. ObjectDisposedException in GameRenderer.CleanUp during teardown is pre-existing: added to CC-025 (#37)
+## [2026-11-19] implement | CC-006.6 | Test plan cases for CC-021/022/023 updated, TP-OVER-07 added, Regression passes section; #32-#36 closed; CC-002 description confirmed
+## [2026-11-19] lint | CC-006 pages | Stale lines fixed in merge-rules, configuration, presentation; ADR-001 Burst set noted; roadmap.md strikethrough status reported to the planning session
