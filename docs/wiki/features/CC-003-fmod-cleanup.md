@@ -119,6 +119,9 @@ No game code changes, so no unit tests. System checks:
 2. FMOD Studio 2.04 opens the project with no migration prompt; both platforms present.
 3. Unity editor: move, merge and game-over sounds play, with no FMOD errors.
 
+Folded into the [test plan](../test-plan.md) as TP-TOOL-04 (case 1), TP-AUDIO-05 (case 2) and TP-AUDIO-06 (case 3). Cases 2 and 3 passed in Ronan's manual check on 2026-11-19; case 1 passed in the agent's fresh-worktree run.
+
 ## Status log
 - 2026-11-19: Planned
 - 2026-11-19: Approved by Ronan (plan, D1–D3 and routing)
+- 2026-11-19: CC-003.1 to CC-003.3 approved by Ronan; PR opened to develop

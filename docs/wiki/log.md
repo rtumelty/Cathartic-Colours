@@ -104,3 +104,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] approve | CC-003.2 | Approved by Ronan after the listening check; #59 Done
 ## [2026-11-19] implement | CC-003.3 | Audio docs updated for the saved 2.04 project: audio-fmod.md (layout, platforms and encodings, rebuilding the banks, Unity platform-to-Build-folder findings; .unsaved hazard section removed), test cases TP-AUDIO-05 rewritten, TP-AUDIO-06 and TP-TOOL-04 added, ADR-003 note, index
 ## [2026-11-19] schema | CLAUDE.md | §1 FMOD Studio 2.04 with Desktop and Mobile banks committed; §5 FMOD bullet: save, close Studio, rebuild with tools\build-fmod-banks.ps1, commit Build/ with Metadata/; removed the migrate-to-2.04 text
+## [2026-11-19] approve | CC-003.3 | Approved by Ronan; #60 Done; feature test plan folded in (TP-TOOL-04, TP-AUDIO-05, TP-AUDIO-06); PR to develop opened, #9 In review
