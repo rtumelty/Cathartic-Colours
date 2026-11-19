@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#9](https://github.com/rtumelty/Cathartic-Colours/issues/9) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-003-fmod-cleanup` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#66](https://github.com/rtumelty/Cathartic-Colours/pull/66) |
 | Depends on | [CC-033](https://github.com/rtumelty/Cathartic-Colours/issues/45) (FMOD for Unity 2.04, done) |
 | Blocks | [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10) (Android builds use the Mobile banks; both edit `CLAUDE.md` and the audio docs) |
 
