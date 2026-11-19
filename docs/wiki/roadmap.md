@@ -59,3 +59,4 @@ Every roadmap id and its issue. Deliverables are sub-issues of their item. Featu
 | CC-032 | [#44](https://github.com/rtumelty/Cathartic-Colours/issues/44) | Presentation-layer cleanup (jelly material, unused scripts) |
 | CC-033 | [#45](https://github.com/rtumelty/Cathartic-Colours/issues/45) | Upgrade project to Unity 6000.6.9f1 |
 | CC-034 | [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46) | Move roadmap tracking to GitHub Issues and Projects |
+| CC-035 | [#55](https://github.com/rtumelty/Cathartic-Colours/issues/55) | Rubber-band spawn colours against board imbalance |

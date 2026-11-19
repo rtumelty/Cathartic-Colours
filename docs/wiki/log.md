@@ -67,3 +67,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] plan | CC-003, CC-004 | Rescoped after Ronan's develop commits (FMOD project saved, Mobile banks, Android build profiles); CC-033 keeps com.unity.purchasing (Ronan)
 ## [2026-11-19] approve | CC-033 | PR #54 squash-merged into develop as 73ee1cc, identical to the branch tip; #45 and sub-issues #51-#53 Done
 ## [2026-11-19] plan | roadmap | Review after CC-033: Foundations continues with CC-003, CC-004, CC-005; CC-006 is unblocked (its branch needs develop merged in); audio-fmod hazard marked resolved pending CC-003
+## [2026-11-19] plan | CC-035 | New backlog item: spawn colour rubber-banding against board colour imbalance (Ronan); depends on CC-006
+## [2026-11-19] schema | CLAUDE.md | §6 two working copies: Cathartic-Colours is the agent sandbox, Cathartic-Colours_2 is Ronan's manual copy; agents ask before switching the manual copy's branch; §4 batchmode note updated
