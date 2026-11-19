@@ -94,7 +94,12 @@ An agent can produce an installable Android development build (APK) from the com
 - **D4 — Build code in its own Editor assembly.** It follows the `CatharticColours.Simulation` assembly pattern, so it can be unit-tested; code in the default editor assembly can't be referenced by test assemblies.
 
 ## Divergences
-_None yet._
+- **CC-004.2: FMOD Android banks** (approved by Ronan, 2026-11-19). The first build (version code 72) packed `Build/Desktop/Master.bank`, byte-identical by MD5, because FMOD for Unity's Android platform entry was inactive with no build folder, so it inherited the plug-in default `Desktop` (`Platform.PropertyAccessors.BuildDirectory`). Fix: in `Assets/Resources/FMOD/FMODStudioSettings.asset`, the `PlatformAndroid` entry is now `active: 1` with `BuildDirectory: Mobile`, which is what the FMOD settings window writes for an Android override. The rebuild (version code 73) packs `Build/Mobile/Master.bank`. While the editor's build target is Android, play-in-editor also uses the Mobile banks.
+
+## Implementation notes
+- The first IL2CPP/Gradle build took 36 min; a rebuild with a warm `Library/` took 3 min.
+- Each build re-saves five settings files with default fields that the Unity 6.6 upgrade added (URP global settings, `UniversalRP.asset`, `GraphicsSettings.asset`, `EntitiesClientSettings.asset`, `ProjectAuditorSettings.asset`). They were reverted, not committed, so the build commits stay focused. `ProjectSettings.asset` comes back unchanged, because the build restores the version code.
+- When the harness's background PowerShell runner wraps the script, it killed the wrapper (exit 255) while Unity kept building. Run the script from Git Bash or a normal terminal.
 
 ## Feature test plan
 1. `tools/build-android.ps1` on a clean checkout: exit code 0, APK in `Cathartic Colours/Builds/Android/`, package `com.catharticcolours.game`, version code equal to `git rev-list --count HEAD`.

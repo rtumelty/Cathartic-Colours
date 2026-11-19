@@ -16,8 +16,8 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); FMO
 | `Assets/Resources/FMOD/FMODStudioSettings.asset` | FMOD for Unity settings (the event cache `FMODStudioCache.asset` beside it is gitignored) |
 | `Assets/Scenes/MainMenu.unity`, `Assets/Scenes/Gameplay scene.unity` | Each has an FMOD `StudioListener` component (on the camera object) |
 | `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` | FMOD Studio project file |
-| `Cathartic Colours - FMOD/Build/Desktop/Master.bank`, `Master.strings.bank` | Built Desktop banks that Unity reads (committed) |
-| `Cathartic Colours - FMOD/Build/Mobile/Master.bank`, `Master.strings.bank` | Built Mobile banks (committed) |
+| `Cathartic Colours - FMOD/Build/Desktop/Master.bank`, `Master.strings.bank` | Built Desktop banks for the editor and Windows builds (committed) |
+| `Cathartic Colours - FMOD/Build/Mobile/Master.bank`, `Master.strings.bank` | Built Mobile banks for Android builds (committed) |
 | `Cathartic Colours - FMOD/.gitignore` | Ignores FMOD Studio's per-machine folders `.cache/`, `.user/` and `.unsaved/` |
 | `tools/build-fmod-banks.ps1` | Rebuilds the banks from the command line ([Rebuilding the banks](#rebuilding-the-banks)) |
 
@@ -62,14 +62,14 @@ No other script or scene references FMOD events: there are no `StudioEventEmitte
 | `LoggingLevel` | 1 | |
 | `LiveUpdatePort` | 9264 | (per-platform LiveUpdate values are all "not overridden") |
 | `AndroidUseOBB` / `AndroidPatchBuild` | 0 / 0 | |
-| `Platforms` | 12 entries (Default, Play In Editor, Windows, Mac, Linux, Android, iOS, tvOS, visionOS, WebGL, Mobile Low, Mobile High) | Only `Default` and `PlayInEditor` have `active: 1`; no platform overrides a `BuildDirectory` (every `BuildDirectory` has `HasValue: 0`) |
+| `Platforms` | 12 entries (Default, Play In Editor, Windows, Mac, Linux, Android, iOS, tvOS, visionOS, WebGL, Mobile Low, Mobile High) | `Default`, `PlayInEditor` and `Android` have `active: 1`; only `Android` overrides `BuildDirectory` (`Mobile`, since CC-004) |
 
 Only start-up bank loading for `ImportType.StreamingAssets` is done by `RuntimeManager.LoadBanks` (`Packages/com.fmod.fmod-for-unity.v204/src/RuntimeManager.cs`). In the Editor the plugin reads banks straight from the source bank path; in a player build the Unity build step copies them to StreamingAssets (standard FMOD for Unity behaviour; not exercised in this repo). `Assets/StreamingAssets` does not exist on disk, and the Unity `.gitignore` ignores `.bank` files under `Assets/StreamingAssets/` (`Cathartic Colours/.gitignore`).
 
 Platform build folders (checked 2026-11-19 in the package source; not run on a device):
-- `Platform.cs` line 720 defaults a platform's `BuildDirectory` to `Desktop`. No platform in `FMODStudioSettings.asset` overrides it (every `BuildDirectory` has `HasValue: 0`), so the editor and Windows builds read `Build/Desktop/`.
-- `PlatformMobileLow.cs` lines 21-25 declare the Android and iOS runtime platforms as the Mobile platform template (`PlatformMobileHigh` inherits it, `PlatformMobileHigh.cs` line 13). Neither sets a build directory, and both are inactive in the settings asset (`active: 0`).
-- So nothing in the package or the committed settings points Android at `Build/Mobile/`. Whether an Android build picks up the Mobile banks or falls back to `Desktop` was **not verified**: [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10) (Android builds) has to check it and, if needed, override the `BuildDirectory` for Android in the FMOD settings.
+- `Platform.cs` line 720 defaults a platform's `BuildDirectory` to `Desktop`. A property is read from the first platform up the parent chain that is `active` and has the value (`PropertyAccessor.Get`, `Platform.cs` line 584), so the editor and Windows builds read `Build/Desktop/`.
+- `PlatformMobileLow.cs` lines 21-25 declare the Android and iOS runtime platforms as the Mobile platform template (`PlatformMobileHigh` inherits it, `PlatformMobileHigh.cs` line 13). Neither sets a build directory.
+- Before CC-004, the Android entry was inactive with no `BuildDirectory`, so an Android build packed the **Desktop** banks (checked by MD5 of the APK's `assets/Master.bank`). Since [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10), the `PlatformAndroid` entry has `active: 1` and `BuildDirectory: Mobile` (the same as adding an Android override in the FMOD settings window), and the APK's `Master.bank` is byte-identical to `Build/Mobile/Master.bank`. While the editor's build target is Android, play-in-editor reads the Mobile banks too.
 
 The Android native libraries are present under `Packages/com.fmod.fmod-for-unity.v204/platforms/android/lib/`.
 
@@ -131,10 +131,10 @@ Notes:
 ## Interactions with other systems
 - Event entities are created inside the simulation: [ecs-frame-order.md](ecs-frame-order.md) (event entity table, unordered `AudioSystem`) and [merge-rules.md](merge-rules.md) (which merges happen).
 - No presentation code plays sound; there is no audio setting in the menu or in `GameConfiguration` ([configuration.md](configuration.md)).
-- Android builds, and checking that they use the Mobile banks, are future work: [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10).
+- Android builds pack the Mobile banks (verified in [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)).
 
 ## Known issues
-- Android: no Android build or device test has been done yet, and which bank folder an Android build reads is not verified (see "Platform build folders"). [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)
+- Android: no device test of audio yet; it's part of the CC-004 device smoke test. [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)
 - `AudioSystem` is unordered against the systems that create events, so playback timing is not deterministic. [ecs-frame-order.md](ecs-frame-order.md)
 - Note (design, confirmed by Ronan 2026-11-18): the merge sound is selected from the moving block's size, i.e. the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This is a naming choice, not an issue (`Assets/Scripts/ECS/Systems/BoardStepSystem.cs`, `MergeAudioPath`).
 
