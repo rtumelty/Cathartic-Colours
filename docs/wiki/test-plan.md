@@ -547,7 +547,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 
 ## Audio (AUDIO)
 
-Pass setup: start on the main menu, choose the Standard 4x4 settings (custom width and height 4) and tap Start with speakers or headphones on and the device volume up. The Color Merge and Advanced Color Merge clear sounds are the same as the Standard Large pair sound; test them only if time allows. TP-AUDIO-05 is a separate check in FMOD Studio and needs no game running.
+Pass setup: start on the main menu, choose the Standard 4x4 settings (custom width and height 4) and tap Start with speakers or headphones on and the device volume up. The Color Merge and Advanced Color Merge clear sounds are the same as the Standard Large pair sound; test them only if time allows. TP-AUDIO-06 starts from a fresh clone and plays the game in the Unity editor. TP-AUDIO-05 is a separate check in FMOD Studio and needs no game running.
 
 ### TP-AUDIO-01 — Move sound on each move
 
@@ -589,19 +589,29 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Expected | No sound plays, because moves are ignored after game over. |
 | Roadmap id | CC-023 (fixed in CC-006) |
 
+### TP-AUDIO-06 — Editor plays all five events after a clean checkout
+
+| Field | Content |
+|---|---|
+| Id | `TP-AUDIO-06` |
+| Preconditions | A fresh clone of the repo; FMOD Studio not installed or not needed; Unity 6000.6.9f1; sound audible |
+| Steps | 1. Open the Unity project and open the Console. 2. Play from the main menu scene and start a game. 3. Make moves, including a small, medium and large merge if they arise. 4. Play until game over. |
+| Expected | The move sound, each merge sound reached and the game-over sound all play. The Console shows no FMOD errors and no "Event not found" warnings. |
+| Roadmap id | CC-003 |
+
 ### TP-AUDIO-05 — FMOD project contains the five game events
 
 | Field | Content |
 |---|---|
 | Id | `TP-AUDIO-05` |
-| Preconditions | A fresh clone of the repo; FMOD Studio 2.03 installed; no `.unsaved/` folder in `Cathartic Colours - FMOD/` |
-| Steps | 1. Open `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` in FMOD Studio. 2. Open the Events browser. |
-| Expected | The project lists the five events `Block_Move`, `Block_Merge_Small`, `Block_Merge_Medium`, `Block_Merge_Large` and `GameOver`, assigned to the Master bank. Known to fail until CC-003. |
+| Preconditions | A fresh clone of the repo; FMOD Studio 2.04 installed |
+| Steps | 1. Open `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` in FMOD Studio. 2. Open the Events browser. 3. Open the platforms list (Project, Platforms). |
+| Expected | No migration prompt appears. Both the Desktop and Mobile platforms are present. The Events browser lists the five events `Block_Move`, `Block_Merge_Small`, `Block_Merge_Medium`, `Block_Merge_Large` and `GameOver`, assigned to the Master bank. |
 | Roadmap id | CC-003 |
 
 ## Editor and tooling (TOOL)
 
-Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of the branch under test, and the editor closed. These cases check the development tooling set up in CC-033, not the game. Run TP-TOOL-02 first, since the command-line runs need the editor closed.
+Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of the branch under test, and the editor closed. These cases check the development tooling set up in CC-033, not the game. Run TP-TOOL-02 first, since the command-line runs need the editor closed. TP-TOOL-04 also needs FMOD Studio 2.04.00 installed (and closed).
 
 ### TP-TOOL-02 — Command-line test runs exit cleanly
 
@@ -632,6 +642,16 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Steps | 1. Open **Window → Package Management → Package Manager**. 2. Select **In Project**. |
 | Expected | The direct packages are Entities, Input System, In-App Purchasing, Universal RP, Test Framework, JetBrains Rider Editor and the embedded FMOD for Unity 2.04, matching the Kept table in the CC-033 feature page. Other entries are their dependencies (uGUI and 2D Physics come back this way, through In-App Purchasing). Collab, Visual Scripting, Timeline, the AI and multiplayer packages and the other removed packages are not listed. |
 | Roadmap id | CC-033 |
+
+### TP-TOOL-04 — Bank build script rebuilds identical banks
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-04` |
+| Preconditions | FMOD Studio 2.04.00 installed and closed; a fresh clone of the branch under test |
+| Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-fmod-banks.ps1`. 2. Run `git status`. |
+| Expected | The script exits with code 0 and lists the Desktop and Mobile banks as written. `git status` is clean (only the ignored `.cache/` is new), so the rebuilt banks are unchanged. |
+| Roadmap id | CC-003 |
 
 ## Project tracking (TRACK)
 

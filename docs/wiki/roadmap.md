@@ -12,9 +12,9 @@ This page lists only work still to do and the recommended order. An item drops o
 **Release goal:** Android launch of Cathartic Colours.
 
 ## Phases and suggested order
-1. **Foundations:** [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9) (FMOD clean-up and Studio 2.04), [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10) (Android development builds)
+1. **Foundations:** [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10) (Android development builds)
 2. **Core refactor:** [CC-002](https://github.com/rtumelty/Cathartic-Colours/issues/8): game-code assembly definitions and PlayMode tests (the simulation's unit tests came with CC-006)
-3. **Quick fixes, any time:** [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40) + [CC-029](https://github.com/rtumelty/Cathartic-Colours/issues/41) together (restart/UI); [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43) before CC-013. The other small backlog items ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31), [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37), [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38), [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39), [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42), [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)) sit in this phase on the board until they're scheduled.
+3. **Quick fixes, any time:** [CC-037](https://github.com/rtumelty/Cathartic-Colours/issues/64) (up-arrow exception) before [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42), which rewrites the same input code; [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40) + [CC-029](https://github.com/rtumelty/Cathartic-Colours/issues/41) together (restart/UI); [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43) before CC-013. The other small backlog items ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31), [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37), [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38), [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39), [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42), [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44), [CC-038](https://github.com/rtumelty/Cathartic-Colours/issues/65)) sit in this phase on the board until they're scheduled.
 4. **Gameplay:** [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19) → [CC-008](https://github.com/rtumelty/Cathartic-Colours/issues/20) → [CC-035](https://github.com/rtumelty/Cathartic-Colours/issues/55) (spawn rubber-banding, a spawn rule per mode on the CC-008 framework) → [CC-009](https://github.com/rtumelty/Cathartic-Colours/issues/21) → [CC-010](https://github.com/rtumelty/Cathartic-Colours/issues/22) / [CC-011](https://github.com/rtumelty/Cathartic-Colours/issues/23) / [CC-012](https://github.com/rtumelty/Cathartic-Colours/issues/24)
 5. **Platform and monetisation:** [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) (signing and Google Play) before [CC-015](https://github.com/rtumelty/Cathartic-Colours/issues/27) → [CC-016](https://github.com/rtumelty/Cathartic-Colours/issues/28), which need a store listing; [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25) → [CC-014](https://github.com/rtumelty/Cathartic-Colours/issues/26)
 6. **Polish:** [CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29) (profile on device), [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30) (can run in parallel any time; finalise after the new screens from 4–5 exist)
@@ -26,7 +26,6 @@ Every open roadmap id and its issue. Rows are removed when an item is merged or 
 | Id | Issue | Title |
 |---|---|---|
 | CC-002 | [#8](https://github.com/rtumelty/Cathartic-Colours/issues/8) | Test infrastructure: game-code asmdefs + PlayMode tests |
-| CC-003 | [#9](https://github.com/rtumelty/Cathartic-Colours/issues/9) | FMOD project clean-up and Studio 2.04 migration |
 | CC-004 | [#10](https://github.com/rtumelty/Cathartic-Colours/issues/10) | Android build pipeline |
 | CC-007 | [#19](https://github.com/rtumelty/Cathartic-Colours/issues/19) | Next-spawn preview |
 | CC-008 | [#20](https://github.com/rtumelty/Cathartic-Colours/issues/20) | Game mode rules framework |
@@ -51,3 +50,5 @@ Every open roadmap id and its issue. Rows are removed when an item is merged or 
 | CC-032 | [#44](https://github.com/rtumelty/Cathartic-Colours/issues/44) | Presentation-layer cleanup (jelly material, unused scripts) |
 | CC-035 | [#55](https://github.com/rtumelty/Cathartic-Colours/issues/55) | Rubber-band spawn colours against board imbalance |
 | CC-036 | [#57](https://github.com/rtumelty/Cathartic-Colours/issues/57) | Store release: signing, keystore and Google Play publishing |
+| CC-037 | [#64](https://github.com/rtumelty/Cathartic-Colours/issues/64) | Up arrow throws an Input System exception on every press |
+| CC-038 | [#65](https://github.com/rtumelty/Cathartic-Colours/issues/65) | Save and load write a log line on every move |

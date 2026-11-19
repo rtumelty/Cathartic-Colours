@@ -83,6 +83,7 @@ There is none in the input code. `GameInputHandler` and `SwipeDetector` do not c
 - `SwipeDetector` handles touchscreens only; a mouse drag does nothing, so swipe cannot be tested in the editor without a touch simulator (`Assets/Scripts/Gameplay/SwipeDetector.cs`, `Update`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
 - `SwipeDetector` sits in the nested namespace `Gameplay.CatharticColours`, unlike every other gameplay class (`Assets/Scripts/Gameplay/SwipeDetector.cs`); renaming it would break the prefab's serialised type reference. [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
 - keyboard and swipe paths use different dead-zone rules (`|y| > 0.1` for keyboard, none for swipe) and both resolve diagonal ties to vertical (`Assets/Scripts/Gameplay/GameInputHandler.cs`, `OnMove` and `OnSwipe`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
+- `OnEnable` adds `Move` with a plain `<Keyboard>/upArrow` binding next to the `2DVector` composite. That binding yields a `float`, so `OnMove`'s `ReadValue<Vector2>()` throws `InvalidOperationException` on every up-arrow press; `SendMoveCommand` also creates an undisposed entity query per move (`Assets/Scripts/Gameplay/GameInputHandler.cs`). [CC-037](https://github.com/rtumelty/Cathartic-Colours/issues/64)
 
 ## Related test cases
 - [Standard](../test-plan.md#standard-mode-std): TP-STD-02 (keyboard), TP-STD-08 (swipe), TP-STD-09 (gamepad, CC-030).

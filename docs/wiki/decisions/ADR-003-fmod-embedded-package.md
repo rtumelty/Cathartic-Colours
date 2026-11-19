@@ -42,4 +42,4 @@ Rules:
 ## Consequences
 - `Assets/Plugins/` is gone. FMOD code is in `Packages/com.fmod.fmod-for-unity.v204/`, and `FMODUnity`/`FMODUnityEditor` asmdefs are unchanged in name, so game code (`using FMODUnity;`) is unaffected.
 - The package name changes with each FMOD minor version (`.v204`), so an upgrade also changes the folder, the lock entry and the git rules.
-- The FMOD Studio project stays on 2.03 until it's migrated ([CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9)). A 2.04 runtime loading 2.03 banks is checked in CC-033 MANUAL step 2.
+- The FMOD Studio project stays on 2.03 until it's migrated ([CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9)). A 2.04 runtime loading 2.03 banks is checked in CC-033 MANUAL step 2. (Done 2026-11-19 in CC-003: the Studio project is saved in 2.04 and the banks are rebuilt with 2.04.)

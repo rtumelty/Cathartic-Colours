@@ -11,7 +11,7 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 - **Repo:** `github.com/rtumelty/Cathartic-Colours`. Branches per user-level §4 (`master`, `develop`, `feature/CC-<nnn>-<slug>`).
 - **Layout**
   - `Cathartic Colours/` — Unity project (Unity **6000.6.9f1**, URP 2D 17.6.0, Entities 6.6.0 / DOTS ECS, Input System, UI Toolkit, Unity IAP 5.5.1, FMOD for Unity **2.04** as an embedded package in `Packages/com.fmod.fmod-for-unity.v204`, see [ADR-003](docs/wiki/decisions/ADR-003-fmod-embedded-package.md))
-  - `Cathartic Colours - FMOD/` — FMOD Studio 2.03 project (Unity reads banks from its `Build/` folder; not yet migrated to 2.04)
+  - `Cathartic Colours - FMOD/` — FMOD Studio 2.04 project (Unity reads banks from its `Build/` folder; Desktop and Mobile banks are committed)
   - `CatharticColours.pz` — original PuzzleScript prototype (reference only)
   - `docs/wiki/` — LLM-maintained wiki · `docs/raw/` — immutable sources
 - **Roadmap id prefix:** `CC` (e.g. `CC-001`, deliverable `CC-001.2`).
@@ -43,10 +43,10 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 
 ## 5. Editor-only and external-tool work
 - Scene/prefab wiring, UXML layout changes with complex bindings and all FMOD Studio edits are `MANUAL (Ronan)` unless trivially safe.
-- **FMOD:** always **save the FMOD project** (Ctrl+S) before building banks or committing. Unsaved changes live in `.unsaved/` and are not part of the project. The Studio project is still on 2.03 while the Unity integration is on 2.04: migrate the Studio project to 2.04 (open it in FMOD Studio 2.04 and save) before rebuilding banks, so the banks match the runtime.
+- **FMOD:** always **save the FMOD project** (Ctrl+S) before building banks or committing. Unsaved edits live in `.unsaved/` (git-ignored) and are not part of the project. Then close FMOD Studio, rebuild the banks with `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-fmod-banks.ps1` and commit the changed `Build/` files with the `Metadata/` changes. Agents run the script in the sandbox copy only, never against a project open in FMOD Studio.
 
 ## 6. Sessions and environment
-- **Planning session:** one long-running session owns the roadmap, refinement and feature plans (user-level §2.1). On approval it sets the issue to Approved and creates the deliverable sub-issues with `gh`. It then creates `feature/CC-<nnn>-<slug>` from `develop`, commits the feature page (with its index/log entries and any ADRs) there and pushes it. It commits to `develop` only when `roadmap.md` strategy changes. The kickoff prompt names the branch, the feature page and the issue number.
+- **Planning session:** one long-running session owns the roadmap, refinement and feature plans (user-level §2.1). On approval it sets the issue to Approved and creates the deliverable sub-issues with `gh`. It then creates `feature/CC-<nnn>-<slug>` from `develop`, commits the feature page (with its index/log entries and any ADRs) there and pushes it. It commits to `develop` only when `roadmap.md` strategy changes. The kickoff prompt names the branch, the feature page and the issue number. On approval the planning session also starts the feature session itself with that prompt, locally with Remote Control on (user-level §2.1 step 4); a feature that waits for another one starts when that merge is detected.
 - **Tracking (since CC-034, [ADR-002](docs/wiki/decisions/ADR-002-issue-tracking.md)):**
   - Board: **user project #1**, <https://github.com/users/rtumelty/projects/1> (node id `PVT_kwHOAGm39c4BsNZC`), linked to the repo.
   - Fields: `Status`, `Severity`, `Size`, `Phase` (Foundations, Core refactor, Quick fixes, Gameplay, Platform and monetisation, Polish).
