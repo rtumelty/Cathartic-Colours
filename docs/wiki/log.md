@@ -109,3 +109,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] approve | CC-003 | PR #66 squash-merged into develop as 77cb904, identical to the branch tip; #9 and sub-issues #58-#60 Done; removed from the roadmap
 ## [2026-11-19] plan | CC-004 | Started after CC-003; CC-003 found that nothing points Android at Build/Mobile banks, so CC-004 checks which banks an Android build packs
 ## [2026-11-19] approve | CC-004 | Plan, D1–D4 and routing approved by Ronan; #10 Approved, sub-issues #61–#63; signing and store work split out to CC-036
+## [2026-11-19] implement | CC-004.1 | Android application id com.catharticcolours.game set in Player Settings; Android Development profile: Build App Bundle and Wait For Managed Debugger off; batchmode open exit 0, no compiler warnings or project errors
