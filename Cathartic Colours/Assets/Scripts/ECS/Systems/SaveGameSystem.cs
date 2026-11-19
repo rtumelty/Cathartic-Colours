@@ -9,10 +9,12 @@ using SaveSystem;
 namespace ECS.Systems
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    [UpdateAfter(typeof(ScoringSystem))]
+    [UpdateAfter(typeof(MergeEffectsSystem))]
     public partial struct SaveGameSystem : ISystem
     {
-        
+        // True once the save has been deleted for the current game over, so the file check runs once, not every frame.
+        private bool endedLastFrame;
+
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<GameStateComponent>();
@@ -27,14 +29,18 @@ namespace ECS.Systems
             // Input is processed when we transition from WaitingForInput=false to WaitingForInput=true
             bool inputProcessedThisFrame = !gameState.WaitingForInput;
 
-            if (inputProcessedThisFrame && !gameState.GameOver && !gameState.LevelComplete)
+            bool ended = gameState.GameOver || gameState.LevelComplete;
+
+            if (inputProcessedThisFrame && !ended)
             {
                 SaveGame(ref state);
             }
-            else if (gameState.GameOver || gameState.LevelComplete)
+            else if (ended && !endedLastFrame)
             {
                 DeleteSaveGame();
             }
+
+            endedLastFrame = ended;
         }
 
         private void SaveGame(ref SystemState state)

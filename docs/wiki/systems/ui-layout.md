@@ -88,7 +88,7 @@ Elements in the UXML that no code queries: `root`, `header` (menu), `title`, `me
 - `GameUI.uxml` structure: `root` contains `header` (title, `move-count`, `score-label`), `game-over-panel`, `level-complete-panel`, then a wrapper holding `footer` (`instruction-text` container, `controls-hint`, `footer-main-menu-button`).
 - Both panels use class `modal-panel` (`GameUI.uss`): `position: absolute`, full size, centred content, `rgba(0,0,0,0.8)` background, `display: none`.
 - `InitializeUIState` sets both to `DisplayStyle.None` at set-up. After that `GameRenderer.Update` calls `UpdateUI`, which calls `GameUIManager.UpdateGameState(gameState, score)` **every frame** (`GameRenderer.cs`, `Update`/`UpdateUI`). That method sets `gameOverPanel.style.display` to `Flex` while `GameOver` is true and `None` otherwise, and the same for `levelCompletePanel` with `LevelComplete`.
-- The game-over panel therefore appears the frame after `GameEndConditionSystem` sets `GameOver`, and disappears when a restart recreates the state. `LevelComplete` is never set by any system, so the level-complete panel never appears ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)).
+- The game-over panel therefore appears the frame after `BoardStepSystem` sets `GameOver`, and disappears when a restart recreates the state. `LevelComplete` is never set by any system, so the level-complete panel never appears ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)).
 - Panels sit above the board (they are UI overlay); they do not block keyboard or touch input ([input.md](input.md)).
 
 ### Text updates

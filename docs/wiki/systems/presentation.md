@@ -51,7 +51,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 ### `JellyManager` and `JellyController`
 **What the wobble is.** `JellyManager` sets shader properties on one shared material, `BlockMaterial.mat`, for `wobblePeriod` seconds after a move; the blocks' `JellyShader` (Shader Graph, `Assets/Shaders/JellyShader.shadergraph`) uses them to wobble the mesh (properties in the graph: `_MainColor`, `_WobbleStrength`, `_DirectionInfluence`, `_DirectionWobbleFrequency`, `_MoveDirection`, `_RandomWobbleFrequency`, `_MinimumOpacity`, `_VolumeIntensity`, `_VolumePower`, `_Texture2D`).
 
-**Trigger.** `InputProcessingSystem.OnUpdate` calls `GameManager.JellyManager.StartWobble(new Vector2(dir.x, dir.y))` for each accepted move, with no null check ([CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)). `JellyManager.OnEnable` registers itself in `GameManager.JellyManager`; `OnDisable` clears it.
+**Trigger.** `GameRenderer.UpdateUI` calls `WobbleOnNewMove`, which calls `GameManager.JellyManager.StartWobble(LastMoveDirection)` (null-checked) when `GameStateComponent.MoveCount` has increased since the last frame. After a game starts or resumes, the first read only records the count, so resuming does not wobble. No simulation code calls presentation (since CC-006.3, ADR-001 §4). Because MonoBehaviour `Update` and the ECS groups run at different points in the player loop, the wobble can start one frame after the move. `JellyManager.OnEnable` registers itself in `GameManager.JellyManager`; `OnDisable` clears it.
 
 **`StartWobble(Vector2 target)`.** Stores the target direction and resets the timer; starts `WobbleCoroutine` if none is running (a move during a running wobble restarts the timer and re-targets, without starting a second coroutine).
 
@@ -70,7 +70,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 `JellyController` (`RequireComponent(SpriteRenderer)`) animates `_WobbleStrength` and `_DistortionStrength` on `spriteRenderer.material` and has a `Jiggle(intensity)` coroutine. It is not attached to any prefab or scene (no reference found in `Assets/Prefabs` or `Assets/Scenes`), and its sprite-material properties do not match the mesh-based block shader.
 
 ### `PointsParticleSpawner`
-`Assets/Scripts/Gameplay/PointsParticleSpawner.cs` (global namespace). `Awake` registers `GameManager.ActivePointsParticleSpawner`; `OnDestroy` clears it. `ScoringSystem` calls `Emit(points, mergeColor, worldPosition)` once per `MergeEventComponent`, with the world position computed from the grid position and `GameRenderer.cellSize`/`cellSpacing`, pushed back in z by 5 (`Assets/Scripts/ECS/Systems/ScoringSystem.cs`).
+`Assets/Scripts/Gameplay/PointsParticleSpawner.cs` (global namespace). `Awake` registers `GameManager.ActivePointsParticleSpawner`; `OnDestroy` clears it. `MergeEffectsSystem` calls `Emit(points, mergeColor, worldPosition)` once per `MergeEventComponent` (points are carried on the event), with the world position computed from the grid position and `GameRenderer.cellSize`/`cellSpacing`, pushed back in z by 5. If the spawner or renderer is missing it skips the effect but still destroys the event (`Assets/Scripts/ECS/Systems/MergeEffectsSystem.cs`).
 
 `Emit` branches on `spawnMode`:
 - `Text`: `SpawnPoints` splits the points into digits and emits one particle from `digitParticleSystems[digit]` per digit, spaced `particleWidth * spacingMultiplier` apart and centred if `centerAlignment`. Skips if `points <= 0`.
@@ -81,10 +81,10 @@ Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); th
 ### ECS state read and written, per component
 | Component | Reads | Writes |
 |---|---|---|
-| `GameRenderer` | `BlockComponent` (all, per frame); `GameStateComponent` and `ScoreComponent` (via cached entities, per frame, for the UI); `GameManager.ActiveConfiguration`, `ActiveColorProfile` | Creates `GridConfigComponent`, `GameStateComponent`, `ScoreComponent`, `GameModeComponent`, the mode tag and `SpawnColorSystemTag` (`InitializeGame`); creates the initial indicator `BlockComponent` (`SpawnInitialBlock`); destroys blocks and singletons (`CleanUp`); `PlayerPrefs` (`LoadFromSave`) |
+| `GameRenderer` | `BlockComponent` (all, per frame); `GameStateComponent` and `ScoreComponent` (via cached entities, per frame, for the UI); `GameManager.ActiveConfiguration`, `ActiveColorProfile` | Creates `GridConfigComponent`, `GameStateComponent`, `ScoreComponent`, `GameModeComponent` and `ScoringConfigComponent` (`InitializeGame`); starts the jelly wobble on a new move (`WobbleOnNewMove`); creates the initial indicator `BlockComponent` (`SpawnInitialBlock`); destroys blocks and singletons (`CleanUp`); `PlayerPrefs` (`LoadFromSave`) |
 | `Block` | none (receives `Size` from the renderer) | none (animator parameters only) |
-| `JellyManager` | none (receives a direction from `InputProcessingSystem`) | shared material `BlockMaterial.mat` properties |
-| `PointsParticleSpawner` | none (receives points, colour and position from `ScoringSystem`); `ColorProfile` colours | none |
+| `JellyManager` | none (receives a direction from `GameRenderer.WobbleOnNewMove`) | shared material `BlockMaterial.mat` properties |
+| `PointsParticleSpawner` | none (receives points, colour and position from `MergeEffectsSystem`); `ColorProfile` colours | none |
 
 ### Prefabs, materials and shaders
 | Item | Path | Notes |
@@ -100,12 +100,11 @@ Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); th
 
 ## Interactions with other systems
 - Reads ECS state and creates singletons: [ecs-frame-order.md](ecs-frame-order.md), [configuration.md](configuration.md).
-- Called from simulation systems: `InputProcessingSystem` (jelly), `ScoringSystem` (particles, `GameRenderer.cellSize`); see [input.md](input.md) and [merge-rules.md](merge-rules.md).
+- Driven by state and events only: `GameRenderer` reads `MoveCount`/`LastMoveDirection` (jelly); `MergeEffectsSystem`, a Presentation-group system, turns merge events into particles (using `GameRenderer.cellSize`); see [ecs-frame-order.md](ecs-frame-order.md) and [merge-rules.md](merge-rules.md).
 - UI text, panels and camera fitting: [ui-layout.md](ui-layout.md).
 - Resume restores block entities that this system then draws: [save-system.md](save-system.md).
 
 ## Known issues
-- Simulation systems call presentation directly through `GameManager`: `InputProcessingSystem` -> `JellyManager`; `ScoringSystem` -> `PointsParticleSpawner`/`GameRenderer`. [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)
 - The indicator's colour is chosen on the following move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
 - Visuals are an aesthetic prototype (instant moves, scale-only animation); rework planned. [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30)
 - `GameRenderer` allocates every frame (a new `EntityQuery`, arrays, a `HashSet`, and a `MaterialPropertyBlock` per block); profiling is planned. [CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29)

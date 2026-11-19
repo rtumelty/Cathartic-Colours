@@ -1,4 +1,5 @@
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace ECS.Components
 {
@@ -9,5 +10,8 @@ namespace ECS.Components
         public bool LevelComplete;
         public int MoveCount;
         public Unity.Mathematics.Random Random;
+
+        // Direction of the last accepted move, for presentation (jelly wobble). Not saved.
+        public int2 LastMoveDirection;
     }
 }

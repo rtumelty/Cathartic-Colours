@@ -4,7 +4,7 @@ A system page describes how one part of the game works **today**. It does not de
 
 ## Rules
 
-- **Cite sources.** Every behavioural claim names the file it comes from, as a path under `Assets/Scripts/...` in the Unity project, for example "Each merge is scored once (`Assets/Scripts/ECS/Systems/ScoringSystem.cs`)."
+- **Cite sources.** Every behavioural claim names the file it comes from, as a path under `Assets/Scripts/...` in the Unity project, for example "Each merge is scored once (`Assets/Scripts/Simulation/BoardSimulation.cs`)."
 - **Check against code.** Verify claims against the current source before writing. Re-check when a feature changes the system.
 - **Known issues are linked.** Problems go in *Known issues*, each linked to its item's issue, for example [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12). A new problem found while documenting becomes a new Backlog issue (project `CLAUDE.md` §6); it is not fixed in the wiki pass.
 - **Link to tests.** Related test cases in [test-plan.md](../test-plan.md) are linked by id.

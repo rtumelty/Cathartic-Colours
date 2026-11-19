@@ -121,10 +121,7 @@ namespace SaveSystem
         {
             if (savedBlocks == null || savedBlocks.Length == 0) return;
             
-            var blockArchetype = entityManager.CreateArchetype(
-                typeof(BlockComponent),
-                typeof(MovingBlockTag)
-            );
+            var blockArchetype = entityManager.CreateArchetype(typeof(BlockComponent));
 
             foreach (var savedBlock in savedBlocks)
             {
@@ -138,9 +135,6 @@ namespace SaveSystem
                     GridPosition = new int2(savedBlock.gridX, savedBlock.gridY),
                     IsNextColorIndicator = savedBlock.isNextColorIndicator
                 });
-
-                // Initially disable the MovingBlockTag - it will be enabled when input is processed
-                entityManager.SetComponentEnabled<MovingBlockTag>(blockEntity, false);
             }
         }
     }

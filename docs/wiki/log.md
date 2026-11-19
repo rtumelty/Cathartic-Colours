@@ -74,3 +74,7 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-006.2 | Pure board model (Block, BoardState, SimEvent, StepResult), struct rule sets behind IMergeRules with MergeRulesFactory, BoardSimulation.Step with parity incl. CC-020/CC-021; 200 EditMode tests pass, Burst compile checked
 ## [2026-11-19] diverge | CC-006.2 | Old IMergeUtility classes removed as planned, so BlockMovementSystem and GameEndConditionSystem now call MergeRulesFactory (name clash on MergeResult); restored-indicator MovingBlockTag slide noted for .3
 ## [2026-11-19] schema | CLAUDE.md | §3 rules-as-strategies now IMergeRules structs and MergeRulesFactory; Simulation.Block name-clash note
+## [2026-11-19] approve | CC-006.2 | Approved by Ronan, including the old-systems adapter divergence; #14 Done
+## [2026-11-19] implement | CC-006.3 | BoardStepSystem (Burst) wraps BoardSimulation.Step and replaces five move systems; MergeEffectsSystem for particles; wobble from GameRenderer; ScoringConfigComponent; CC-023 fixed; CC-024 dead code removed; OccupantTracking keeps entity identity; 208 EditMode tests pass, ECS world check passed
+## [2026-11-19] diverge | CC-006.3 | Resume no longer replays resolve/spawn (part of CC-022, save fix stays in .5); CC-025 fixed as a side effect; SpawnColorSystemTag also removed; ClearMoveDirectionSystem made Burst
+## [2026-11-19] implement | wiki | ecs-frame-order rewritten; merge-rules, presentation, audio-fmod, configuration, input, save-system, ui-layout updated for BoardStepSystem

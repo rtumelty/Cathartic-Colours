@@ -6,7 +6,9 @@ using UnityEngine;
 
 namespace ECS.Systems
 {
+    // Plays audio events created by BoardStepSystem in the same frame. Managed (not Burst): FMOD RuntimeManager.
     [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateAfter(typeof(BoardStepSystem))]
     public partial struct AudioSystem : ISystem
     {
         public void OnUpdate(ref SystemState state)

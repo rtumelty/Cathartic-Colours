@@ -11,7 +11,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | `Assets/Scripts/Gameplay/GameInputHandler.cs` | Keyboard action, direction mapping, `SendMoveCommand`, `OnSwipe` |
 | `Assets/Scripts/Gameplay/SwipeDetector.cs` | Touch swipe detection, calls `GameInputHandler.OnSwipe` |
 | `Assets/Scripts/ECS/Components/MoveDirectionComponent.cs` | The command component (`int2 Direction`) |
-| `Assets/Scripts/ECS/Systems/InputProcessingSystem.cs` | Accepts or rejects the command |
+| `Assets/Scripts/ECS/Systems/BoardStepSystem.cs` | Accepts or rejects the command and runs the move |
 | `Assets/Scripts/ECS/Systems/ClearMoveDirectionSystem.cs` | Destroys the command |
 | `Assets/Prefabs/GameManager.prefab` | Carries `GameInputHandler` and `SwipeDetector` |
 | `Assets/Input/GameControls.inputactions` | Project-wide Input Actions asset (not used by the game code) |
@@ -64,24 +64,21 @@ Lifecycle:
 | Stage | Where | What happens |
 |---|---|---|
 | Create | `SendMoveCommand`, from `Update`-time input callbacks (outside ECS) | Entity created if none exists |
-| Accept / reject | `InputProcessingSystem` | Returns without effect if `!WaitingForInput`, `GameOver`, there is no command or the direction is `(0,0)`. Otherwise arms the blocks, starts the jelly wobble, sets `WaitingForInput = false` and increments `MoveCount` |
-| Use | `BlockMovementSystem` | Reads the direction (it also emits `Block_Move` whenever a command exists, even if rejected) |
-| Destroy | `ClearMoveDirectionSystem` (after `SpawnColorSystem`) | Destroys the command entity every frame it exists, whether accepted or not |
+| Accept / reject and use | `BoardStepSystem` | Rejects without effect or sound if `!WaitingForInput` or `GameOver` (and `BoardSimulation.Step` rejects any direction other than the four unit vectors). Otherwise runs the move, sets `WaitingForInput = false`, increments `MoveCount` and records `LastMoveDirection` |
+| Destroy | `ClearMoveDirectionSystem` (after `BoardStepSystem`) | Destroys the command entity every frame it exists, whether accepted or not |
 
 The full per-frame order is in [ecs-frame-order.md](ecs-frame-order.md#one-player-move-frame-by-frame). Consequences: at most one move per frame; input received while the game is not waiting (during the move frame) or after game over is discarded at the end of that frame, not buffered; a held key does not repeat (the `Move` action only performs on value changes).
 
 ### Input blocking while UI is open
-There is none in the input code. `GameInputHandler` and `SwipeDetector` do not check for open panels, `UIDocument` focus, or pointer-over-UI. The only blocking is the simulation's: `InputProcessingSystem` ignores commands once `GameOver` is true, and the game-over panel (`GameUIManager.UpdateGameState`) is a full-screen overlay for pointer events on UI but does not stop keyboard or touch swipes reaching the handler. The level-complete panel can never show ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)). See [ui-layout.md](ui-layout.md).
+There is none in the input code. `GameInputHandler` and `SwipeDetector` do not check for open panels, `UIDocument` focus, or pointer-over-UI. The only blocking is the simulation's: `BoardStepSystem` ignores commands once `GameOver` is true, and the game-over panel (`GameUIManager.UpdateGameState`) is a full-screen overlay for pointer events on UI but does not stop keyboard or touch swipes reaching the handler. The level-complete panel can never show ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)). See [ui-layout.md](ui-layout.md).
 
 ## Interactions with other systems
 - Command entity consumed by [ecs-frame-order.md](ecs-frame-order.md) systems; move rules in [merge-rules.md](merge-rules.md).
-- `InputProcessingSystem` calls `GameManager.JellyManager.StartWobble` with the move direction ([presentation.md](presentation.md), [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)).
+- The jelly wobble starts when `GameRenderer` sees `MoveCount` increase, in `LastMoveDirection` ([presentation.md](presentation.md)); input code does not call presentation.
 - Panels that overlay the board: [ui-layout.md](ui-layout.md).
 - The handler lives on the `GameManager` prefab with `GameRenderer` ([configuration.md](configuration.md)).
 
 ## Known issues
-- A rejected move (for example a swipe or key press after game over) still plays the move sound. [CC-023](https://github.com/rtumelty/Cathartic-Colours/issues/35)
-- Presentation is triggered from simulation (`InputProcessingSystem` calls `GameManager.JellyManager` with no null check). [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)
 - `GameControls.inputactions` (project-wide actions, including gamepad and a `Gameplay/Move` action) is unused: `GameInputHandler` creates its own empty `InputActionAsset` and adds a keyboard-only `Move` action in code, so there are two definitions of the same controls and gamepads do not work (`Assets/Scripts/Gameplay/GameInputHandler.cs`, `OnEnable`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
 - `SwipeDetector` handles touchscreens only; a mouse drag does nothing, so swipe cannot be tested in the editor without a touch simulator (`Assets/Scripts/Gameplay/SwipeDetector.cs`, `Update`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
 - `SwipeDetector` sits in the nested namespace `Gameplay.CatharticColours`, unlike every other gameplay class (`Assets/Scripts/Gameplay/SwipeDetector.cs`); renaming it would break the prefab's serialised type reference. [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)

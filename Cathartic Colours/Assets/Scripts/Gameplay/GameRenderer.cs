@@ -50,6 +50,9 @@ namespace Gameplay
         
         private Entity gameStateEntity;
         private Entity scoreEntity;
+
+        // Move count last seen by UpdateUI; -1 until the first read after a game starts or resumes.
+        private int lastSeenMoveCount = -1;
         
         private Camera mainCamera;
 
@@ -200,25 +203,23 @@ namespace Gameplay
                 Mode = config.gameMode
             });
 
-            // Set game mode tags
-            switch (config.gameMode)
+            // Tier points and the spawn toggle, as unmanaged data for BoardStepSystem
+            var scoringConfigEntity = entityManager.CreateEntity();
+            entityManager.AddComponentData(scoringConfigEntity, new ScoringConfigComponent
             {
-                case GameMode.Standard:
-                    entityManager.AddComponent<StandardMergeSystemTag>(gameStateEntity);
-                    break;
-                case GameMode.ColorMerge:
-                    entityManager.AddComponent<ColorMergeSystemTag>(gameStateEntity);
-                    break;
-                case GameMode.AdvancedColorMerge:
-                    entityManager.AddComponent<AdvancedColorMergeSystemTag>(gameStateEntity);
-                    break;
-            }
-
-            // Enable colour spawning
-            if (config.spawnNextColourSystem)
-            {
-                entityManager.AddComponent<SpawnColorSystemTag>(gameStateEntity);
-            }
+                Settings = new StepSettings
+                {
+                    Points = new TierPoints
+                    {
+                        Tier1 = config.tier1Points,
+                        Tier2 = config.tier2Points,
+                        Tier3 = config.tier3Points,
+                        Tier4 = config.tier4Points
+                    },
+                    SpawnEnabled = config.spawnNextColourSystem
+                }
+            });
+            lastSeenMoveCount = -1;
 
             // Update instruction text via UI manager
             if (GameManager.ActiveGameUIManager != null)
@@ -396,11 +397,23 @@ namespace Gameplay
             var gameState = entityManager.GetComponentData<GameStateComponent>(gameStateEntity);
             var score = entityManager.GetComponentData<ScoreComponent>(scoreEntity);
 
+            WobbleOnNewMove(gameState);
+
             // Delegate UI updates to UI manager
             if (GameManager.ActiveGameUIManager != null)
             {
                 GameManager.ActiveGameUIManager.UpdateGameState(gameState, score);
             }
+        }
+
+        // The jelly wobbles when the board reports a new accepted move; the simulation never calls presentation.
+        private void WobbleOnNewMove(GameStateComponent gameState)
+        {
+            if (lastSeenMoveCount >= 0 && gameState.MoveCount > lastSeenMoveCount && GameManager.JellyManager != null)
+            {
+                GameManager.JellyManager.StartWobble(new Vector2(gameState.LastMoveDirection.x, gameState.LastMoveDirection.y));
+            }
+            lastSeenMoveCount = gameState.MoveCount;
         }
 
         private void CleanUp()
@@ -426,6 +439,9 @@ namespace Gameplay
             entityManager.DestroyEntity(query);
 
             query = entityManager.CreateEntityQuery(typeof(GameModeComponent));
+            entityManager.DestroyEntity(query);
+
+            query = entityManager.CreateEntityQuery(typeof(ScoringConfigComponent));
             entityManager.DestroyEntity(query);
 
             // Clean up visuals
