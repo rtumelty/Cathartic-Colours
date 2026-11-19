@@ -111,7 +111,7 @@ The in-game score shown is `ScoreComponent.TotalScore`; `CurrentFrameScore` is n
 | `OnNextLevelRequested` (`Action`) | `next-level-button` clicked (inside the level-complete panel, which can never show) | `GameRenderer.OnNextLevel` (TODO; calls `RestartGame`) |
 | `OnLayoutRecalculated` (`Action<float, float>`) | Forwarded from `LayoutObserver.OnLayoutRecalculated` (`HandleLayoutRecalculated`) | `GameRenderer.UpdateCamera(headerHeight, footerHeight)` |
 
-`GameRenderer.OnEnable` starts a coroutine that waits until `GameManager.ActiveGameUIManager` is non-null, then subscribes all three; `OnDisable` unsubscribes if the manager still exists (`GameRenderer.cs`). Main-menu buttons are not events: the three "main menu" buttons call `ReturnToMainMenu`, which loads the scene named by `mainMenuSceneName` (`"MainMenu"` in the prefab) directly.
+`GameRenderer.OnEnable` starts a coroutine that waits until `PresentationRegistry.ActiveGameUIManager` is non-null, then subscribes all three; `OnDisable` unsubscribes if the manager still exists (`GameRenderer.cs`). Main-menu buttons are not events: the three "main menu" buttons call `ReturnToMainMenu`, which loads the scene named by `mainMenuSceneName` (`"MainMenu"` in the prefab) directly.
 
 ### `LayoutObserver` and the camera
 `Assets/Scripts/Gameplay/LayoutObserver.cs` (plain class, constructed by `GameUIManager.SetupUI` with the `UIDocument`):

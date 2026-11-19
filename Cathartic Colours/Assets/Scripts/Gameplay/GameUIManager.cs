@@ -35,12 +35,12 @@ namespace Gameplay
 
         private void Awake()
         {
-            GameManager.ActiveGameUIManager = this;
+            PresentationRegistry.ActiveGameUIManager = this;
         }
 
         private void OnDestroy()
         {
-            GameManager.ActiveGameUIManager = null;
+            PresentationRegistry.ActiveGameUIManager = null;
             UnhookEvents();
             
             if (layoutObserver != null)

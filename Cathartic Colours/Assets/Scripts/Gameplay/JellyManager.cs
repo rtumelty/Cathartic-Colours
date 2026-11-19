@@ -30,12 +30,12 @@ namespace Gameplay
         
         void OnEnable()
         {
-            GameManager.JellyManager = this;
+            PresentationRegistry.JellyManager = this;
         }
         
         void OnDisable()
         {
-            GameManager.JellyManager = null;
+            PresentationRegistry.JellyManager = null;
         }
 
         public void StartWobble(Vector2 targetWobbleDirection)

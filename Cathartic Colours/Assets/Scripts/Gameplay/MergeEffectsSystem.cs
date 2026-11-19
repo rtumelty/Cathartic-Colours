@@ -11,6 +11,7 @@ namespace ECS.Systems
     /// Managed (not Burst): it calls the <c>PointsParticleSpawner</c> MonoBehaviour.
     /// </summary>
     [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateBefore(typeof(SaveGameSystem))] // was UpdateAfter(MergeEffectsSystem) on SaveGameSystem before CC-002
     public partial struct MergeEffectsSystem : ISystem
     {
         public void OnCreate(ref SystemState state)
@@ -20,8 +21,8 @@ namespace ECS.Systems
 
         public void OnUpdate(ref SystemState state)
         {
-            var particleSpawner = GameManager.ActivePointsParticleSpawner;
-            var gameRenderer = GameManager.ActiveGameRenderer;
+            var particleSpawner = PresentationRegistry.ActivePointsParticleSpawner;
+            var gameRenderer = PresentationRegistry.ActiveGameRenderer;
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (mergeEvent, entity) in SystemAPI.Query<RefRO<MergeEventComponent>>().WithEntityAccess())

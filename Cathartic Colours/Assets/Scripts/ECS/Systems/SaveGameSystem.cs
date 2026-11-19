@@ -9,7 +9,7 @@ using SaveSystem;
 namespace ECS.Systems
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    [UpdateAfter(typeof(MergeEffectsSystem))]
+    // Runs after MergeEffectsSystem; that system (Presentation assembly) declares the order, since Core can't reference it.
     public partial struct SaveGameSystem : ISystem
     {
         // True once the save has been deleted for the current game over, so the file check runs once, not every frame.

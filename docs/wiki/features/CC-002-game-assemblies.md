@@ -115,7 +115,10 @@ Tests in `CatharticColours.Core.Tests` on a test `World` running `BoardStepSyste
 - **D3 — Normal workflow.** One deliverable at a time with Ronan's approval (the no-stops exception applies only to CC-041).
 
 ## Divergences
-_None yet._
+Minor implementation specifics (no scope, architecture, order or routing change):
+- **CC-002.1 folder layout.** The Core assembly definition lives in a new `Assets/Scripts/Core/` folder with `GameManager.cs`. `Data/`, `ECS/` and `SaveSystem/` join it through assembly definition references (`CatharticColours.Core.asmref`), so none of their files moved. The Presentation assembly definition sits in `Assets/Scripts/Gameplay/`. `MergeEffectsSystem.cs` moved to `Gameplay/` (namespace `ECS.Systems` unchanged). The presentation half of `GameManager` became `PresentationRegistry` (`Gameplay/PresentationRegistry.cs`, global namespace).
+- **CC-002.1 system order.** `SaveGameSystem` (Core) had `[UpdateAfter(typeof(MergeEffectsSystem))]`, which Core can't compile once that system is in Presentation. The same constraint is now declared from the other side: `[UpdateBefore(typeof(SaveGameSystem))]` on `MergeEffectsSystem`. The resolved order in `PresentationSystemGroup` is unchanged (`MergeEffectsSystem` → `SaveGameSystem` → `EndFrameSystem`).
+- **CC-002.1 reference check.** Scenes, prefabs and assets were checked with a temporary batchmode editor script (not committed): no missing scripts, and no broken references in scenes, prefabs or game configuration. It also found 7 broken references in URP render settings (`Settings/Rendering/Renderer2D.asset` probe-volume debug shaders, `Lit2DSceneTemplate.scenetemplate`), which this change doesn't touch and which predate it.
 
 ## Feature test plan
 1. Command line: EditMode and PlayMode runs both pass.
