@@ -100,6 +100,9 @@ No game code changes, so no unit tests. System checks:
 ## Divergences
 - 2026-11-19 (planning session, before work started): Ronan's re-save on `develop` (96298b1) did the MANUAL Save step and the `.unsaved/` removal from the approved plan. The plan's first deliverable is reduced to untracking `.cache/` and `.user/`.
 
+## Implementation notes
+- **CC-003.1** (worker Haiku, as planned): saved-project checks passed: `Metadata/Platform/` has Desktop `{37b3f97d-…}` and Mobile `{f18948da-…}`; `Metadata/EncodingSetting/` has Vorbis quality 37 and FADPCM 24 kHz; `Metadata/Event/` has 5 events; nothing under `.unsaved/` tracked. 236 files untracked (233 `.cache/`, 3 `.user/`), still on disk.
+
 ## Feature test plan
 1. `tools/build-fmod-banks.ps1` on a clean checkout: exit code 0, Desktop and Mobile banks written, `git status` clean apart from any explained bank change.
 2. FMOD Studio 2.04 opens the project with no migration prompt; both platforms present.
