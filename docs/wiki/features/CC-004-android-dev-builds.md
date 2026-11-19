@@ -99,12 +99,15 @@ An agent can produce an installable Android development build (APK) from the com
 ## Implementation notes
 - The first IL2CPP/Gradle build took 36 min; a rebuild with a warm `Library/` took 3 min.
 - Each build re-saves five settings files with default fields that the Unity 6.6 upgrade added (URP global settings, `UniversalRP.asset`, `GraphicsSettings.asset`, `EntitiesClientSettings.asset`, `ProjectAuditorSettings.asset`). They were reverted, not committed, so the build commits stay focused. `ProjectSettings.asset` comes back unchanged, because the build restores the version code.
+- CC-004.3 device install: `adb install -r` of version code 73 on a Samsung SM-S911B (Android 16 SDK level 36 target) printed `Success`; the app launched (process running, no fatal errors in logcat). The only Unity error logged is a `ClassNotFoundException` for Play Core's `AssetPackManager`, which Unity logs in APK builds without Play Asset Delivery and is harmless.
 - When the harness's background PowerShell runner wraps the script, it killed the wrapper (exit 255) while Unity kept building. Run the script from Git Bash or a normal terminal.
 
 ## Feature test plan
 1. `tools/build-android.ps1` on a clean checkout: exit code 0, APK in `Cathartic Colours/Builds/Android/`, package `com.catharticcolours.game`, version code equal to `git rev-list --count HEAD`.
 2. `adb install -r` of a newer build over an older one succeeds.
 3. On the phone: the app launches without waiting for a debugger; the three modes play with sound; resume works.
+
+Folded into the [test plan](../test-plan.md#android-build-droid) as TP-DROID-01 to TP-DROID-04.
 
 ## Status log
 - 2026-11-19: Planned
