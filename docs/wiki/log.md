@@ -97,3 +97,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-003 | Ronan re-saved the FMOD Studio project in 2.04 (96298b1): Mobile platform and encoding now saved in Metadata, .unsaved removed from git; banks rebuilt in 2.04 (576f6cb)
 ## [2026-11-19] approve | CC-003 | Plan, D1–D3 and routing approved by Ronan; #9 Approved, sub-issues #58–#60; Ronan's 2.04 re-save (96298b1) replaced the MANUAL Save step
 ## [2026-11-19] implement | CC-003.1 | FMOD Studio per-machine folders .cache/ (233 files) and .user/ (3 files) untracked, kept on disk; .gitignore added for .cache/, .user/, .unsaved/; saved-project checks passed (Desktop + Mobile platforms, 2 encodings, 5 events)
+## [2026-11-19] approve | CC-003.1 | Approved by Ronan; #58 Done
+## [2026-11-19] implement | CC-003.2 | tools/build-fmod-banks.ps1 wraps fmodstudiocl -build; -diagnostic clean (no errors or warnings); a clean-checkout build rewrote all four banks byte-identical to the committed ones

@@ -41,6 +41,10 @@ The FMOD Studio project in `Cathartic Colours - FMOD/` is a clean, saved FMOD St
 1. Check the saved project first: `Metadata/Platform/` has both Desktop and Mobile, `Metadata/EncodingSetting/` has two settings, `Metadata/Event/` has the five events, and `git ls-files "Cathartic Colours - FMOD/.unsaved"` is empty. Stop and report if any check fails.
 2. Add `Cathartic Colours - FMOD/.gitignore` with `.cache/`, `.user/` and `.unsaved/`.
 3. `git rm -r --cached` `.cache/` and `.user/`. Confirm with `git status` that only those paths are staged as deleted and that the files are still on disk.
+- **CC-003.2** (worker Sonnet, as planned; primary reworded two messages and ran the clean-checkout test):
+  - `tools/build-fmod-banks.ps1` with `-Platforms`, `-Diagnostic`, `-FmodStudioCl`, `-LogDir`. Logs go to `%TEMP%mod-bank-build-<timestamp>`. A missing tool exits 1 with the install/override message. The tool reports `Version 2.04.00, Build #168298`.
+  - `-Diagnostic`: "Project validation completed successfully", no errors or warnings.
+  - FMOD skips banks whose `.cache/` build records are current, so in the sandbox (which has `.cache/`) the script wrote nothing. In a fresh worktree of the branch (no `.cache/` or `.user/`) it rebuilt Desktop and Mobile, and all four banks were **byte-identical** to the committed ones (Desktop `Master.bank` 88,512 bytes, Mobile `Master.bank` 174,912 bytes, strings banks 972 bytes). `git status` showed only the ignored, regenerated `.cache/`; no `.user/` was created. No banks committed.
 
 **Definition of Done**
 - [ ] The three checks above pass, with output in the commit review
@@ -102,6 +106,10 @@ No game code changes, so no unit tests. System checks:
 
 ## Implementation notes
 - **CC-003.1** (worker Haiku, as planned): saved-project checks passed: `Metadata/Platform/` has Desktop `{37b3f97d-…}` and Mobile `{f18948da-…}`; `Metadata/EncodingSetting/` has Vorbis quality 37 and FADPCM 24 kHz; `Metadata/Event/` has 5 events; nothing under `.unsaved/` tracked. 236 files untracked (233 `.cache/`, 3 `.user/`), still on disk.
+- **CC-003.2** (worker Sonnet, as planned; primary reworded two messages and ran the clean-checkout test):
+  - `tools/build-fmod-banks.ps1` with `-Platforms`, `-Diagnostic`, `-FmodStudioCl`, `-LogDir`. Logs go to `%TEMP%mod-bank-build-<timestamp>`. A missing tool exits 1 with the install/override message. The tool reports `Version 2.04.00, Build #168298`.
+  - `-Diagnostic`: "Project validation completed successfully", no errors or warnings.
+  - FMOD skips banks whose `.cache/` build records are current, so in the sandbox (which has `.cache/`) the script wrote nothing. In a fresh worktree of the branch (no `.cache/` or `.user/`) it rebuilt Desktop and Mobile, and all four banks were **byte-identical** to the committed ones (Desktop `Master.bank` 88,512 bytes, Mobile `Master.bank` 174,912 bytes, strings banks 972 bytes). `git status` showed only the ignored, regenerated `.cache/`; no `.user/` was created. No banks committed.
 
 ## Feature test plan
 1. `tools/build-fmod-banks.ps1` on a clean checkout: exit code 0, Desktop and Mobile banks written, `git status` clean apart from any explained bank change.
