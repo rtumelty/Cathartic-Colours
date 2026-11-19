@@ -49,6 +49,7 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] diverge | CC-034.3 | CC-006 feature page is not on this branch, so its issue header and link rewrite are left to the planning or CC-006 session (raised with Ronan); feature headers drop status/fields
 ## [2026-11-18] approve | CC-034.3 | Approved by Ronan; #49 closed; MANUAL steps 2–3 done by Ronan (workflows verified enabled); CC-006 page fix assigned to the planning session
 ## [2026-11-18] implement | CC-034 | Feature test cases folded into test-plan.md (new area TRACK, 4 cases); #46 → In review; PR to develop opened
+## [2026-11-18] lint | CC-006 | Feature page header links issue #12 (status/fields removed), deliverables link sub-issues #13–#18, roadmap.md#cc-nnn links → issue URLs (also ADR-001); Burst-alignment divergence marked approved
 ## [2026-11-18] implement | CC-034 | PR #50 merged; squash 3096558 matches the branch tip; #46 closed by hand, since "Closes #n" only fires on merges into the default branch (master)
 ## [2026-11-18] approve | CC-006 | Burst alignment of plan and ADR-001 §5 approved by Ronan
 ## [2026-11-18] plan | CC-033 | Feature page written: 3 deliverables (strip packages + Android module + editor upgrade; FMOD 2.04 + API fixes; test-runner smoke run + docs), routing Sonnet/primary/Haiku
@@ -70,3 +71,21 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] plan | CC-035 | New backlog item: spawn colour rubber-banding against board colour imbalance (Ronan); depends on CC-006
 ## [2026-11-19] schema | CLAUDE.md | §6 two working copies: Cathartic-Colours is the agent sandbox, Cathartic-Colours_2 is Ronan's manual copy; agents ask before switching the manual copy's branch; §4 batchmode note updated
 ## [2026-11-19] schema | CLAUDE.md | Two-working-copies rule moved out of the project CLAUDE.md into an uncommitted CLAUDE.local.md, since it describes one machine's setup (Ronan); §4 batchmode note restored
+## [2026-11-19] implement | CC-006.1 | CatharticColours.Simulation assembly (block, size, tier and mode enums, namespace Simulation) and EditMode test assembly; 4 smoke tests pass from the CLI; assets unchanged; TestResults/ gitignored
+## [2026-11-19] schema | CLAUDE.md | §3 Simulation namespace and the ADR-001 pattern (rules in the pure simulation, ECS wraps it); §4 test-run and Assembly-CSharp notes updated for the Simulation tests
+## [2026-11-19] approve | CC-006.1 | Approved by Ronan; #13 Done
+## [2026-11-19] implement | CC-006.2 | Pure board model (Block, BoardState, SimEvent, StepResult), struct rule sets behind IMergeRules with MergeRulesFactory, BoardSimulation.Step with parity incl. CC-020/CC-021; 200 EditMode tests pass, Burst compile checked
+## [2026-11-19] diverge | CC-006.2 | Old IMergeUtility classes removed as planned, so BlockMovementSystem and GameEndConditionSystem now call MergeRulesFactory (name clash on MergeResult); restored-indicator MovingBlockTag slide noted for .3
+## [2026-11-19] schema | CLAUDE.md | §3 rules-as-strategies now IMergeRules structs and MergeRulesFactory; Simulation.Block name-clash note
+## [2026-11-19] approve | CC-006.2 | Approved by Ronan, including the old-systems adapter divergence; #14 Done
+## [2026-11-19] implement | CC-006.3 | BoardStepSystem (Burst) wraps BoardSimulation.Step and replaces five move systems; MergeEffectsSystem for particles; wobble from GameRenderer; ScoringConfigComponent; CC-023 fixed; CC-024 dead code removed; OccupantTracking keeps entity identity; 208 EditMode tests pass, ECS world check passed
+## [2026-11-19] diverge | CC-006.3 | Resume no longer replays resolve/spawn (part of CC-022, save fix stays in .5); CC-025 fixed as a side effect; SpawnColorSystemTag also removed; ClearMoveDirectionSystem made Burst
+## [2026-11-19] implement | wiki | ecs-frame-order rewritten; merge-rules, presentation, audio-fmod, configuration, input, save-system, ui-layout updated for BoardStepSystem
+## [2026-11-19] approve | CC-006.3 | Manual regression pass done by Ronan; approved including the CC-022/CC-025 side effects; #15 Done
+## [2026-11-19] implement | CC-006.4 | Colour roll advances the random state (CC-020); spawn picks uniformly from empty cells with one draw, fails only on a full board (CC-021); BoardStepSystem saves such moves; Fixes_ tests replace Pins_; 207 EditMode tests pass
+## [2026-11-19] approve | CC-006.4 | Approved by Ronan; #16 Done
+## [2026-11-19] implement | CC-006.5 | Save records the idle state after a move; restore always waits for input (older saves too); no format change; TP-SAVE-03 updated, TP-SAVE-07 added; save-system and ecs-frame-order CC-022 items removed
+## [2026-11-19] approve | CC-006.5 | Approved by Ronan (TP-SAVE cases pass); #17 Done. ObjectDisposedException in GameRenderer.CleanUp during teardown is pre-existing: added to CC-025 (#37)
+## [2026-11-19] implement | CC-006.6 | Test plan cases for CC-021/022/023 updated, TP-OVER-07 added, Regression passes section; #32-#36 closed; CC-002 description confirmed
+## [2026-11-19] lint | CC-006 pages | Stale lines fixed in merge-rules, configuration, presentation; ADR-001 Burst set noted; roadmap.md strikethrough status reported to the planning session
+## [2026-11-19] approve | CC-006.6 | Approved by Ronan; #18 Done; PR #56 opened to develop, #12 In review

@@ -23,9 +23,11 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 - Systems pages to maintain (`docs/wiki/systems/`): `ecs-frame-order`, `merge-rules` (per mode, plus scoring, spawning and end conditions), `configuration`, `save-system`, `audio-fmod`, `input`, `ui-layout`, `presentation`.
 
 ## 3. Codebase patterns to follow
-- **Namespaces:** `ECS.Components`, `ECS.Systems`, `ECS.Utilities`, `Gameplay`, `Data`, `SaveSystem`.
+- **Namespaces:** `Simulation`, `ECS.Components`, `ECS.Systems`, `ECS.Utilities`, `Gameplay`, `Data`, `SaveSystem`.
+- **Rules run in the pure simulation; ECS wraps it** ([ADR-001](docs/wiki/decisions/ADR-001-pure-board-simulation.md), since CC-006). The `CatharticColours.Simulation` assembly (`Assets/Scripts/Simulation/`, namespace `Simulation`) references only `Unity.Mathematics` and `Unity.Collections`: no `UnityEngine.Object`, Entities or `GameManager`. It holds the block enums (`BlockColor`, `BlockSize`, `ScoreTier`, `GameMode`) and, as CC-006 lands, the board state, merge rules and move step. New rule logic goes here, with EditMode tests in `Assets/Tests/EditMode/` (`CatharticColours.Simulation.Tests`).
 - **ECS:** `partial struct` systems implementing `ISystem`, ordered with `[UpdateInGroup]`/`[UpdateAfter]`/`[UpdateBefore]`; singleton components for game state (`GameStateComponent`, `ScoreComponent`, `GridConfigComponent`, `GameModeComponent`); **tag components** to enable systems (`SpawnColorSystemTag`, mode tags); **event entities** for one-off effects (`AudioEventComponent`, `MergeEventComponent`) consumed and destroyed by their system; `EntityCommandBuffer` for structural changes.
-- **Rules as strategies:** merge rules implement `IMergeUtility`, chosen by `MergeUtilityFactory` from `GameMode`. (A managed interface, so `BlockMovementSystem` cannot be Burst-compiled; new rule code should take a Burst-compatible form, see below.)
+- **Rules as strategies:** each mode's merge rules are a struct (`StandardMergeRules`, `ColorMergeRules`, `AdvancedColorMergeRules`) implementing `IMergeRules`, used as a generic constraint (`where TRules : struct, IMergeRules`). `MergeRulesFactory` switches on `GameMode` and calls the generic code with the matching struct, so there is no boxing and the code stays Burst-compatible. A new mode adds a struct and a `case`.
+- **Name clash:** a global-namespace `Block` MonoBehaviour exists (`Assets/Scripts/Gameplay/Block.cs`), and it wins name lookup outside the `Simulation` namespace. Write `Simulation.Block` in ECS and gameplay code.
 - **Favour Burst-compatible solutions** in ECS code: unmanaged components and data, no managed objects, interfaces or statics (`GameManager`) inside systems, `[BurstCompile]` on systems where possible. A non-Burst choice needs a stated reason on the feature page.
 - **Configuration as ScriptableObjects:** `GameConfiguration`, `ColorProfile` (menu `CatharticColors/…`); runtime copies held by static `GameManager`.
 - **Presentation** (MonoBehaviours: `GameRenderer`, `GameUIManager`, `JellyManager`, `PointsParticleSpawner`) reads ECS state; UI is UI Toolkit (UXML/USS), elements found by name with `root.Q<>()`.
@@ -35,8 +37,8 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 ## 4. Running tests and builds
 - **Tests (command line):**
   `"C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe" -batchmode -projectPath "Cathartic Colours" -runTests -testPlatform EditMode -testResults "TestResults\editmode.xml" -logFile -`
-  then the same with `-testPlatform PlayMode`. (Do not pass `-quit` with `-runTests`.) Close the editor first: a batchmode run can't open a project that's already open. The path above is the Unity Hub default install location for 6000.6.9f1. Until test assemblies exist, each run reports 0 tests, which is the expected result (CC-033).
-- **Known constraint:** game scripts currently compile into `Assembly-CSharp`, which test assemblies can't reference. Adding assembly definitions for game code is a prerequisite for automated tests.
+  then the same with `-testPlatform PlayMode`. (Do not pass `-quit` with `-runTests`.) Close the editor first: a batchmode run can't open a project that's already open. The path above is the Unity Hub default install location for 6000.6.9f1. EditMode runs the `CatharticColours.Simulation.Tests` assembly (since CC-006); PlayMode has no tests yet and reports 0, which is expected.
+- **Known constraint:** apart from the `Simulation` assembly, game scripts compile into `Assembly-CSharp`, which test assemblies can't reference. ECS, presentation and save code can't be unit-tested until the rest of CC-002 adds their assembly definitions.
 - **Android build:** no Android build profile or build script is committed yet. Until one exists, builds are a `MANUAL (Ronan)` step.
 
 ## 5. Editor-only and external-tool work

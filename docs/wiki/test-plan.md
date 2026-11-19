@@ -103,7 +103,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 
 ## Standard mode (STD)
 
-Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start. Keep the same game for TP-STD-01 to TP-STD-07 (return to the menu only if the board becomes full). TP-STD-08 and TP-STD-09 need a touch device and a gamepad.
+Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start. Keep the same game for TP-STD-01 to TP-STD-07 (return to the menu only if the board becomes full). TP-STD-08 and TP-STD-09 need a touch device and a gamepad. Since CC-006 the colour of each new block and the cell of the next white block come from separate random draws, so they are independent: do not expect any pattern linking them. (Not reliably observable by hand, so there is no case for it.)
 
 ### TP-STD-01 — First move converts the white block
 
@@ -112,8 +112,8 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Id | `TP-STD-01` |
 | Preconditions | New Standard 6x6 game, no moves made. One white block at (3, 3) |
 | Steps | 1. Press the left arrow key once. |
-| Expected | The white block stays in its cell and becomes a Red, Green or Blue Small block. A new white block appears in a different, previously empty cell. Moves reads 1, Score reads 0. |
-| Roadmap id | — |
+| Expected | The white block stays in its cell and becomes a Red, Green or Blue Small block. A new white block appears in a different, previously empty cell (always, while any cell is empty; CC-021). Moves reads 1, Score reads 0. |
+| Roadmap id | CC-021 (fixed in CC-006) |
 
 ### TP-STD-02 — One cell per move, all four directions
 
@@ -399,14 +399,24 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 
 ## Game over (OVER)
 
-Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a small board fills fastest), tap Start and play until the board is full. No save file should exist when the pass starts.
+Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a small board fills fastest), tap Start and play until the board is full. No save file should exist when the pass starts. TP-OVER-07 is checked on the way, while the 4x4 board fills up, before TP-OVER-01.
+
+### TP-OVER-07 — A free cell always gets the new white block
+
+| Field | Content |
+|---|---|
+| Id | `TP-OVER-07` |
+| Preconditions | Standard 4x4 game, played as in TP-OVER-01 while the board fills up. Repeat every time a move leaves exactly one empty cell |
+| Steps | 1. Make a move that slides or merges so that exactly one cell is empty just before the new white block is placed (in practice: the board has one empty cell before the move, and your move merges nothing; sliding never changes the number of empty cells). 2. Check the board after that move. 3. If the board is now full but a merge is still possible, make a move that merges nothing (for example, towards a wall the blocks are already against) and check the board. |
+| Expected | Step 2: the new white block appears in the one free cell, every time (before CC-021 it sometimes failed to appear). When two or more cells are free after a move, the white block is in one of them, and over many moves it appears in different cells (not always the same one). Step 3: the board stays full, the white block on it turns coloured and no new white block appears (there is no free cell); the move still counts (Moves rises by 1) and play continues while a merge is possible. Mark "not reached" if the board never has exactly one free cell after a move. |
+| Roadmap id | CC-021 (fixed in CC-006) |
 
 ### TP-OVER-01 — Full board with a merge available keeps playing
 
 | Field | Content |
 |---|---|
 | Id | `TP-OVER-01` |
-| Preconditions | Standard 4x4 game; play until all 16 cells are occupied (the white block counts as occupied) |
+| Preconditions | Standard 4x4 game; play until all 16 cells are occupied (the white block counts as occupied; the board usually becomes full when a new white block takes the last free cell, see TP-OVER-07) |
 | Steps | 1. When the board becomes full, check whether two same-colour, same-size blocks touch. 2. If so, press along them to merge. |
 | Expected | While the board is full but at least one adjacent pair can merge, the game-over panel does not appear and the move that merges is accepted. If the board fills with no mergeable pair the game ends instead: continue with TP-OVER-02. |
 | Roadmap id | — |
@@ -421,15 +431,15 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Expected | A full-screen game-over panel appears over the board with a Restart button and a Main Menu button. Score and Moves keep their final values. |
 | Roadmap id | — |
 
-### TP-OVER-03 — Moves are ignored after game over
+### TP-OVER-03 — Moves, sound and Moves counter are unchanged after game over
 
 | Field | Content |
 |---|---|
 | Id | `TP-OVER-03` |
-| Preconditions | Game-over panel showing |
-| Steps | 1. Note Score and Moves. 2. Press each arrow key. 3. Swipe if on a touch device. |
-| Expected | The board, Score and Moves do not change. The panel stays up. |
-| Roadmap id | — |
+| Preconditions | Game-over panel showing ("Grid Full!"), sound audible |
+| Steps | 1. Note Score, Moves and the board. 2. Press the up, down, left and right arrow keys, then W, A, S and D, one at a time. 3. Swipe in all four directions if on a touch device. |
+| Expected | No move sound or any other sound plays. The board, Score and Moves do not change (Moves does not rise). The panel stays up. |
+| Roadmap id | CC-023 (fixed in CC-006) |
 
 ### TP-OVER-04 — Restart starts a fresh game
 
@@ -492,8 +502,18 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Id | `TP-SAVE-03` |
 | Preconditions | The game resumed in TP-SAVE-02; you noted the white block's cell before leaving |
 | Steps | 1. Without pressing any key, compare the white block's cell and colour with the noted values. |
-| Expected | The white block is in the same cell as before leaving, is still white, and no additional white block appeared. Known to fail until CC-022 (backlog item derived from code reading, not yet confirmed on a device: resume may turn the saved white block into a coloured one and spawn a new one without a move). |
-| Roadmap id | CC-022 |
+| Expected | The white block is in the same cell as before leaving, is still white, and no additional white block appeared. |
+| Roadmap id | CC-022 (fixed in CC-006) |
+
+### TP-SAVE-07 — Nothing changes after resume until the first move
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-07` |
+| Preconditions | The game resumed in TP-SAVE-02; you noted Moves, Score and the board before leaving |
+| Steps | 1. Without pressing any key, wait 5 seconds and compare Moves, Score, every block and the white block with the noted values. 2. Make one move. |
+| Expected | Step 1: everything matches the noted values and no sound plays. Step 2: Moves rises by exactly 1, the white block turns into a coloured block (it does not move), and one new white block appears. |
+| Roadmap id | CC-022 (fixed in CC-006) |
 
 ### TP-SAVE-04 — Play continues and later moves are saved
 
@@ -536,7 +556,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Id | `TP-AUDIO-01` |
 | Preconditions | New game, sound audible |
 | Steps | 1. Press an arrow key once. 2. Repeat four more times. |
-| Expected | A move sound plays on each key press. |
+| Expected | A move sound plays on each key press, at the moment of the press (the merge sound for a move also plays with that move, not later). |
 | Roadmap id | — |
 
 ### TP-AUDIO-02 — Merge sound follows the moving block's size
@@ -566,8 +586,8 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Id | `TP-AUDIO-04` |
 | Preconditions | Game-over panel showing |
 | Steps | 1. Press an arrow key. 2. Press it again. |
-| Expected | No sound plays, because moves are ignored after game over. Known to fail until CC-023. |
-| Roadmap id | CC-023 |
+| Expected | No sound plays, because moves are ignored after game over. |
+| Roadmap id | CC-023 (fixed in CC-006) |
 
 ### TP-AUDIO-05 — FMOD project contains the five game events
 
@@ -590,8 +610,8 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Id | `TP-TOOL-02` |
 | Preconditions | Editor closed |
 | Steps | 1. Run the EditMode `-runTests` command from project `CLAUDE.md` §4. 2. Run the same command with `-testPlatform PlayMode`. |
-| Expected | Each run exits with code 0 and writes its results XML. With no test assemblies yet, each XML reports 0 test cases. Once tests exist (CC-006), every test passes. |
-| Roadmap id | CC-033 |
+| Expected | Each run exits with code 0 and writes its results XML. The EditMode XML reports the `CatharticColours.Simulation.Tests` cases (CC-006), all passed; PlayMode reports 0 test cases until CC-002 adds PlayMode tests. |
+| Roadmap id | CC-033, CC-006 |
 
 ### TP-TOOL-01 — Project opens on 6000.6.9f1 without errors
 
@@ -656,3 +676,9 @@ Pass setup: signed in to GitHub as a repo admin, with the [project board](https:
 | Steps | 1. Merge the PR. 2. Check the issue and the board. |
 | Expected | The issue is closed and its board item is in Done ("Pull request merged" / "Item closed" workflows). |
 | Roadmap id | CC-034 |
+
+## Regression passes
+
+Record of manual passes run against a change. Add a line per pass.
+
+- 2026-11-19 — CC-006.3 (BoardStepSystem swap): Standard, Color Merge, Advanced Color Merge, Game over, Save/Resume — passed (Ronan). CC-006.5: TP-SAVE-02, -03, -07 passed (Ronan).

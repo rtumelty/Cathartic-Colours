@@ -26,7 +26,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 
 **Lifecycle.** `Awake` registers `GameManager.ActiveGameRenderer`, caches `Camera.main` and loads fallback configuration if none ([configuration.md](configuration.md)). `Start` runs `SetupUI` (camera background colour from the colour profile, then `GameUIManager.SetupUI`) and `InitializeGame`. `OnEnable` subscribes to the UI events ([ui-layout.md](ui-layout.md)). `Update` runs `UpdateVisuals` then `UpdateUI` every frame. `OnDestroy` clears the static reference and runs `CleanUp`.
 
-**Singletons.** `InitializeGame` creates the grid, game-state, score and game-mode entities and the mode and spawn tags, then the visual grid, then either `SpawnInitialBlock` or `SaveGameManager.RestoreWorldState`. This is documented in [configuration.md](configuration.md#starting-a-game) and [ecs-frame-order.md](ecs-frame-order.md#singletons) and is not repeated here. `RestartGame` = `CleanUp` + `InitializeGame`.
+**Singletons.** `InitializeGame` creates the grid, game-state, score, game-mode and scoring-config entities, then the visual grid, then either `SpawnInitialBlock` or `SaveGameManager.RestoreWorldState`. This is documented in [configuration.md](configuration.md#starting-a-game) and [ecs-frame-order.md](ecs-frame-order.md#singletons) and is not repeated here. `RestartGame` = `CleanUp` + `InitializeGame`.
 
 **Visual grid.** `CreateVisualGrid` instantiates `gridWidth * gridHeight` `Cell` prefabs as children, named `Cell_{x}_{y}`, at world position `(x * (cellSize + cellSpacing), y * (cellSize + cellSpacing), 0)`. It tries to tint each via `GetComponent<SpriteRenderer>()` with `ColorProfile.GridBackgroundColor`; the `Cell` prefab has a `MeshFilter`, `MeshRenderer` and `BoxCollider` and no `SpriteRenderer`, so the tint is skipped (see Known issues).
 
@@ -43,7 +43,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 
 **Camera.** `SetupUI` sets `mainCamera.backgroundColor` once. The scene camera is orthographic, clear flags solid colour, size 5 (`Assets/Scenes/Gameplay scene.unity`). `UpdateCamera(headerHeight, footerHeight)` re-fits size and position when the UI reports a layout change; the maths is described in [ui-layout.md](ui-layout.md#layoutobserver-and-the-camera).
 
-**Cleanup.** `CleanUp` destroys all block entities, the cached game-state and score entities, and the `GridConfigComponent` and `GameModeComponent` entities, then destroys every visual object and clears the dictionary. It does not destroy the `Cell` objects, which are left in place and then re-created by the next `InitializeGame` (see Known issues).
+**Cleanup.** `CleanUp` destroys all block entities, the cached game-state and score entities, and the `GridConfigComponent`, `GameModeComponent` and `ScoringConfigComponent` entities, then destroys every visual object and clears the dictionary. It does not destroy the `Cell` objects, which are left in place and then re-created by the next `InitializeGame` (see Known issues).
 
 ### `Block`
 `Assets/Scripts/Gameplay/Block.cs` (global namespace). Serialised `animator`; property `Size` (setter calls `animator.SetInteger("Size", value)`), `Disappear()` (`animator.SetTrigger("Disappear")`), `Dispose()` (`Destroy(gameObject)`, called from the animation event). The controller `Assets/AnimationClips/Block.controller` has parameters `Size` (int) and `Disappear` (trigger), and states `Appear` (default), `Small_to_Medium`, `Medium_to_Large` and `Disappear`; transitions use `Size` thresholds (greater than 1 and greater than 2) and the trigger. The exact transition wiring was not traced.
@@ -51,7 +51,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 ### `JellyManager` and `JellyController`
 **What the wobble is.** `JellyManager` sets shader properties on one shared material, `BlockMaterial.mat`, for `wobblePeriod` seconds after a move; the blocks' `JellyShader` (Shader Graph, `Assets/Shaders/JellyShader.shadergraph`) uses them to wobble the mesh (properties in the graph: `_MainColor`, `_WobbleStrength`, `_DirectionInfluence`, `_DirectionWobbleFrequency`, `_MoveDirection`, `_RandomWobbleFrequency`, `_MinimumOpacity`, `_VolumeIntensity`, `_VolumePower`, `_Texture2D`).
 
-**Trigger.** `InputProcessingSystem.OnUpdate` calls `GameManager.JellyManager.StartWobble(new Vector2(dir.x, dir.y))` for each accepted move, with no null check ([CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)). `JellyManager.OnEnable` registers itself in `GameManager.JellyManager`; `OnDisable` clears it.
+**Trigger.** `GameRenderer.UpdateUI` calls `WobbleOnNewMove`, which calls `GameManager.JellyManager.StartWobble(LastMoveDirection)` (null-checked) when `GameStateComponent.MoveCount` has increased since the last frame. After a game starts or resumes, the first read only records the count, so resuming does not wobble. No simulation code calls presentation (since CC-006.3, ADR-001 §4). Because MonoBehaviour `Update` and the ECS groups run at different points in the player loop, the wobble can start one frame after the move. `JellyManager.OnEnable` registers itself in `GameManager.JellyManager`; `OnDisable` clears it.
 
 **`StartWobble(Vector2 target)`.** Stores the target direction and resets the timer; starts `WobbleCoroutine` if none is running (a move during a running wobble restarts the timer and re-targets, without starting a second coroutine).
 
@@ -70,7 +70,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 `JellyController` (`RequireComponent(SpriteRenderer)`) animates `_WobbleStrength` and `_DistortionStrength` on `spriteRenderer.material` and has a `Jiggle(intensity)` coroutine. It is not attached to any prefab or scene (no reference found in `Assets/Prefabs` or `Assets/Scenes`), and its sprite-material properties do not match the mesh-based block shader.
 
 ### `PointsParticleSpawner`
-`Assets/Scripts/Gameplay/PointsParticleSpawner.cs` (global namespace). `Awake` registers `GameManager.ActivePointsParticleSpawner`; `OnDestroy` clears it. `ScoringSystem` calls `Emit(points, mergeColor, worldPosition)` once per `MergeEventComponent`, with the world position computed from the grid position and `GameRenderer.cellSize`/`cellSpacing`, pushed back in z by 5 (`Assets/Scripts/ECS/Systems/ScoringSystem.cs`).
+`Assets/Scripts/Gameplay/PointsParticleSpawner.cs` (global namespace). `Awake` registers `GameManager.ActivePointsParticleSpawner`; `OnDestroy` clears it. `MergeEffectsSystem` calls `Emit(points, mergeColor, worldPosition)` once per `MergeEventComponent` (points are carried on the event), with the world position computed from the grid position and `GameRenderer.cellSize`/`cellSpacing`, pushed back in z by 5. If the spawner or renderer is missing it skips the effect but still destroys the event (`Assets/Scripts/ECS/Systems/MergeEffectsSystem.cs`).
 
 `Emit` branches on `spawnMode`:
 - `Text`: `SpawnPoints` splits the points into digits and emits one particle from `digitParticleSystems[digit]` per digit, spaced `particleWidth * spacingMultiplier` apart and centred if `centerAlignment`. Skips if `points <= 0`.
@@ -81,10 +81,10 @@ Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); th
 ### ECS state read and written, per component
 | Component | Reads | Writes |
 |---|---|---|
-| `GameRenderer` | `BlockComponent` (all, per frame); `GameStateComponent` and `ScoreComponent` (via cached entities, per frame, for the UI); `GameManager.ActiveConfiguration`, `ActiveColorProfile` | Creates `GridConfigComponent`, `GameStateComponent`, `ScoreComponent`, `GameModeComponent`, the mode tag and `SpawnColorSystemTag` (`InitializeGame`); creates the initial indicator `BlockComponent` (`SpawnInitialBlock`); destroys blocks and singletons (`CleanUp`); `PlayerPrefs` (`LoadFromSave`) |
+| `GameRenderer` | `BlockComponent` (all, per frame); `GameStateComponent` and `ScoreComponent` (via cached entities, per frame, for the UI); `GameManager.ActiveConfiguration`, `ActiveColorProfile` | Creates `GridConfigComponent`, `GameStateComponent`, `ScoreComponent`, `GameModeComponent` and `ScoringConfigComponent` (`InitializeGame`); starts the jelly wobble on a new move (`WobbleOnNewMove`); creates the initial indicator `BlockComponent` (`SpawnInitialBlock`); destroys blocks and singletons (`CleanUp`); `PlayerPrefs` (`LoadFromSave`) |
 | `Block` | none (receives `Size` from the renderer) | none (animator parameters only) |
-| `JellyManager` | none (receives a direction from `InputProcessingSystem`) | shared material `BlockMaterial.mat` properties |
-| `PointsParticleSpawner` | none (receives points, colour and position from `ScoringSystem`); `ColorProfile` colours | none |
+| `JellyManager` | none (receives a direction from `GameRenderer.WobbleOnNewMove`) | shared material `BlockMaterial.mat` properties |
+| `PointsParticleSpawner` | none (receives points, colour and position from `MergeEffectsSystem`); `ColorProfile` colours | none |
 
 ### Prefabs, materials and shaders
 | Item | Path | Notes |
@@ -100,24 +100,23 @@ Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); th
 
 ## Interactions with other systems
 - Reads ECS state and creates singletons: [ecs-frame-order.md](ecs-frame-order.md), [configuration.md](configuration.md).
-- Called from simulation systems: `InputProcessingSystem` (jelly), `ScoringSystem` (particles, `GameRenderer.cellSize`); see [input.md](input.md) and [merge-rules.md](merge-rules.md).
+- Driven by state and events only: `GameRenderer` reads `MoveCount`/`LastMoveDirection` (jelly); `MergeEffectsSystem`, a Presentation-group system, turns merge events into particles (using `GameRenderer.cellSize`); see [ecs-frame-order.md](ecs-frame-order.md) and [merge-rules.md](merge-rules.md).
 - UI text, panels and camera fitting: [ui-layout.md](ui-layout.md).
 - Resume restores block entities that this system then draws: [save-system.md](save-system.md).
 
 ## Known issues
-- Simulation systems call presentation directly through `GameManager`: `InputProcessingSystem` -> `JellyManager`; `ScoringSystem` -> `PointsParticleSpawner`/`GameRenderer`. [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)
 - The indicator's colour is chosen on the following move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
 - Visuals are an aesthetic prototype (instant moves, scale-only animation); rework planned. [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30)
 - `GameRenderer` allocates every frame (a new `EntityQuery`, arrays, a `HashSet`, and a `MaterialPropertyBlock` per block); profiling is planned. [CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29)
-- Guards: `CleanUp` (also called from `OnDestroy`) uses `entityManager` even if `InitializeGame` never ran; `GameManager.JellyManager` is dereferenced without a check. [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
-- Dead code in the ECS layer is tracked in [CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36); presentation-layer cleanup (including the unused `JellyController`) is [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44).
+- Guards: `CleanUp` (also called from `OnDestroy`) uses `entityManager` even if `InitializeGame` never ran, or after the ECS world has been disposed during scene teardown (seen once by Ronan on 2026-11-19 as an `ObjectDisposedException` from `GameRenderer.CleanUp` in `OnDestroy`; depends on teardown order). (`GameManager.JellyManager` is null-checked since CC-006.3.) [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
+- Dead ECS code ([CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36)) was removed in CC-006.3; presentation-layer cleanup (including the unused `JellyController`) is [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44).
 - `GameRenderer.CreateVisualGrid` looks for a `SpriteRenderer` on the `Cell` prefab, which has only a `MeshRenderer`, so `ColorProfile.gridBackgroundColor` is never applied (`Assets/Scripts/Gameplay/GameRenderer.cs`, `Assets/Prefabs/Cell.prefab`). [CC-029](https://github.com/rtumelty/Cathartic-Colours/issues/41)
 - `RestartGame` calls `CleanUp`, which does not destroy the existing `Cell` objects, and `InitializeGame` then creates a full new grid on top, so each restart adds a duplicate set of cells at the same positions (`Assets/Scripts/Gameplay/GameRenderer.cs`, `CleanUp` and `CreateVisualGrid`). Derived from code reading; not run. [CC-029](https://github.com/rtumelty/Cathartic-Colours/issues/41)
 - `JellyManager` writes wobble properties on the shared `BlockMaterial.mat` asset (not an instance), so in the editor play sessions change the asset's saved values (the committed material has non-default `_WobbleStrength` etc.) (`Assets/Scripts/Gameplay/JellyManager.cs`, `Assets/Materials/BlockMaterial.mat`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
 - `JellyController` is not used by any prefab or scene (`Assets/Scripts/Gameplay/JellyController.cs`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
 - `ScoreParticles.prefab` serialises fields that no longer exist on `PointsParticleSpawner` (`particleSystem`, `minAngle`, `maxAngle`) and has no `digitParticleSystems` assigned; only the scene override supplies `blobParticleSystem`, so the prefab on its own does not work (`Assets/Prefabs/ScoreParticles.prefab`, `Assets/Scripts/Gameplay/PointsParticleSpawner.cs`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
 - the wobble smoothing `Lerp(current, target, 0.7)` is applied per frame rather than per second, so it is frame-rate dependent (`Assets/Scripts/Gameplay/JellyManager.cs`, `WobbleCoroutine`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
-- The Advanced Color Merge White Large clear has result colour `None`, which `DefaultColorProfile` maps to `(0,0,0,0)`, so its particles are fully transparent (`Assets/Scripts/ECS/Utilities/AdvancedColorMergeUtility.cs`, `Assets/Data/Color Profiles/DefaultColorProfile.asset`). Found by code reading; not run. [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
+- The Advanced Color Merge White Large clear has result colour `None`, which `DefaultColorProfile` maps to `(0,0,0,0)`, so its particles are fully transparent (`Assets/Scripts/Simulation/AdvancedColorMergeRules.cs`, `Assets/Data/Color Profiles/DefaultColorProfile.asset`). Found by code reading; not run. [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
 
 ## Related test cases
 - [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-02 (camera fit), TP-HUD-06 (wobble, particles, instant moves).

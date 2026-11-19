@@ -9,10 +9,12 @@ using SaveSystem;
 namespace ECS.Systems
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    [UpdateAfter(typeof(ScoringSystem))]
+    [UpdateAfter(typeof(MergeEffectsSystem))]
     public partial struct SaveGameSystem : ISystem
     {
-        
+        // True once the save has been deleted for the current game over, so the file check runs once, not every frame.
+        private bool endedLastFrame;
+
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<GameStateComponent>();
@@ -23,18 +25,22 @@ namespace ECS.Systems
             if (!SystemAPI.TryGetSingleton<GameStateComponent>(out var gameState))
                 return;
 
-            // Detect if input was processed this frame
-            // Input is processed when we transition from WaitingForInput=false to WaitingForInput=true
+            // BoardStepSystem sets WaitingForInput to false only in the frame of an accepted move
+            // (EndFrameSystem sets it back), so this is true exactly once per move.
             bool inputProcessedThisFrame = !gameState.WaitingForInput;
 
-            if (inputProcessedThisFrame && !gameState.GameOver && !gameState.LevelComplete)
+            bool ended = gameState.GameOver || gameState.LevelComplete;
+
+            if (inputProcessedThisFrame && !ended)
             {
                 SaveGame(ref state);
             }
-            else if (gameState.GameOver || gameState.LevelComplete)
+            else if (ended && !endedLastFrame)
             {
                 DeleteSaveGame();
             }
+
+            endedLastFrame = ended;
         }
 
         private void SaveGame(ref SystemState state)
@@ -88,7 +94,9 @@ namespace ECS.Systems
             // Get game state
             if (SystemAPI.TryGetSingleton<GameStateComponent>(out var gameState))
             {
-                saveData.waitingForInput = gameState.WaitingForInput;
+                // The save describes the idle state after the move, when the game waits for the next input.
+                // (WaitingForInput is false right now only because this is the move's frame.)
+                saveData.waitingForInput = true;
                 saveData.gameOver = gameState.GameOver;
                 saveData.levelComplete = gameState.LevelComplete;
                 saveData.moveCount = gameState.MoveCount;

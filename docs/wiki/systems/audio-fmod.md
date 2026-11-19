@@ -11,8 +11,7 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); FMO
 | `Assets/Scripts/ECS/Utilities/FMODEventPaths.cs` | The five event path constants |
 | `Assets/Scripts/ECS/Components/AudioEventComponent.cs` | Event entity component (`FixedString64Bytes EventPath`) |
 | `Assets/Scripts/ECS/Systems/AudioSystem.cs` | Plays and destroys audio event entities |
-| `Assets/Scripts/ECS/Systems/BlockMovementSystem.cs` | Emits move and merge sounds |
-| `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs` | Emits the game-over sound |
+| `Assets/Scripts/ECS/Systems/BoardStepSystem.cs` | Emits move, merge and game-over sounds for accepted moves (since CC-006.3) |
 | `Packages/com.fmod.fmod-for-unity.v204/` | FMOD for Unity 2.04.00, an embedded UPM package ([ADR-003](../decisions/ADR-003-fmod-embedded-package.md)); was `Assets/Plugins/FMOD/` (2.03.11) before CC-033 |
 | `Assets/Resources/FMOD/FMODStudioSettings.asset` | FMOD for Unity settings (the event cache `FMODStudioCache.asset` beside it is gitignored) |
 | `Assets/Scenes/MainMenu.unity`, `Assets/Scenes/Gameplay scene.unity` | Each has an FMOD `StudioListener` component (on the camera object) |
@@ -32,13 +31,13 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); FMO
 
 | Constant | Path | Emitted by |
 |---|---|---|
-| `BlockMove` | `event:/Block_Move` | `BlockMovementSystem.OnUpdate`, once at the start of every run where a `MoveDirectionComponent` exists (before any validation, see Known issues) |
-| `BlockMergeSmall` | `event:/Block_Merge_Small` | `BlockMovementSystem.GetMergeAudioPath` |
-| `BlockMergeMedium` | `event:/Block_Merge_Medium` | `BlockMovementSystem.GetMergeAudioPath` |
-| `BlockMergeLarge` | `event:/Block_Merge_Large` | `BlockMovementSystem.GetMergeAudioPath`; also directly when a merge destroys both blocks (`result.ShouldDestroy`) |
-| `GameOver` | `event:/GameOver` | `GameEndConditionSystem.OnUpdate`, when it sets `GameOver = true` |
+| `BlockMove` | `event:/Block_Move` | `BoardStepSystem`, once per accepted move (a rejected move makes no sound since CC-006.3) |
+| `BlockMergeSmall` | `event:/Block_Merge_Small` | `BoardStepSystem.MergeAudioPath` |
+| `BlockMergeMedium` | `event:/Block_Merge_Medium` | `BoardStepSystem.MergeAudioPath` |
+| `BlockMergeLarge` | `event:/Block_Merge_Large` | `BoardStepSystem.MergeAudioPath`; also directly when a merge destroys both blocks (`SimEvent.DestroysBoth`) |
+| `GameOver` | `event:/GameOver` | `BoardStepSystem`, when the move ends the game |
 
-`GetMergeAudioPath(originalSize, resultSize)` is called with the moving block's size before the merge and the merge result's size. It returns Small if either is Small, else Medium if either is Medium, else Large. Because a merge result is never smaller than the input, the sound is effectively chosen by the moving block's original size: Small blocks merging gives the Small sound, Medium the Medium sound, Large the Large sound. A merge that clears both blocks always plays the Large sound (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`).
+`MergeAudioPath(moverSize, resultSize)` is called with the moving block's size before the merge and the merge result's size. It returns Small if either is Small, else Medium if either is Medium, else Large. Because a merge result is never smaller than the input, the sound is effectively chosen by the moving block's original size: Small blocks merging gives the Small sound, Medium the Medium sound, Large the Large sound. A merge that clears both blocks always plays the Large sound (`Assets/Scripts/ECS/Systems/BoardStepSystem.cs`, `WriteBack`).
 
 No other script or scene references FMOD events: there are no `StudioEventEmitter` components, no music and no UI sounds (search of `Assets/Scripts` and scenes; the only FMOD components in the two scenes are `StudioListener`).
 
@@ -113,10 +112,9 @@ The built banks in `Build/Desktop/` nevertheless appear to contain the events: t
 ## Known issues
 - The five FMOD events exist only in `.unsaved/`; the saved project has none. [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9)
 - No Android/mobile bank build or FMOD mobile platform configuration: only `Build/Desktop/` exists and no platform sets a `BuildDirectory`. [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)
-- `Block_Move` plays whenever a move command exists, including rejected moves (game over). [CC-023](https://github.com/rtumelty/Cathartic-Colours/issues/35)
 - `AudioSystem` is unordered against the systems that create events, so playback timing is not deterministic. [ecs-frame-order.md](ecs-frame-order.md)
 - There is no `Metadata/Event/` folder and the `.fspro` is an empty stub, so a bank build from a fresh clone of the saved project would contain no events (`Cathartic Colours - FMOD/Metadata/`). Part of [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9).
-- Note (design, confirmed by Ronan 2026-11-18): the merge sound is selected from the moving block's size, i.e. the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This is a naming choice, not an issue (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `GetMergeAudioPath`).
+- Note (design, confirmed by Ronan 2026-11-18): the merge sound is selected from the moving block's size, i.e. the *input* size, not the size produced (e.g. Medium + Medium plays `Block_Merge_Medium` although a Large block results). This is a naming choice, not an issue (`Assets/Scripts/ECS/Systems/BoardStepSystem.cs`, `MergeAudioPath`).
 
 ## Related test cases
 - [Audio](../test-plan.md#audio-audio): TP-AUDIO-01 to TP-AUDIO-05.

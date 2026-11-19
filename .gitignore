@@ -3,3 +3,6 @@
 # Obsidian: per-machine UI state
 **/.obsidian/workspace*.json
 **/.obsidian/cache
+
+# Unity -runTests output (CLAUDE.md §4 command)
+TestResults/
