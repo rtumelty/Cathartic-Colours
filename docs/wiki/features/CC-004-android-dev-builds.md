@@ -112,3 +112,4 @@ Folded into the [test plan](../test-plan.md#android-build-droid) as TP-DROID-01 
 ## Status log
 - 2026-11-19: Planned
 - 2026-11-19: Approved by Ronan (plan, D1–D4 and routing; signing split out to CC-036)
+- 2026-11-19: Device smoke test (MANUAL 2) passed on Ronan's phone with version code 73: three modes, swipes, sound, resume

@@ -115,3 +115,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-004.3 | New systems/build-android.md; CLAUDE.md §4 build command; test plan area DROID (TP-DROID-01–04); index
 ## [2026-11-19] schema | CLAUDE.md | §2 test plan area Android build and systems page build-android; §4 Android build command replaces "no build script yet"
 ## [2026-11-19] implement | CC-004.3 | Device install: adb install -r of version code 73 on Ronan's phone succeeded; app launched, no fatal errors in logcat
+## [2026-11-19] implement | CC-004 MANUAL 2 | Ronan: device smoke test passed on version code 73 (three modes, swipes, Mobile-bank sound, resume)
+## [2026-11-19] approve | CC-004.3 | Approved by Ronan; #63 Done; feature test plan folded in (TP-DROID-01 to 04); PR to develop opened, #10 In review
