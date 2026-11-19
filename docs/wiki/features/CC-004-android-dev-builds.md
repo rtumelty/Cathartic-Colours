@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#10](https://github.com/rtumelty/Cathartic-Colours/issues/10) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-004-android-dev-builds` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#67](https://github.com/rtumelty/Cathartic-Colours/pull/67) |
 | Depends on | [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9) (FMOD clean-up; merge it first, then merge `develop` into this branch) |
 | Blocks | [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) (store release), [CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29) (profiling on device) |
 
