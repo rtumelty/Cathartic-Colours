@@ -96,3 +96,12 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] plan | CC-036 | New backlog item: release signing, keystore and Google Play publishing, split out of CC-004 because the game isn't going to the store yet (Ronan)
 ## [2026-11-19] implement | CC-003 | Ronan re-saved the FMOD Studio project in 2.04 (96298b1): Mobile platform and encoding now saved in Metadata, .unsaved removed from git; banks rebuilt in 2.04 (576f6cb)
 ## [2026-11-19] schema | CLAUDE.md, ~/.claude/CLAUDE.md | On plan approval the planning session starts the feature session itself with the kickoff prompt (local, Remote Control on), so Ronan can work away from the machine; user-level §2.1 step 4 (not in git) and project §6
+## [2026-11-19] approve | CC-003 | Plan, D1–D3 and routing approved by Ronan; #9 Approved, sub-issues #58–#60; Ronan's 2.04 re-save (96298b1) replaced the MANUAL Save step
+## [2026-11-19] implement | CC-003.1 | FMOD Studio per-machine folders .cache/ (233 files) and .user/ (3 files) untracked, kept on disk; .gitignore added for .cache/, .user/, .unsaved/; saved-project checks passed (Desktop + Mobile platforms, 2 encodings, 5 events)
+## [2026-11-19] approve | CC-003.1 | Approved by Ronan; #58 Done
+## [2026-11-19] implement | CC-003.2 | tools/build-fmod-banks.ps1 wraps fmodstudiocl -build; -diagnostic clean (no errors or warnings); a clean-checkout build rewrote all four banks byte-identical to the committed ones
+## [2026-11-19] implement | CC-003 MANUAL 1 | Ronan: manual copy on 442e23b, FMOD Studio 2.04 reopened the project and the editor played all sounds; the pull removed the copy's tracked .user/ files, so its layout was restored from a backup as ignored files
+## [2026-11-19] approve | CC-003.2 | Approved by Ronan after the listening check; #59 Done
+## [2026-11-19] implement | CC-003.3 | Audio docs updated for the saved 2.04 project: audio-fmod.md (layout, platforms and encodings, rebuilding the banks, Unity platform-to-Build-folder findings; .unsaved hazard section removed), test cases TP-AUDIO-05 rewritten, TP-AUDIO-06 and TP-TOOL-04 added, ADR-003 note, index
+## [2026-11-19] schema | CLAUDE.md | §1 FMOD Studio 2.04 with Desktop and Mobile banks committed; §5 FMOD bullet: save, close Studio, rebuild with tools\build-fmod-banks.ps1, commit Build/ with Metadata/; removed the migrate-to-2.04 text
+## [2026-11-19] approve | CC-003.3 | Approved by Ronan; #60 Done; feature test plan folded in (TP-TOOL-04, TP-AUDIO-05, TP-AUDIO-06); PR to develop opened, #9 In review
