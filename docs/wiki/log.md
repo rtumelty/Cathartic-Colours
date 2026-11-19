@@ -68,6 +68,9 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] plan | CC-003, CC-004 | Rescoped after Ronan's develop commits (FMOD project saved, Mobile banks, Android build profiles); CC-033 keeps com.unity.purchasing (Ronan)
 ## [2026-11-19] approve | CC-033 | PR #54 squash-merged into develop as 73ee1cc, identical to the branch tip; #45 and sub-issues #51-#53 Done
 ## [2026-11-19] plan | roadmap | Review after CC-033: Foundations continues with CC-003, CC-004, CC-005; CC-006 is unblocked (its branch needs develop merged in); audio-fmod hazard marked resolved pending CC-003
+## [2026-11-19] plan | CC-035 | New backlog item: spawn colour rubber-banding against board colour imbalance (Ronan); depends on CC-006
+## [2026-11-19] schema | CLAUDE.md | §6 two working copies: Cathartic-Colours is the agent sandbox, Cathartic-Colours_2 is Ronan's manual copy; agents ask before switching the manual copy's branch; §4 batchmode note updated
+## [2026-11-19] schema | CLAUDE.md | Two-working-copies rule moved out of the project CLAUDE.md into an uncommitted CLAUDE.local.md, since it describes one machine's setup (Ronan); §4 batchmode note restored
 ## [2026-11-19] implement | CC-006.1 | CatharticColours.Simulation assembly (block, size, tier and mode enums, namespace Simulation) and EditMode test assembly; 4 smoke tests pass from the CLI; assets unchanged; TestResults/ gitignored
 ## [2026-11-19] schema | CLAUDE.md | §3 Simulation namespace and the ADR-001 pattern (rules in the pure simulation, ECS wraps it); §4 test-run and Assembly-CSharp notes updated for the Simulation tests
 ## [2026-11-19] approve | CC-006.1 | Approved by Ronan; #13 Done
