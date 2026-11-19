@@ -70,3 +70,7 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] plan | roadmap | Review after CC-033: Foundations continues with CC-003, CC-004, CC-005; CC-006 is unblocked (its branch needs develop merged in); audio-fmod hazard marked resolved pending CC-003
 ## [2026-11-19] implement | CC-006.1 | CatharticColours.Simulation assembly (block, size, tier and mode enums, namespace Simulation) and EditMode test assembly; 4 smoke tests pass from the CLI; assets unchanged; TestResults/ gitignored
 ## [2026-11-19] schema | CLAUDE.md | §3 Simulation namespace and the ADR-001 pattern (rules in the pure simulation, ECS wraps it); §4 test-run and Assembly-CSharp notes updated for the Simulation tests
+## [2026-11-19] approve | CC-006.1 | Approved by Ronan; #13 Done
+## [2026-11-19] implement | CC-006.2 | Pure board model (Block, BoardState, SimEvent, StepResult), struct rule sets behind IMergeRules with MergeRulesFactory, BoardSimulation.Step with parity incl. CC-020/CC-021; 200 EditMode tests pass, Burst compile checked
+## [2026-11-19] diverge | CC-006.2 | Old IMergeUtility classes removed as planned, so BlockMovementSystem and GameEndConditionSystem now call MergeRulesFactory (name clash on MergeResult); restored-indicator MovingBlockTag slide noted for .3
+## [2026-11-19] schema | CLAUDE.md | §3 rules-as-strategies now IMergeRules structs and MergeRulesFactory; Simulation.Block name-clash note

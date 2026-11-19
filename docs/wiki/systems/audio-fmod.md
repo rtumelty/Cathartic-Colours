@@ -35,7 +35,7 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); FMO
 | `BlockMove` | `event:/Block_Move` | `BlockMovementSystem.OnUpdate`, once at the start of every run where a `MoveDirectionComponent` exists (before any validation, see Known issues) |
 | `BlockMergeSmall` | `event:/Block_Merge_Small` | `BlockMovementSystem.GetMergeAudioPath` |
 | `BlockMergeMedium` | `event:/Block_Merge_Medium` | `BlockMovementSystem.GetMergeAudioPath` |
-| `BlockMergeLarge` | `event:/Block_Merge_Large` | `BlockMovementSystem.GetMergeAudioPath`; also directly when a merge destroys both blocks (`result.ShouldDestroy`) |
+| `BlockMergeLarge` | `event:/Block_Merge_Large` | `BlockMovementSystem.GetMergeAudioPath`; also directly when a merge destroys both blocks (`result.DestroysBoth`) |
 | `GameOver` | `event:/GameOver` | `GameEndConditionSystem.OnUpdate`, when it sets `GameOver = true` |
 
 `GetMergeAudioPath(originalSize, resultSize)` is called with the moving block's size before the merge and the merge result's size. It returns Small if either is Small, else Medium if either is Medium, else Large. Because a merge result is never smaller than the input, the sound is effectively chosen by the moving block's original size: Small blocks merging gives the Small sound, Medium the Medium sound, Large the Large sound. A merge that clears both blocks always plays the Large sound (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`).

@@ -1,5 +1,6 @@
 using ECS.Components;
 using ECS.Utilities;
+using Simulation;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -22,9 +23,8 @@ namespace ECS.Systems
             
             if (gameState.ValueRW.GameOver) return;
             
-            // Get the game mode and appropriate merge utility
-            var gameMode = SystemAPI.GetSingleton<GameModeComponent>();
-            IMergeUtility mergeUtility = MergeUtilityFactory.GetMergeUtility(gameMode.Mode);
+            // Merge rules come from the pure simulation (CC-006); this system is replaced in CC-006.3
+            GameMode mode = SystemAPI.GetSingleton<GameModeComponent>().Mode;
             
             var gridConfig = SystemAPI.GetSingleton<GridConfigComponent>();
 
@@ -57,7 +57,7 @@ namespace ECS.Systems
                 ref state, 
                 ref occupancyMap, 
                 gridConfig, 
-                mergeUtility
+                mode
             );
 
             occupancyMap.Dispose();
@@ -84,7 +84,7 @@ namespace ECS.Systems
             ref SystemState state,
             ref NativeHashMap<int2, Entity> occupancyMap,
             GridConfigComponent gridConfig,
-            IMergeUtility mergeUtility)
+            GameMode mode)
         {
             // Reusable directions array
             var directions = new NativeArray<int2>(4, Allocator.Temp);
@@ -114,8 +114,8 @@ namespace ECS.Systems
 
                     var neighborBlock = state.EntityManager.GetComponentData<BlockComponent>(neighborEntity);
 
-                    // Use merge utility to check if blocks can merge
-                    if (mergeUtility.CanMerge(block.ValueRO, neighborBlock))
+                    // Use the mode's rules to check if blocks can merge
+                    if (MergeRulesFactory.CanMerge(mode, block.ValueRO.ToSimulationBlock(), neighborBlock.ToSimulationBlock()))
                     {
                         hasValidMerge = true;
                         break;

@@ -8,11 +8,13 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 ## Key files
 | File | Role |
 |---|---|
-| `Assets/Scripts/ECS/Utilities/IMergeUtility.cs` | `IMergeUtility` (`CanMerge`, `MergeBlocks`) and `MergeResult` |
-| `Assets/Scripts/ECS/Utilities/MergeUtilityFactory.cs` | `GameMode` to utility |
-| `Assets/Scripts/ECS/Utilities/StandardMergeUtility.cs` | Standard rules |
-| `Assets/Scripts/ECS/Utilities/ColorMergeUtility.cs` | Color Merge rules |
-| `Assets/Scripts/ECS/Utilities/AdvancedColorMergeUtility.cs` | Advanced Color Merge rules |
+| `Assets/Scripts/Simulation/IMergeRules.cs`, `MergeResult.cs` | `IMergeRules` (`CanMerge`, `Merge`) and `MergeResult` |
+| `Assets/Scripts/Simulation/MergeRulesFactory.cs` | `GameMode` to rule struct (switch, no boxing) |
+| `Assets/Scripts/Simulation/StandardMergeRules.cs` | Standard rules |
+| `Assets/Scripts/Simulation/ColorMergeRules.cs` | Color Merge rules |
+| `Assets/Scripts/Simulation/AdvancedColorMergeRules.cs` | Advanced Color Merge rules |
+| `Assets/Scripts/Simulation/BoardSimulation.cs`, `BoardState.cs`, `Block.cs`, `SimEvent.cs`, `StepSettings.cs` | Pure move step (slide, merge, score, resolve, spawn, end check); not yet used by the game (wired in by CC-006.3) |
+| `Assets/Tests/EditMode/` | Unit tests for all of the above (`CatharticColours.Simulation.Tests`) |
 | `Assets/Scripts/ECS/Systems/BlockMovementSystem.cs` | Slide and merge execution |
 | `Assets/Scripts/ECS/Systems/ScoringSystem.cs`, `Assets/Scripts/ECS/Components/ScoringComponents.cs` | Merge events, tiers, score |
 | `Assets/Scripts/Data/GameConfiguration.cs` | Tier point values (`GetPointsForTier`) |
@@ -29,13 +31,13 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 - A block has `Color`, `Size`, `GridPosition` and `IsNextColorIndicator` (the white placeholder for the next spawn). All three merge utilities refuse to merge any indicator block.
 
 ### The merge strategy
-`BlockMovementSystem` and `GameEndConditionSystem` both call `MergeUtilityFactory.GetMergeUtility(GameModeComponent.Mode)`, which returns `AdvancedColorMergeUtility` for `AdvancedColorMerge`, `ColorMergeUtility` for `ColorMerge`, and `StandardMergeUtility` for `Standard` and any other value (`Assets/Scripts/ECS/Utilities/MergeUtilityFactory.cs`).
+Each mode's rules are a struct implementing `IMergeRules` in the `Simulation` assembly (since CC-006.2, replacing the `IMergeUtility` classes). `MergeRulesFactory` switches on `GameMode`: `AdvancedColorMergeRules` for `AdvancedColorMerge`, `ColorMergeRules` for `ColorMerge`, and `StandardMergeRules` for `Standard` and any other value. `BlockMovementSystem` and `GameEndConditionSystem` call `MergeRulesFactory.CanMerge`/`Merge(GameModeComponent.Mode, …)`, converting each `BlockComponent` with `ToSimulationBlock()`. `BoardSimulation.Step` runs a whole move on a `BoardState` with the same rules; it has the same behaviour as the systems described below, pinned by the EditMode tests, and replaces them in CC-006.3.
 
-`IMergeUtility` has two methods: `CanMerge(block1, block2)` and `MergeBlocks(block1, block2)`. `MergeBlocks` returns a `MergeResult` with `Color`, `Size`, `ScoreTier` and `ShouldDestroy`. In `BlockMovementSystem`, `block1` is the moving block and `block2` is the block it moves into (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `OnUpdate`). If `ShouldDestroy` is false the target block takes the result's colour and size and the moving block is destroyed; if true, both blocks are destroyed. The interface covers only merge rules; spawn, end and scoring rules are fixed in systems (see Known issues).
+`IMergeRules` has two methods: `CanMerge(mover, target)` and `Merge(mover, target)`. `Merge` returns a `MergeResult` with `Color`, `Size`, `Tier` and `DestroysBoth`. In `BlockMovementSystem`, `block1` is the moving block and `block2` is the block it moves into (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `OnUpdate`). If `DestroysBoth` is false the target block takes the result's colour and size and the moving block is destroyed; if true, both blocks are destroyed. The interface covers only merge rules; spawn, end and scoring rules are fixed in systems (see Known issues).
 
 ### Rules per mode
 
-**Standard** (`Assets/Scripts/ECS/Utilities/StandardMergeUtility.cs`)
+**Standard** (`Assets/Scripts/Simulation/StandardMergeRules.cs`)
 - `CanMerge`: same colour and same size, neither an indicator. Any colour (the game only ever spawns Red, Green, Blue, so in practice three independent colour families).
 - `MergeBlocks` by the moving block's size:
 
@@ -45,7 +47,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 | Medium + Medium | Large, same colour | Tier2 |
 | Large + Large | both destroyed | Tier3 |
 
-**Color Merge** (`Assets/Scripts/ECS/Utilities/ColorMergeUtility.cs`)
+**Color Merge** (`Assets/Scripts/Simulation/ColorMergeRules.cs`)
 - `CanMerge` is false for equal colours, for White or None on either side, and for indicators. Size is ignored. It is true for two different primaries, and for a secondary with the primary it lacks (the two share no bits and together make 7). Two secondaries never merge.
 - `MergeBlocks` ORs the colour bits. Result size is the **moving block's** size (blocks are only ever Small in this mode).
 
@@ -54,9 +56,9 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 | Red + Green | Yellow | Tier1 |
 | Red + Blue | Magenta | Tier1 |
 | Green + Blue | Cyan | Tier1 |
-| Yellow + Blue, Magenta + Green, Cyan + Red | both destroyed (result colour White, `ShouldDestroy`) | Tier3 |
+| Yellow + Blue, Magenta + Green, Cyan + Red | both destroyed (result colour White, `DestroysBoth`) | Tier3 |
 
-**Advanced Color Merge** (`Assets/Scripts/ECS/Utilities/AdvancedColorMergeUtility.cs`)
+**Advanced Color Merge** (`Assets/Scripts/Simulation/AdvancedColorMergeRules.cs`)
 - `CanMerge` is false for indicators and None, then by size pair:
 
 | Pair | Condition | Result | Tier |
@@ -78,7 +80,7 @@ Source: `Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`, `OnUpdate`.
 5. For each block, the target cell is `GridPosition + direction`:
    - **Out of bounds:** the block stays and its tag is disabled.
    - **Empty in the occupancy map:** the block moves one cell (the map is updated immediately, so a block behind can move into the cell just vacated) and its tag is disabled.
-   - **Occupied and `CanMerge` and the occupant has not already been merged into this move:** merge. The moving block is destroyed and removed from the map; the occupant takes the result colour and size and is added to `mergedIntoBlocks`. If `ShouldDestroy`, both are destroyed and both removed from the map.
+   - **Occupied and `CanMerge` and the occupant has not already been merged into this move:** merge. The moving block is destroyed and removed from the map; the occupant takes the result colour and size and is added to `mergedIntoBlocks`. If `DestroysBoth`, both are destroyed and both removed from the map.
    - **Occupied otherwise** (cannot merge, or occupant was already merged into this move): the block stays and its tag is disabled.
 6. **One merge per block per move:** a moving block is destroyed when it merges, and a block that was merged into cannot be merged into again in the same move. A merge result also never moves further in the same move.
 7. Each merge creates a `MergeEventComponent` (position = target cell, tier, result colour) and an audio event. The sound is `Block_Merge_Large` for destroying merges, otherwise chosen from the moving block's size and the result size (`GetMergeAudioPath`: Small if either is Small, else Medium if either is Medium, else Large).
@@ -145,12 +147,12 @@ Source: `Assets/Scripts/ECS/Systems/GameEndConditionSystem.cs`.
 - Merge events drive particles and score display; audio events drive FMOD one-shots; the save system stores blocks, score and random state. See [save-system.md](save-system.md), [audio-fmod.md](audio-fmod.md) and [presentation.md](presentation.md).
 
 ## Known issues
-- `IMergeUtility` covers merge rules only; spawn policy, end conditions, scoring and move mechanics are hard-coded in systems. [CC-008](https://github.com/rtumelty/Cathartic-Colours/issues/20)
+- `IMergeRules` covers merge rules only; spawn policy, end conditions, scoring and move mechanics are hard-coded in systems. [CC-008](https://github.com/rtumelty/Cathartic-Colours/issues/20)
 - The spawn colour is chosen only on the next move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
 - Rules are executed inside ECS systems that also call presentation code (`ScoringSystem`). [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12)
 - `LevelComplete` is never set. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
-- Advanced Color Merge has unmergeable dead ends: two Medium blocks of the same colour, a Small and a Medium, and Small blocks of different colours never merge (`Assets/Scripts/ECS/Utilities/AdvancedColorMergeUtility.cs`, `CanMerge`). [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38)
-- Color Merge result size is the moving block's size and `CanMerge` ignores size; this works only because blocks are always Small in that mode (`Assets/Scripts/ECS/Utilities/ColorMergeUtility.cs`). [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38)
+- Advanced Color Merge has unmergeable dead ends: two Medium blocks of the same colour, a Small and a Medium, and Small blocks of different colours never merge (`Assets/Scripts/Simulation/AdvancedColorMergeRules.cs`, `CanMerge`). [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38)
+- Color Merge result size is the moving block's size and `CanMerge` ignores size; this works only because blocks are always Small in that mode (`Assets/Scripts/Simulation/ColorMergeRules.cs`). [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38)
 - In `BlockMovementSystem` the "target was destroyed, move into the space" branch and the `destroyedBlocks.Contains(entity)` skip are unreachable: destroyed blocks are removed from the occupancy map and are always ahead of the mover in sort order (`Assets/Scripts/ECS/Systems/BlockMovementSystem.cs`). [CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36)
 - Random colour/position correlation (stored `Random` not advanced by `ResolveNewBlocksSystem`), and `SpawnColorSystem` can fail to spawn when empty cells remain; both described in [ecs-frame-order.md](ecs-frame-order.md#known-issues) (`Assets/Scripts/ECS/Systems/ResolveNewBlocksSystem.cs`, `Assets/Scripts/ECS/Systems/SpawnColorSystem.cs`). [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32), [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33)
 

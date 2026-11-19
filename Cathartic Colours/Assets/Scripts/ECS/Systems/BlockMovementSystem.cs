@@ -22,9 +22,8 @@ namespace ECS.Systems
             if (!SystemAPI.TryGetSingleton<MoveDirectionComponent>(out var moveDirection))
                 return;
 
-            // Get the game mode and appropriate merge utility
-            var gameMode = SystemAPI.GetSingleton<GameModeComponent>();
-            IMergeUtility mergeUtility = MergeUtilityFactory.GetMergeUtility(gameMode.Mode);
+            // Merge rules come from the pure simulation (CC-006); this system is replaced in CC-006.3
+            GameMode mode = SystemAPI.GetSingleton<GameModeComponent>().Mode;
 
             var gridConfig = SystemAPI.GetSingleton<GridConfigComponent>();
             var ecb = new EntityCommandBuffer(Allocator.Temp);
@@ -97,14 +96,14 @@ namespace ECS.Systems
 
                     var targetBlock = state.EntityManager.GetComponentData<BlockComponent>(targetEntity);
 
-                    // Check if can merge using the appropriate utility
+                    // Check if can merge using the mode's rules
                     if (!mergedIntoBlocks.Contains(targetEntity) &&
-                        mergeUtility.CanMerge(blockData, targetBlock))
+                        MergeRulesFactory.CanMerge(mode, blockData.ToSimulationBlock(), targetBlock.ToSimulationBlock()))
                     {
-                        // Perform merge using utility
-                        MergeResult result = mergeUtility.MergeBlocks(blockData, targetBlock);
+                        // Perform merge using the mode's rules
+                        MergeResult result = MergeRulesFactory.Merge(mode, blockData.ToSimulationBlock(), targetBlock.ToSimulationBlock());
                         
-                        if (result.ShouldDestroy)
+                        if (result.DestroysBoth)
                         {
                             // Both blocks destroyed
                             ecb.DestroyEntity(entity);
@@ -198,7 +197,7 @@ namespace ECS.Systems
             ecb.AddComponent(mergeEventEntity, new MergeEventComponent
             {
                 Position = position,
-                Tier = result.ScoreTier,
+                Tier = result.Tier,
                 Color = result.Color
             });
         }
