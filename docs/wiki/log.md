@@ -60,3 +60,6 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] diverge | CC-033.2 | UPM tarball instead of .unitypackage (embedded package, ADR-003); agent imported instead of MANUAL step 1; started before CC-033.1 approval at Ronan's request
 ## [2026-11-19] implement | CC-033 | Merged develop (saved FMOD Studio project, Mobile banks, Android build profiles, Unity IAP 5.5.1) into the feature branch; FMOD settings now migrated to 2.04; event cache untracked again
 ## [2026-11-19] implement | CC-033 | 57 .meta files below Unity 6.6's minimum format re-saved (56 in the FMOD package, MainMenu.uxml.meta); plugin platform flags unchanged; local package change recorded in systems/audio-fmod
+## [2026-11-19] implement | CC-033.3 | EditMode and PlayMode -runTests on 6000.6.9f1 both exit 0 with a results XML (0 tests); ProjectSettings re-saved in the 6.6 format; test plan area TOOL added (TP-TOOL-01..03)
+## [2026-11-19] schema | CLAUDE.md | §1 Unity 6000.6.9f1, Entities 6.6.0, URP 17.6.0, Unity IAP, FMOD for Unity 2.04; §4 editor path and close-the-editor note; §5 FMOD Studio 2.04 migration note replaces the stale .unsaved note
+## [2026-11-19] diverge | CC-033.3 | Primary wrote the docs, Haiku ran the tests; corrected the merge note: Unity 6.6 writes a trailing i on integer hex arrays

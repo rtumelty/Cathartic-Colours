@@ -10,8 +10,8 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 - **Game:** Cathartic Colours — casual 2048-style colour-merge puzzle game. Target: **Android release**.
 - **Repo:** `github.com/rtumelty/Cathartic-Colours`. Branches per user-level §4 (`master`, `develop`, `feature/CC-<nnn>-<slug>`).
 - **Layout**
-  - `Cathartic Colours/` — Unity project (Unity **6000.3.2f1**, URP 2D, Entities 1.4.4 / DOTS ECS, Input System, UI Toolkit, FMOD for Unity)
-  - `Cathartic Colours - FMOD/` — FMOD Studio 2.03 project (Unity reads banks from its `Build/` folder)
+  - `Cathartic Colours/` — Unity project (Unity **6000.6.9f1**, URP 2D 17.6.0, Entities 6.6.0 / DOTS ECS, Input System, UI Toolkit, Unity IAP 5.5.1, FMOD for Unity **2.04** as an embedded package in `Packages/com.fmod.fmod-for-unity.v204`, see [ADR-003](docs/wiki/decisions/ADR-003-fmod-embedded-package.md))
+  - `Cathartic Colours - FMOD/` — FMOD Studio 2.03 project (Unity reads banks from its `Build/` folder; not yet migrated to 2.04)
   - `CatharticColours.pz` — original PuzzleScript prototype (reference only)
   - `docs/wiki/` — LLM-maintained wiki · `docs/raw/` — immutable sources
 - **Roadmap id prefix:** `CC` (e.g. `CC-001`, deliverable `CC-001.2`).
@@ -34,14 +34,14 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 
 ## 4. Running tests and builds
 - **Tests (command line):**
-  `"<UnityEditorPath>\Unity.exe" -batchmode -projectPath "Cathartic Colours" -runTests -testPlatform EditMode -testResults "TestResults\editmode.xml" -logFile -`
-  then the same with `-testPlatform PlayMode`. (Do not pass `-quit` with `-runTests`.) Record the local Unity path in a gitignored file or here once known.
+  `"C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe" -batchmode -projectPath "Cathartic Colours" -runTests -testPlatform EditMode -testResults "TestResults\editmode.xml" -logFile -`
+  then the same with `-testPlatform PlayMode`. (Do not pass `-quit` with `-runTests`.) Close the editor first: a batchmode run can't open a project that's already open. The path above is the Unity Hub default install location for 6000.6.9f1. Until test assemblies exist, each run reports 0 tests, which is the expected result (CC-033).
 - **Known constraint:** game scripts currently compile into `Assembly-CSharp`, which test assemblies can't reference. Adding assembly definitions for game code is a prerequisite for automated tests.
 - **Android build:** no Android build profile or build script is committed yet. Until one exists, builds are a `MANUAL (Ronan)` step.
 
 ## 5. Editor-only and external-tool work
 - Scene/prefab wiring, UXML layout changes with complex bindings and all FMOD Studio edits are `MANUAL (Ronan)` unless trivially safe.
-- **FMOD:** always **save the FMOD project** (Ctrl+S) before building banks or committing. Unsaved changes live in `.unsaved/` and are not part of the project. (As of Nov 2026 the game's five events exist only in `.unsaved/` — restore and save them before any audio work.)
+- **FMOD:** always **save the FMOD project** (Ctrl+S) before building banks or committing. Unsaved changes live in `.unsaved/` and are not part of the project. The Studio project is still on 2.03 while the Unity integration is on 2.04: migrate the Studio project to 2.04 (open it in FMOD Studio 2.04 and save) before rebuilding banks, so the banks match the runtime.
 
 ## 6. Sessions and environment
 - **Planning session:** one long-running session owns the roadmap, refinement and feature plans (user-level §2.1). On approval it sets the issue to Approved and creates the deliverable sub-issues with `gh`. It then creates `feature/CC-<nnn>-<slug>` from `develop`, commits the feature page (with its index/log entries and any ADRs) there and pushes it. It commits to `develop` only when `roadmap.md` strategy changes. The kickoff prompt names the branch, the feature page and the issue number.

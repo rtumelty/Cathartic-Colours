@@ -33,7 +33,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [Presentation](systems/presentation.md): `GameRenderer`, `Block`, jelly wobble, score particles, and the ECS state each reads and writes.
 
 ## Testing
-- [Manual test plan](test-plan.md) — how to run the test plan, case format, 51 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), and 4 project-tracking cases (TRACK, CC-034).
+- [Manual test plan](test-plan.md) — how to run the test plan, case format, 51 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), 4 project-tracking cases (TRACK, CC-034) and 3 editor and tooling cases (TOOL, CC-033).
 
 ## Raw sources
 - [Raw sources](../raw/README.md) — immutable source material and its register (PuzzleScript prototype, planning discussion when supplied).

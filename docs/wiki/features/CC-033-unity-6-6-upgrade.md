@@ -232,7 +232,7 @@ FMOD may migrate `FMODStudioSettings.asset` (its `CurrentVersion` is still 2.03'
 ### Merge of develop (2026-11-19)
 Ronan committed three changes to `develop` while CC-033 was in review: the FMOD Studio project saved out of `.unsaved/`, rebuilt Desktop banks plus new Mobile banks, and Android build profiles (`Assets/Settings/Build Profiles/`) with `com.unity.purchasing` 5.5.1. They were merged into this branch as follows:
 - **FMOD Studio project, banks, build profiles:** taken as they are. The build profiles hold no signing settings. The Studio project is still serialised as 2.03 (`Studio.02.03.00`).
-- **`FMODStudioSettings.asset`:** develop's edit, made by the 2.04 editor, carried over to the moved file in `Assets/Resources/FMOD/`. `CurrentVersion` is now 132096 (2.04), which is the migration expected after MANUAL step 2. A stray `i` at the end of the `MigratedPlatforms` hex string was removed, because it isn't valid hex.
+- **`FMODStudioSettings.asset`:** develop's edit, made by the 2.04 editor, carried over to the moved file in `Assets/Resources/FMOD/`. `CurrentVersion` is now 132096 (2.04), which is the migration expected after MANUAL step 2. A trailing `i` at the end of the `MigratedPlatforms` hex string was removed as a stray character. That was wrong: CC-033.3 showed that Unity 6.6 writes integer arrays with this `i` suffix itself (see CC-033.3 results). Unity reads both forms, and it puts the suffix back the next time it saves the file.
 - **`com.unity.purchasing` 5.5.1:** kept by Ronan's decision (planned for CC-016) and added to the stripped manifest. Unity regenerated the lock rather than it being hand-merged. Purchasing brings back `com.unity.ugui` and the 2D physics modules as dependencies (not direct entries), plus Unity Services core and deployment and Newtonsoft JSON.
 - **Build profiles:** a batchmode open did not re-save them. If the editor GUI re-saves them in 6.6 format, that's committed as a format-only change. No device build yet (Ronan, 2026-11-19).
 - **Check:** batchmode open of a clean checkout of the merge (no `Library/`): exit 0, 0 `error CS`, same warnings as CC-033.2. Two first-import `LogError`s ("Host type is not matching any asset type") come from Unity's own render-pipelines.core package files.
@@ -251,7 +251,33 @@ This is a change to vendor code that ADR-003 allows when a Unity upgrade forces 
 
 The editor also re-saved `ProjectSettings/PackageManagerSettings.asset` in the 6.6 registry format, committed as a format-only change. Unity IAP generated `Assets/Resources/BillingMode.json` (`{"androidStore":"GooglePlay"}`), its store setting for Android, committed separately.
 
+## CC-033.3 results
+
+### Test runner smoke run (2026-11-19)
+With the editor closed, the two `-runTests` commands from project `CLAUDE.md` §4 were run on 6000.6.9f1. Results and logs went to the session scratchpad, not the repo.
+
+| Run | Exit code | Results XML | Test cases | Log errors |
+|---|---|---|---|---|
+| EditMode | 0 | written, `result="Passed"` | 0 | none (`error CS`, exceptions, aborts) |
+| PlayMode | 0 | written, `result="Passed"` | 0 | none |
+
+The runner works on 6.6. 0 tests is the expected result until test assemblies exist (CC-002, CC-006).
+
+### ProjectSettings re-saved in the 6.6 format
+The batchmode runs re-saved `ProjectSettings/ProjectSettings.asset` (Player settings) from `serializedVersion` 28 to 30. The diff is format only:
+- New 6.6 fields at their defaults, for example the iOS thermal-state frame rates, Android system-bar options and `enableDirectStorage`.
+- Removed fields for features 6.6 no longer has: HoloLens tracking-loss settings, `AndroidAllowedArchitectures` and `vrEditorSettings`.
+- `AndroidMinSdkVersion` raised from 25 to 26, the lowest Android version Unity 6.6 supports.
+- Integer arrays stored as hex strings now end in `i`, for example `m_ColorGamuts: 00000000i`. This is how 6.6 writes them, so the suffix was kept.
+
+It was committed with CC-033.3. Other files in the working tree that only changed line endings, or that Play mode changed (`BlockMaterial.mat` wobble values), were left out.
+
+### Docs
+- Project `CLAUDE.md`: §1 versions, §4 editor path and the close-the-editor note, §5 FMOD Studio 2.04 migration note. The old §5 note that the five events exist only in `.unsaved/` was replaced, since `develop` now has the saved Studio project.
+- [test-plan](../test-plan.md): new area "Editor and tooling" (`TOOL`), cases TP-TOOL-01 to 03.
+
 ## Divergences
+- **CC-033.3, routing (minor):** the Haiku worker ran the two test commands. The primary model wrote the docs, since the `CLAUDE.md` edits depended on findings from the whole feature. It also corrected its own CC-033 merge note about the `i` suffix.
 - **CC-033, merge (minor):** `develop` gained three commits from Ronan during review (saved FMOD Studio project, Mobile banks, Android build profiles, Unity IAP) and was merged into this branch. Unity IAP stays by Ronan's decision (planned for CC-016), which brings ugui and the 2D physics modules back as its dependencies.
 - **CC-033.2, D2 (minor):** FMOD 2.04 came as a UPM tarball, not a `.unitypackage`, so it's an embedded package under `Packages/`, not `Assets/Plugins/FMOD` (Ronan chose this, ADR-003). The agent did the import, not Ronan (Ronan, 2026-11-18). CC-033.2 started before CC-033.1 was approved, at Ronan's request.
 - **CC-033.1, D3 tool (minor):** Unity Hub 4.0.1 (Store build) dropped `-- --headless install-modules` in favour of the standalone Unity CLI. The agent installed Unity CLI 1.0.1 with Ronan's OK (in `%LOCALAPPDATA%\Unity\bin`, agent-skills setup skipped). Module install with `--accept-eula` (also approved) then failed because UAC elevation was refused from the agent shell. Ronan installs the Android module through the Hub GUI instead (Ronan, 2026-11-18). The OpenJDK module id is `android-open-jdk-17.0.18+8`.
