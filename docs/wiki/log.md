@@ -85,3 +85,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] approve | CC-006.5 | Approved by Ronan (TP-SAVE cases pass); #17 Done. ObjectDisposedException in GameRenderer.CleanUp during teardown is pre-existing: added to CC-025 (#37)
 ## [2026-11-19] implement | CC-006.6 | Test plan cases for CC-021/022/023 updated, TP-OVER-07 added, Regression passes section; #32-#36 closed; CC-002 description confirmed
 ## [2026-11-19] lint | CC-006 pages | Stale lines fixed in merge-rules, configuration, presentation; ADR-001 Burst set noted; roadmap.md strikethrough status reported to the planning session
+## [2026-11-19] approve | CC-006.6 | Approved by Ronan; #18 Done; PR #56 opened to develop, #12 In review

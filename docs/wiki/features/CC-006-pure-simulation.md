@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#12](https://github.com/rtumelty/Cathartic-Colours/issues/12) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-006-pure-simulation` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#56](https://github.com/rtumelty/Cathartic-Colours/pull/56) |
 | Depends on | [CC-034](https://github.com/rtumelty/Cathartic-Colours/issues/46) (GitHub Issues tracking) and [CC-033](https://github.com/rtumelty/Cathartic-Colours/issues/45) (Unity 6000.6.9f1 upgrade), both merged first |
 | Absorbs | [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32), [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33), [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34), [CC-023](https://github.com/rtumelty/Cathartic-Colours/issues/35), [CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36); part of [CC-002](https://github.com/rtumelty/Cathartic-Colours/issues/8) |
 | Decision | [ADR-001](../decisions/ADR-001-pure-board-simulation.md) |
