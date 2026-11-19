@@ -95,6 +95,7 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-005 | points_system had no commits outside master (tip bf5152d); remote branch deleted with Ronan's approval, done in the planning session; #11 closed
 ## [2026-11-19] plan | CC-036 | New backlog item: release signing, keystore and Google Play publishing, split out of CC-004 because the game isn't going to the store yet (Ronan)
 ## [2026-11-19] implement | CC-003 | Ronan re-saved the FMOD Studio project in 2.04 (96298b1): Mobile platform and encoding now saved in Metadata, .unsaved removed from git; banks rebuilt in 2.04 (576f6cb)
+## [2026-11-19] schema | CLAUDE.md, ~/.claude/CLAUDE.md | On plan approval the planning session starts the feature session itself with the kickoff prompt (local, Remote Control on), so Ronan can work away from the machine; user-level §2.1 step 4 (not in git) and project §6
 ## [2026-11-19] approve | CC-003 | Plan, D1–D3 and routing approved by Ronan; #9 Approved, sub-issues #58–#60; Ronan's 2.04 re-save (96298b1) replaced the MANUAL Save step
 ## [2026-11-19] implement | CC-003.1 | FMOD Studio per-machine folders .cache/ (233 files) and .user/ (3 files) untracked, kept on disk; .gitignore added for .cache/, .user/, .unsaved/; saved-project checks passed (Desktop + Mobile platforms, 2 encodings, 5 events)
 ## [2026-11-19] approve | CC-003.1 | Approved by Ronan; #58 Done
