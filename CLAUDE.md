@@ -19,8 +19,8 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
 
 ## 2. Wiki specifics
 - Paths as in the user-level schema: `docs/wiki/{index,log,roadmap,test-plan}.md`, `features/`, `decisions/`, `systems/`.
-- Test plan areas (initial): Main menu · Standard mode · Color Merge mode · Advanced Color Merge mode · Gameplay HUD · Game over · Save/Resume · Audio · Project tracking (GitHub, since CC-034). Add areas as features land.
-- Systems pages to maintain (`docs/wiki/systems/`): `ecs-frame-order`, `merge-rules` (per mode, plus scoring, spawning and end conditions), `configuration`, `save-system`, `audio-fmod`, `input`, `ui-layout`, `presentation`.
+- Test plan areas (initial): Main menu · Standard mode · Color Merge mode · Advanced Color Merge mode · Gameplay HUD · Game over · Save/Resume · Audio · Android build · Project tracking (GitHub, since CC-034). Add areas as features land.
+- Systems pages to maintain (`docs/wiki/systems/`): `ecs-frame-order`, `merge-rules` (per mode, plus scoring, spawning and end conditions), `configuration`, `save-system`, `audio-fmod`, `build-android`, `input`, `ui-layout`, `presentation`.
 
 ## 3. Codebase patterns to follow
 - **Namespaces:** `Simulation`, `ECS.Components`, `ECS.Systems`, `ECS.Utilities`, `Gameplay`, `Data`, `SaveSystem`.
@@ -39,7 +39,7 @@ Changes to this file are logged in `docs/wiki/log.md` (op `schema`).
   `"C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe" -batchmode -projectPath "Cathartic Colours" -runTests -testPlatform EditMode -testResults "TestResults\editmode.xml" -logFile -`
   then the same with `-testPlatform PlayMode`. (Do not pass `-quit` with `-runTests`.) Close the editor first: a batchmode run can't open a project that's already open. The path above is the Unity Hub default install location for 6000.6.9f1. EditMode runs the `CatharticColours.Simulation.Tests` assembly (since CC-006); PlayMode has no tests yet and reports 0, which is expected.
 - **Known constraint:** apart from the `Simulation` assembly, game scripts compile into `Assembly-CSharp`, which test assemblies can't reference. ECS, presentation and save code can't be unit-tested until the rest of CC-002 adds their assembly definitions.
-- **Android build:** no Android build profile or build script is committed yet. Until one exists, builds are a `MANUAL (Ronan)` step.
+- **Android build:** `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1` writes a development APK to `Cathartic Colours/Builds/Android/`. Close the editor first; run it in the agent sandbox only. See [docs/wiki/systems/build-android.md](docs/wiki/systems/build-android.md).
 
 ## 5. Editor-only and external-tool work
 - Scene/prefab wiring, UXML layout changes with complex bindings and all FMOD Studio edits are `MANUAL (Ronan)` unless trivially safe.

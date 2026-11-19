@@ -21,7 +21,7 @@ Each case has an id and these fields:
 | Expected | The observable result that means pass |
 | Roadmap id | The roadmap item the case covers, or `—` for existing behaviour |
 
-**Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio · `TOOL` Editor and tooling · `TRACK` Project tracking (GitHub)
+**Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio · `DROID` Android build · `TOOL` Editor and tooling · `TRACK` Project tracking (GitHub)
 
 **Example template (not a real case):**
 
@@ -608,6 +608,50 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Steps | 1. Open `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` in FMOD Studio. 2. Open the Events browser. 3. Open the platforms list (Project, Platforms). |
 | Expected | No migration prompt appears. Both the Desktop and Mobile platforms are present. The Events browser lists the five events `Block_Move`, `Block_Merge_Small`, `Block_Merge_Medium`, `Block_Merge_Large` and `GameOver`, assigned to the Master bank. |
 | Roadmap id | CC-003 |
+
+## Android build (DROID)
+
+Pass setup: a clean checkout of the branch under test in the agent sandbox, the Unity editor closed, and Unity 6000.6.9f1 installed. TP-DROID-01 and TP-DROID-02 run the build script; TP-DROID-03 and TP-DROID-04 need a phone with USB debugging on (see [Android build](systems/build-android.md)). Run them in that order.
+
+### TP-DROID-01 — Script build on a clean checkout
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-01` |
+| Preconditions | Sandbox on the branch under test, editor closed |
+| Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1`. 2. Note the `APK:` path printed at the end. 3. Run `aapt dump badging <apk>` from the Android SDK's `build-tools` folder. |
+| Expected | Exit code 0 and the APK path is printed. The file is in `Cathartic Colours/Builds/Android/`. `aapt` shows package `com.catharticcolours.game` and `versionCode` equal to `git rev-list --count HEAD`. |
+| Roadmap id | CC-004 |
+
+### TP-DROID-02 — Failed build exits non-zero
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-02` |
+| Preconditions | Editor closed |
+| Steps | 1. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 -SkipVersionCode`. 2. Check the exit code and the log (its path is printed by the script). |
+| Expected | Exit code 2. The log contains "Missing required argument -versionCode". No APK is written. |
+| Roadmap id | CC-004 |
+
+### TP-DROID-03 — Install over an older build
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-03` |
+| Preconditions | An older APK installed on the phone with a saved game in progress; a newer APK from TP-DROID-01 |
+| Steps | 1. Run `adb devices` and check the phone is listed as `device`. 2. Run `adb install -r <newer apk>`. 3. Launch the app and tap Resume. |
+| Expected | `adb` prints `Success`. The app keeps its saved game: Resume loads it with the same Moves and Score. |
+| Roadmap id | CC-004 |
+
+### TP-DROID-04 — Launch and play on the phone
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-04` |
+| Preconditions | The newer build installed (TP-DROID-03), sound audible |
+| Steps | 1. Launch the app from the phone's launcher. 2. Start a Standard game, play a few swipe moves, then go back to the menu. 3. Repeat in Color Merge and Advanced Color Merge. 4. Resume a game. |
+| Expected | The app starts without waiting for a debugger. Swipes move blocks, merge sounds play, each mode plays, and Resume restores the saved game. Report any difference from the editor. |
+| Roadmap id | CC-004 |
 
 ## Editor and tooling (TOOL)
 

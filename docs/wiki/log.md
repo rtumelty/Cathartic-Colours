@@ -108,3 +108,12 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] lint | editor log | Editor.log review (manual copy): new CC-037 (#64, up-arrow exception) and CC-038 (#65, per-move save/load logs); CS0414 JellyManager.wobbleActive added to CC-032 (#44); teardown ObjectDisposedException already in CC-025 (#37); URP Deprecated.cs warning and Unity's compile-server pipe error are Unity's own
 ## [2026-11-19] approve | CC-003 | PR #66 squash-merged into develop as 77cb904, identical to the branch tip; #9 and sub-issues #58-#60 Done; removed from the roadmap
 ## [2026-11-19] plan | CC-004 | Started after CC-003; CC-003 found that nothing points Android at Build/Mobile banks, so CC-004 checks which banks an Android build packs
+## [2026-11-19] approve | CC-004 | Plan, D1–D4 and routing approved by Ronan; #10 Approved, sub-issues #61–#63; signing and store work split out to CC-036
+## [2026-11-19] implement | CC-004.1 | Android application id com.catharticcolours.game set in Player Settings; Android Development profile: Build App Bundle and Wait For Managed Debugger off; batchmode open exit 0, no compiler warnings or project errors
+## [2026-11-19] implement | CC-004.2 | CatharticColours.Build.Editor assembly (AndroidBuild.Development, AndroidBuildArgs) + 19 EditMode tests (226/226 pass); tools/build-android.ps1; build of commit count 72 succeeded (first build 36 min); aapt: com.catharticcolours.game, versionCode 72, arm64; missing -versionCode exits 2; FMOD: APK packs Build/Desktop banks, fix proposed to Ronan as a divergence
+## [2026-11-19] diverge | CC-004.2 | Approved by Ronan: FMOD Android platform set to the Mobile bank folder (was inheriting Desktop); rebuild (version code 73) packs Build/Mobile/Master.bank, verified by MD5
+## [2026-11-19] implement | CC-004.3 | New systems/build-android.md; CLAUDE.md §4 build command; test plan area DROID (TP-DROID-01–04); index
+## [2026-11-19] schema | CLAUDE.md | §2 test plan area Android build and systems page build-android; §4 Android build command replaces "no build script yet"
+## [2026-11-19] implement | CC-004.3 | Device install: adb install -r of version code 73 on Ronan's phone succeeded; app launched, no fatal errors in logcat
+## [2026-11-19] implement | CC-004 MANUAL 2 | Ronan: device smoke test passed on version code 73 (three modes, swipes, Mobile-bank sound, resume)
+## [2026-11-19] approve | CC-004.3 | Approved by Ronan; #63 Done; feature test plan folded in (TP-DROID-01 to 04); PR to develop opened, #10 In review
