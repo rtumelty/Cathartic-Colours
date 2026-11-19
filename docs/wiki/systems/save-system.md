@@ -104,6 +104,7 @@ There is none. `version` is written as `"1.0"` and never read; there is no forma
 - `version` and `saveTimestamp` are written but never read, so there is no way to reject or migrate an incompatible save file (`Assets/Scripts/SaveSystem/SaveData.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
 - the save file is written in place with one `File.WriteAllText` (no temp-file-and-rename), so a crash or kill during the write can leave a truncated file; `HasSaveGame` would then show the resume button and `LoadSaveGame` would return null or default-filled data (`Assets/Scripts/ECS/Systems/SaveGameSystem.cs`, `SaveGame`). [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
 - `colorProfileName` and `currentFrameScore` are saved but ignored on restore (`Assets/Scripts/SaveSystem/SaveData.cs`); a save made with a different colour profile resumes with the current one. [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
+- every move logs "Game saved to: <path>" and every load logs "Save game loaded from: <path>" with `Debug.Log`, which floods the Console (250 lines in one session) (`Assets/Scripts/ECS/Systems/SaveGameSystem.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-038](https://github.com/rtumelty/Cathartic-Colours/issues/65)
 
 ## Related test cases
 - [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-01 to TP-SAVE-06.
