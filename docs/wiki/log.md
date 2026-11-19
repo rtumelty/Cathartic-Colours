@@ -69,3 +69,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] plan | roadmap | Review after CC-033: Foundations continues with CC-003, CC-004, CC-005; CC-006 is unblocked (its branch needs develop merged in); audio-fmod hazard marked resolved pending CC-003
 ## [2026-11-19] plan | CC-035 | New backlog item: spawn colour rubber-banding against board colour imbalance (Ronan); depends on CC-006
 ## [2026-11-19] schema | CLAUDE.md | §6 two working copies: Cathartic-Colours is the agent sandbox, Cathartic-Colours_2 is Ronan's manual copy; agents ask before switching the manual copy's branch; §4 batchmode note updated
+## [2026-11-19] schema | CLAUDE.md | Two-working-copies rule moved out of the project CLAUDE.md into an uncommitted CLAUDE.local.md, since it describes one machine's setup (Ronan); §4 batchmode note restored
