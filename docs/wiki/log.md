@@ -89,3 +89,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-006.6 | Test plan cases for CC-021/022/023 updated, TP-OVER-07 added, Regression passes section; #32-#36 closed; CC-002 description confirmed
 ## [2026-11-19] lint | CC-006 pages | Stale lines fixed in merge-rules, configuration, presentation; ADR-001 Burst set noted; roadmap.md strikethrough status reported to the planning session
 ## [2026-11-19] approve | CC-006.6 | Approved by Ronan; #18 Done; PR #56 opened to develop, #12 In review
+## [2026-11-19] approve | CC-006 | PR #56 squash-merged into develop as 2a4177d, identical to the branch tip; #12, sub-issues #13-#18 and absorbed CC-020 to CC-024 (#32-#36) Done
+## [2026-11-19] plan | roadmap | Review after CC-006: CC-025 (#37) narrowed (singleton guard done in CC-006; teardown ObjectDisposedException added); strikethrough removed from the phase order, since status lives on the board
