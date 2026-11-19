@@ -21,7 +21,7 @@ Each case has an id and these fields:
 | Expected | The observable result that means pass |
 | Roadmap id | The roadmap item the case covers, or `—` for existing behaviour |
 
-**Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio · `TRACK` Project tracking (GitHub)
+**Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio · `TOOL` Editor and tooling · `TRACK` Project tracking (GitHub)
 
 **Example template (not a real case):**
 
@@ -578,6 +578,40 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Steps | 1. Open `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` in FMOD Studio. 2. Open the Events browser. |
 | Expected | The project lists the five events `Block_Move`, `Block_Merge_Small`, `Block_Merge_Medium`, `Block_Merge_Large` and `GameOver`, assigned to the Master bank. Known to fail until CC-003. |
 | Roadmap id | CC-003 |
+
+## Editor and tooling (TOOL)
+
+Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of the branch under test, and the editor closed. These cases check the development tooling set up in CC-033, not the game. Run TP-TOOL-02 first, since the command-line runs need the editor closed.
+
+### TP-TOOL-02 — Command-line test runs exit cleanly
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-02` |
+| Preconditions | Editor closed |
+| Steps | 1. Run the EditMode `-runTests` command from project `CLAUDE.md` §4. 2. Run the same command with `-testPlatform PlayMode`. |
+| Expected | Each run exits with code 0 and writes its results XML. With no test assemblies yet, each XML reports 0 test cases. Once tests exist (CC-006), every test passes. |
+| Roadmap id | CC-033 |
+
+### TP-TOOL-01 — Project opens on 6000.6.9f1 without errors
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-01` |
+| Preconditions | Editor closed |
+| Steps | 1. Open the project from Unity Hub with 6000.6.9f1. 2. Wait for the import to finish. 3. Check the Console. |
+| Expected | No upgrade or version prompt. The Console has no compile errors and no "below the supported minimum" warnings about `.meta` files. (A first import of a fresh checkout may log two "Host type is not matching any asset type" errors from the URP package; they don't come back on the next open.) |
+| Roadmap id | CC-033 |
+
+### TP-TOOL-03 — Only the kept packages are installed
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-03` |
+| Preconditions | Project open (after TP-TOOL-01) |
+| Steps | 1. Open **Window → Package Management → Package Manager**. 2. Select **In Project**. |
+| Expected | The direct packages are Entities, Input System, In-App Purchasing, Universal RP, Test Framework, JetBrains Rider Editor and the embedded FMOD for Unity 2.04, matching the Kept table in the CC-033 feature page. Other entries are their dependencies (uGUI and 2D Physics come back this way, through In-App Purchasing). Collab, Visual Scripting, Timeline, the AI and multiplayer packages and the other removed packages are not listed. |
+| Roadmap id | CC-033 |
 
 ## Project tracking (TRACK)
 

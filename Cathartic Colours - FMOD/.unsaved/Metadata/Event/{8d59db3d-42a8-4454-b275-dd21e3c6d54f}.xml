@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<objects serializationModel="Studio.02.03.00">
+<objects serializationModel="Studio.02.04.00">
 	<object class="Event" id="{8d59db3d-42a8-4454-b275-dd21e3c6d54f}">
 		<property name="name">
 			<value>Block_Merge_Large</value>
