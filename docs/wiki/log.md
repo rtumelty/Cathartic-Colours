@@ -58,3 +58,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-18] decision | ADR-003 | FMOD for Unity 2.04 as an embedded UPM package in Packages/com.fmod.fmod-for-unity.v204 (Ronan); settings in Assets/Resources/FMOD
 ## [2026-11-18] implement | CC-033.2 | FMOD 2.04 embedded, 2.03 Assets/Plugins removed, settings moved with GUIDs intact; batchmode compile 0 errors; no game-code API changes needed; Android module installed by Ronan via Hub
 ## [2026-11-18] diverge | CC-033.2 | UPM tarball instead of .unitypackage (embedded package, ADR-003); agent imported instead of MANUAL step 1; started before CC-033.1 approval at Ronan's request
+## [2026-11-19] implement | CC-033 | Merged develop (saved FMOD Studio project, Mobile banks, Android build profiles, Unity IAP 5.5.1) into the feature branch; FMOD settings now migrated to 2.04; event cache untracked again

@@ -159,6 +159,7 @@ Evidence came from a scan of `Assets/` (scripts, scene/prefab classIDs and scrip
 | inputsystem | `GameInputHandler.cs` (`PlayerInput`, `InputActionAsset`), `Assets/Input/GameControls.inputactions` |
 | test-framework | Plan: CC-033.3 `-runTests` smoke runs |
 | ide.rider | Plan: IDE integration (Ronan uses Rider) |
+| purchasing (5.5.1) | Kept: planned for CC-016 (one-time purchase that removes ads), decided by Ronan 2026-11-19. Added on `develop` and merged in; nothing uses it yet. Brings in services.core, services.deployment, ugui and newtonsoft-json as dependencies |
 | modules.androidjni | FMOD `RuntimeManager.cs:194,199` `AndroidJavaClass` |
 | modules.unitywebrequest | FMOD `RuntimeManager.cs:903` `UnityWebRequest.Get` (Android bank loading). Also an entities dependency |
 | modules.jsonserialize | `JsonUtility` in `SaveGameSystem.cs` and `SaveGameManager.cs` |
@@ -228,7 +229,17 @@ Batchmode open without `-ignorecompilererrors`: exit 0, **0 `error CS`**.
 
 FMOD may migrate `FMODStudioSettings.asset` (its `CurrentVersion` is still 2.03's 131857) the first time the editor GUI opens it. Any resulting change is committed after MANUAL step 2.
 
+### Merge of develop (2026-11-19)
+Ronan committed three changes to `develop` while CC-033 was in review: the FMOD Studio project saved out of `.unsaved/`, rebuilt Desktop banks plus new Mobile banks, and Android build profiles (`Assets/Settings/Build Profiles/`) with `com.unity.purchasing` 5.5.1. They were merged into this branch as follows:
+- **FMOD Studio project, banks, build profiles:** taken as they are. The build profiles hold no signing settings. The Studio project is still serialised as 2.03 (`Studio.02.03.00`).
+- **`FMODStudioSettings.asset`:** develop's edit, made by the 2.04 editor, carried over to the moved file in `Assets/Resources/FMOD/`. `CurrentVersion` is now 132096 (2.04), which is the migration expected after MANUAL step 2. A stray `i` at the end of the `MigratedPlatforms` hex string was removed, because it isn't valid hex.
+- **`com.unity.purchasing` 5.5.1:** kept by Ronan's decision (planned for CC-016) and added to the stripped manifest. Unity regenerated the lock rather than it being hand-merged. Purchasing brings back `com.unity.ugui` and the 2D physics modules as dependencies (not direct entries), plus Unity Services core and deployment and Newtonsoft JSON.
+- **Build profiles:** a batchmode open did not re-save them. If the editor GUI re-saves them in 6.6 format, that's committed as a format-only change. No device build yet (Ronan, 2026-11-19).
+- **Check:** batchmode open of a clean checkout of the merge (no `Library/`): exit 0, 0 `error CS`, same warnings as CC-033.2. Two first-import `LogError`s ("Host type is not matching any asset type") come from Unity's own render-pipelines.core package files.
+- **Leftovers from the feature branch's working folder:** develop had also picked up `fmodstudioL.dll`, `Assets/Resources/FMOD.meta` and the FMOD event cache. The DLL and `.meta` are byte-identical to this branch's copies. The event cache was untracked again, because it's gitignored here (ADR-003).
+
 ## Divergences
+- **CC-033, merge (minor):** `develop` gained three commits from Ronan during review (saved FMOD Studio project, Mobile banks, Android build profiles, Unity IAP) and was merged into this branch. Unity IAP stays by Ronan's decision (planned for CC-016), which brings ugui and the 2D physics modules back as its dependencies.
 - **CC-033.2, D2 (minor):** FMOD 2.04 came as a UPM tarball, not a `.unitypackage`, so it's an embedded package under `Packages/`, not `Assets/Plugins/FMOD` (Ronan chose this, ADR-003). The agent did the import, not Ronan (Ronan, 2026-11-18). CC-033.2 started before CC-033.1 was approved, at Ronan's request.
 - **CC-033.1, D3 tool (minor):** Unity Hub 4.0.1 (Store build) dropped `-- --headless install-modules` in favour of the standalone Unity CLI. The agent installed Unity CLI 1.0.1 with Ronan's OK (in `%LOCALAPPDATA%\Unity\bin`, agent-skills setup skipped). Module install with `--accept-eula` (also approved) then failed because UAC elevation was refused from the agent shell. Ronan installs the Android module through the Hub GUI instead (Ronan, 2026-11-18). The OpenJDK module id is `android-open-jdk-17.0.18+8`.
 - **CC-033.1, D1 (minor):** the Visual Studio integration was removed rather than kept (Ronan prefers Rider). The worker's evidence kept ugui, physics2d and terrain as URP-core dependencies, based on the 6000.3 lock. The primary's review against the 6.6 built-in graph found no kept dependents, so they were removed.
