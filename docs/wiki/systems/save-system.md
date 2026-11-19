@@ -33,7 +33,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Frame
 | `gridHeight` | int | `ActiveConfiguration.gridHeight` | Same |
 | `spawnNextColourSystem` | bool | `ActiveConfiguration.spawnNextColourSystem` | Same |
 | `colorProfileName` | string | `ActiveColorProfile.name` (the runtime copy, so it includes the "(Clone)" suffix; inferred from `Object.Instantiate` in `GameManager.Initialize`) | **Ignored**: `InitializeFromSave` re-instantiates the *current* colour profile (`colorProfileTemplate`) |
-| `waitingForInput` | bool | `GameStateComponent.WaitingForInput` | `RestoreWorldState` writes it back |
+| `waitingForInput` | bool | always `true` since CC-006.5: the save describes the idle state after the move | Ignored: `RestoreWorldState` always sets `WaitingForInput = true`, so files written by older builds (which stored `false`) resume the same way |
 | `gameOver` | bool | `GameStateComponent.GameOver` | Written back |
 | `levelComplete` | bool | `GameStateComponent.LevelComplete` | Written back |
 | `moveCount` | int | `GameStateComponent.MoveCount` | Written back |
@@ -55,7 +55,7 @@ Not saved: tier points and any other `GameConfiguration` fields beyond the four 
 | `LoadSaveGame()` | Returns `null` (with a warning) if the file is absent. Otherwise reads and deserialises it inside `try/catch`; any exception is logged with `Debug.LogError("Failed to load save game: ...")` and `null` is returned. In the editor it logs the path |
 | `DeleteSaveGame()` | Deletes the file if present and logs "Save game deleted". **Not called by any code**: `SaveGameSystem` has its own private `DeleteSaveGame` (see Known issues) |
 | `InitializeFromSave(saveData, configTemplate, colorProfileTemplate)` | Logs an error and returns if `saveData` is null. Otherwise instantiates `configTemplate`, overwrites `gameMode`, `gridWidth`, `gridHeight`, `spawnNextColourSystem` from the save, and calls `GameManager.Initialize(runtimeConfig, colorProfileTemplate)` (which instantiates both again) |
-| `RestoreWorldState(saveData)` | Returns if `saveData` is null. Using `World.DefaultGameObjectInjectionWorld`: if a `GameStateComponent` entity exists, overwrites `WaitingForInput`, `GameOver`, `LevelComplete`, `MoveCount`, `Random`; if a `ScoreComponent` entity exists, replaces it with the saved totals; then calls `RestoreBlocks` |
+| `RestoreWorldState(saveData)` | Returns if `saveData` is null. Using `World.DefaultGameObjectInjectionWorld`: if a `GameStateComponent` entity exists, sets `WaitingForInput = true` and overwrites `GameOver`, `LevelComplete`, `MoveCount`, `Random` from the save; if a `ScoreComponent` entity exists, replaces it with the saved totals; then calls `RestoreBlocks` |
 | `RestoreBlocks` (private) | Returns if the array is null or empty. Creates one entity per saved block with only a `BlockComponent` and sets the data, the same shape as blocks in a fresh game (since CC-006.3; before that, restored blocks got a `MovingBlockTag`, which let a restored indicator slide on the first move) |
 
 There is no validation of restored data: grid positions outside the saved width/height, overlapping blocks, or a `blocks` array of an unexpected size are all accepted as-is.
@@ -73,12 +73,12 @@ In practice (see the frame walk-through in [ecs-frame-order.md](ecs-frame-order.
 
 The file is deleted when `GameOver` becomes true (set by `BoardStepSystem`, which also sets `WaitingForInput = true`). `LevelComplete` is never set by any system ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)), so that branch is never taken. Starting a new game, restarting, or returning to the menu does not delete the file: a save survives until the next saved move overwrites it or the game ends. Leaving a game from the footer "Main Menu" button leaves the last post-move save in place, and the menu then offers Resume.
 
-The code comment "Detect if input was processed this frame ... transition from WaitingForInput=false to true" describes a transition the code does not detect; the test is simply `!WaitingForInput`.
+The test is simply `!WaitingForInput`, which `BoardStepSystem` sets only in the frame of an accepted move. The file it writes still records `waitingForInput = true`: the save describes the idle state after the move (since CC-006.5).
 
 ### Resume hand-off
 1. **Menu.** `MainMenuController` shows the resume button only if `SaveGameManager.HasSaveGame()` (checked in `SetupUI` and again in `OnEnable`). `ResumeGame` calls `LoadSaveGame()`; on success it sets `PlayerPrefs` key `LoadFromSave` = `"true"`, calls `PlayerPrefs.Save()` and loads the gameplay scene. On failure it logs `"Failed to load save game"` and stays on the menu (`Assets/Scripts/Gameplay/MainMenuController.cs`, `ResumeGame`).
 2. **Gameplay scene.** `GameRenderer.InitializeGame` reads `LoadFromSave` (default `"false"`). If it is `"true"` it loads the save a second time, deletes the key (`DeleteKey` without `Save()`), and if the save loaded calls `InitializeFromSave`, then takes the updated configuration from `GameManager.ActiveConfiguration`. If the second load returns null it falls back to a normal new game (`Assets/Scripts/Gameplay/GameRenderer.cs`, `InitializeGame`).
-3. **State.** `InitializeGame` creates the singletons as for a new game, builds the visual grid, then calls `RestoreWorldState(saveData)` instead of `SpawnInitialBlock`. The first frame after resume replays the resolve/spawn step ([CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34)).
+3. **State.** `InitializeGame` creates the singletons as for a new game, builds the visual grid, then calls `RestoreWorldState(saveData)` instead of `SpawnInitialBlock`. The game resumes waiting for input: nothing runs until the first move, so the board, the white indicator, Moves and Score stay exactly as saved, and the file is not rewritten (fixed in CC-006.5, [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34)).
 
 ### Versioning and migration
 There is none. `version` is written as `"1.0"` and never read; there is no format check, upgrade path or handling of unknown/missing fields beyond what `JsonUtility` does (missing fields take their type defaults; a field added in a later version will read as default from an old file).
@@ -97,7 +97,6 @@ There is none. `version` is written as `"1.0"` and never read; there is no forma
 - Platform cloud saves are future work: [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25).
 
 ## Known issues
-- The save is written with `waitingForInput = false` and restored as is, so the first frame after resume saves the file again. Since CC-006.3 there is no resolve or spawn step that runs without a move, so the board and indicator no longer change on resume; the save-semantics fix is CC-006.5. [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34)
 - `SaveGameSystem` has its own `DeleteSaveGame`; `SaveGameManager.DeleteSaveGame` is unused and the file path is duplicated in two places. (The per-frame `File.Exists` check was removed in CC-006.3.)
 - The `LevelComplete` delete branch is unreachable. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
 - The resumed configuration replaces the shared static runtime configuration. [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)

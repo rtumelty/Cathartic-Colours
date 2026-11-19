@@ -92,7 +92,9 @@ namespace SaveSystem
                 var gameStateEntity = gameStateQuery.GetSingletonEntity();
                 var gameState = entityManager.GetComponentData<GameStateComponent>(gameStateEntity);
                 
-                gameState.WaitingForInput = saveData.waitingForInput;
+                // Always resume waiting for input. Saves from builds before CC-006.5 stored false (the move
+                // frame's value), which made the first frame after resume look like a move.
+                gameState.WaitingForInput = true;
                 gameState.GameOver = saveData.gameOver;
                 gameState.LevelComplete = saveData.levelComplete;
                 gameState.MoveCount = saveData.moveCount;

@@ -163,6 +163,8 @@ All approved by Ronan 2026-11-18 (D3 with the naming change).
   - **Wrapper change that goes with the fix:** `BoardStepSystem` no longer marks a move as unsaved when the spawn fails. With the fix that happens only on a full board that still has a merge, and that move should be saved.
   - **Test seeds** are spread as `(i + 1) * 2654435761u`: small seeds give small first draws, and seed 0 is rejected by `Unity.Mathematics.Random`.
 
+- **CC-006.5** (2026-11-19, primary): `SaveGameSystem` writes `waitingForInput = true` (the idle state after the move) and `SaveGameManager.RestoreWorldState` always sets `WaitingForInput = true`, ignoring the saved value, so files from older builds resume the same way. No field added or removed and `version` stays `"1.0"`; `waitingForInput` is now written but not read. Together with CC-006.3 (no resolve or spawn outside a move), resume changes nothing until the first move, and no longer rewrites the file in its first frame. The save mapping lives in `Assembly-CSharp`, so there is no unit test: covered by MANUAL TP-SAVE-03 (no longer marked known-to-fail) and the new TP-SAVE-07. 207 EditMode tests still pass.
+
 ## Feature test plan
 1. Command line: EditMode run passes (all simulation tests).
 2. Editor: new game in each mode; play 10 moves, including at least one merge per tier reachable early. Score, particles, sounds and jelly wobble as before.

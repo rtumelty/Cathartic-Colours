@@ -25,8 +25,8 @@ namespace ECS.Systems
             if (!SystemAPI.TryGetSingleton<GameStateComponent>(out var gameState))
                 return;
 
-            // Detect if input was processed this frame
-            // Input is processed when we transition from WaitingForInput=false to WaitingForInput=true
+            // BoardStepSystem sets WaitingForInput to false only in the frame of an accepted move
+            // (EndFrameSystem sets it back), so this is true exactly once per move.
             bool inputProcessedThisFrame = !gameState.WaitingForInput;
 
             bool ended = gameState.GameOver || gameState.LevelComplete;
@@ -94,7 +94,9 @@ namespace ECS.Systems
             // Get game state
             if (SystemAPI.TryGetSingleton<GameStateComponent>(out var gameState))
             {
-                saveData.waitingForInput = gameState.WaitingForInput;
+                // The save describes the idle state after the move, when the game waits for the next input.
+                // (WaitingForInput is false right now only because this is the move's frame.)
+                saveData.waitingForInput = true;
                 saveData.gameOver = gameState.GameOver;
                 saveData.levelComplete = gameState.LevelComplete;
                 saveData.moveCount = gameState.MoveCount;

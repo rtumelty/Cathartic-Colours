@@ -115,7 +115,6 @@ New game: `GameRenderer.InitializeGame` creates the singletons and one white ind
 ## Known issues
 - The indicator's colour is only chosen on the following move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
 - `GameStateComponent.LevelComplete` is never set by any system. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
-- The save is written with `waitingForInput = false` and restored as is, so the first frame after resume looks like a move frame to `SaveGameSystem` (it saves again). Since CC-006.3 nothing else happens in that frame: there is no longer a resolve or spawn step that runs without a move. The save-semantics fix is [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34) (CC-006.5).
 
 ## Related test cases
 - [Standard](../test-plan.md#standard-mode-std): TP-STD-01 to TP-STD-03 (first move, one cell per move, walls).

@@ -492,8 +492,18 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Id | `TP-SAVE-03` |
 | Preconditions | The game resumed in TP-SAVE-02; you noted the white block's cell before leaving |
 | Steps | 1. Without pressing any key, compare the white block's cell and colour with the noted values. |
-| Expected | The white block is in the same cell as before leaving, is still white, and no additional white block appeared. Known to fail until CC-022 (backlog item derived from code reading, not yet confirmed on a device: resume may turn the saved white block into a coloured one and spawn a new one without a move). |
-| Roadmap id | CC-022 |
+| Expected | The white block is in the same cell as before leaving, is still white, and no additional white block appeared. |
+| Roadmap id | CC-022 (fixed in CC-006) |
+
+### TP-SAVE-07 — Nothing changes after resume until the first move
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-07` |
+| Preconditions | The game resumed in TP-SAVE-02; you noted Moves, Score and the board before leaving |
+| Steps | 1. Without pressing any key, wait 5 seconds and compare Moves, Score, every block and the white block with the noted values. 2. Make one move. |
+| Expected | Step 1: everything matches the noted values and no sound plays. Step 2: Moves rises by exactly 1, the white block turns into a coloured block (it does not move), and one new white block appears. |
+| Roadmap id | CC-022 (fixed in CC-006) |
 
 ### TP-SAVE-04 — Play continues and later moves are saved
 

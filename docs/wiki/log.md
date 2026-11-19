@@ -80,3 +80,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | wiki | ecs-frame-order rewritten; merge-rules, presentation, audio-fmod, configuration, input, save-system, ui-layout updated for BoardStepSystem
 ## [2026-11-19] approve | CC-006.3 | Manual regression pass done by Ronan; approved including the CC-022/CC-025 side effects; #15 Done
 ## [2026-11-19] implement | CC-006.4 | Colour roll advances the random state (CC-020); spawn picks uniformly from empty cells with one draw, fails only on a full board (CC-021); BoardStepSystem saves such moves; Fixes_ tests replace Pins_; 207 EditMode tests pass
+## [2026-11-19] approve | CC-006.4 | Approved by Ronan; #16 Done
+## [2026-11-19] implement | CC-006.5 | Save records the idle state after a move; restore always waits for input (older saves too); no format change; TP-SAVE-03 updated, TP-SAVE-07 added; save-system and ecs-frame-order CC-022 items removed
