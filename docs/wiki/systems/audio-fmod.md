@@ -89,6 +89,8 @@ The package folder is vendor code ([ADR-003](../decisions/ADR-003-fmod-embedded-
 | `.unsaved/` | Unsaved changes, see below |
 
 ### The `.unsaved/` hazard
+> **Resolved 2026-11-19:** Ronan saved the FMOD project, so the five events are now in `Metadata/Event/`, and Mobile banks exist in `Build/Mobile/`. The tables in this section describe the earlier state. Old copies still tracked in `.unsaved/`, the 2.03 to 2.04 Studio migration and the rewrite of this section belong to [CC-003](https://github.com/rtumelty/Cathartic-Colours/issues/9).
+
 `Cathartic Colours - FMOD/.unsaved/` holds changes FMOD Studio keeps outside the project until the user saves:
 
 | Path | Contents |

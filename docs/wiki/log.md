@@ -63,3 +63,7 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-19] implement | CC-033.3 | EditMode and PlayMode -runTests on 6000.6.9f1 both exit 0 with a results XML (0 tests); ProjectSettings re-saved in the 6.6 format; test plan area TOOL added (TP-TOOL-01..03)
 ## [2026-11-19] schema | CLAUDE.md | §1 Unity 6000.6.9f1, Entities 6.6.0, URP 17.6.0, Unity IAP, FMOD for Unity 2.04; §4 editor path and close-the-editor note; §5 FMOD Studio 2.04 migration note replaces the stale .unsaved note
 ## [2026-11-19] diverge | CC-033.3 | Primary wrote the docs, Haiku ran the tests; corrected the merge note: Unity 6.6 writes a trailing i on integer hex arrays
+## [2026-11-18] schema | ~/.claude/CLAUDE.md | (not in git) §4: commit messages and PRs must be readable without knowledge of the project or its plans; ids lead the subject but are never the only explanation
+## [2026-11-19] plan | CC-003, CC-004 | Rescoped after Ronan's develop commits (FMOD project saved, Mobile banks, Android build profiles); CC-033 keeps com.unity.purchasing (Ronan)
+## [2026-11-19] approve | CC-033 | PR #54 squash-merged into develop as 73ee1cc, identical to the branch tip; #45 and sub-issues #51-#53 Done
+## [2026-11-19] plan | roadmap | Review after CC-033: Foundations continues with CC-003, CC-004, CC-005; CC-006 is unblocked (its branch needs develop merged in); audio-fmod hazard marked resolved pending CC-003
