@@ -21,8 +21,11 @@ namespace Gameplay
         private Label instructionLabel;
         private VisualElement gameOverPanel;
         private VisualElement levelCompletePanel;
-        private Button restartButton;
+        private Button gameOverRestartButton;
+        private Button levelCompleteRestartButton;
         private Button nextLevelButton;
+        private Button gameOverMainMenuButton;
+        private Button levelCompleteMainMenuButton;
         private Button footerMainMenuButton;
         
         private LayoutObserver layoutObserver;
@@ -123,81 +126,39 @@ namespace Gameplay
             instructionLabel = root.Query<Label>(className: "instruction-text").First();
             gameOverPanel = root.Q<VisualElement>("game-over-panel");
             levelCompletePanel = root.Q<VisualElement>("level-complete-panel");
-            restartButton = root.Q<Button>("restart-button");
+            gameOverRestartButton = gameOverPanel?.Q<Button>("gameover-restart-button");
+            levelCompleteRestartButton = levelCompletePanel?.Q<Button>("levelcomplete-restart-button");
             nextLevelButton = levelCompletePanel?.Q<Button>("next-level-button");
+            gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
+            levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
             footerMainMenuButton = root.Q<Button>("footer-main-menu-button");
         }
 
+        private void RaiseRestartRequested() => OnRestartRequested?.Invoke();
+
+        private void RaiseNextLevelRequested() => OnNextLevelRequested?.Invoke();
+
+        // Unhooks first so hooking more than once never subscribes a button twice.
         private void HookUpEvents()
         {
-            if (restartButton != null)
-            {
-                restartButton.clicked += () => OnRestartRequested?.Invoke();
-            }
+            UnhookEvents();
 
-            var gameOverRestartButton = gameOverPanel?.Q<Button>("restart-button");
-            if (gameOverRestartButton != null)
-            {
-                gameOverRestartButton.clicked += () => OnRestartRequested?.Invoke();
-            }
-
-            if (nextLevelButton != null)
-            {
-                nextLevelButton.clicked += () => OnNextLevelRequested?.Invoke();
-            }
-
-            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
-            if (gameOverMainMenuButton != null)
-            {
-                gameOverMainMenuButton.clicked += ReturnToMainMenu;
-            }
-
-            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
-            if (levelCompleteMainMenuButton != null)
-            {
-                levelCompleteMainMenuButton.clicked += ReturnToMainMenu;
-            }
-
-            if (footerMainMenuButton != null)
-            {
-                footerMainMenuButton.clicked += ReturnToMainMenu;
-            }
+            if (gameOverRestartButton != null) gameOverRestartButton.clicked += RaiseRestartRequested;
+            if (levelCompleteRestartButton != null) levelCompleteRestartButton.clicked += RaiseRestartRequested;
+            if (nextLevelButton != null) nextLevelButton.clicked += RaiseNextLevelRequested;
+            if (gameOverMainMenuButton != null) gameOverMainMenuButton.clicked += ReturnToMainMenu;
+            if (levelCompleteMainMenuButton != null) levelCompleteMainMenuButton.clicked += ReturnToMainMenu;
+            if (footerMainMenuButton != null) footerMainMenuButton.clicked += ReturnToMainMenu;
         }
 
         private void UnhookEvents()
         {
-            if (restartButton != null)
-            {
-                restartButton.clicked -= () => OnRestartRequested?.Invoke();
-            }
-
-            var gameOverRestartButton = gameOverPanel?.Q<Button>("restart-button");
-            if (gameOverRestartButton != null)
-            {
-                gameOverRestartButton.clicked -= () => OnRestartRequested?.Invoke();
-            }
-
-            if (nextLevelButton != null)
-            {
-                nextLevelButton.clicked -= () => OnNextLevelRequested?.Invoke();
-            }
-
-            var gameOverMainMenuButton = gameOverPanel?.Q<Button>("main-menu-button");
-            if (gameOverMainMenuButton != null)
-            {
-                gameOverMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-
-            var levelCompleteMainMenuButton = levelCompletePanel?.Q<Button>("main-menu-button");
-            if (levelCompleteMainMenuButton != null)
-            {
-                levelCompleteMainMenuButton.clicked -= ReturnToMainMenu;
-            }
-
-            if (footerMainMenuButton != null)
-            {
-                footerMainMenuButton.clicked -= ReturnToMainMenu;
-            }
+            if (gameOverRestartButton != null) gameOverRestartButton.clicked -= RaiseRestartRequested;
+            if (levelCompleteRestartButton != null) levelCompleteRestartButton.clicked -= RaiseRestartRequested;
+            if (nextLevelButton != null) nextLevelButton.clicked -= RaiseNextLevelRequested;
+            if (gameOverMainMenuButton != null) gameOverMainMenuButton.clicked -= ReturnToMainMenu;
+            if (levelCompleteMainMenuButton != null) levelCompleteMainMenuButton.clicked -= ReturnToMainMenu;
+            if (footerMainMenuButton != null) footerMainMenuButton.clicked -= ReturnToMainMenu;
         }
 
         private void InitializeUIState()
