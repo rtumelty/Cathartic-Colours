@@ -13,6 +13,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [CC-002 Split game code into testable assemblies](features/CC-002-game-assemblies.md) — Core and Presentation assemblies, ECS board-step and save tests, PlayMode smoke tests. Issue [#8](https://github.com/rtumelty/Cathartic-Colours/issues/8). The page is on `feature/CC-002-game-assemblies`.
 - [CC-006 Extract pure board simulation from ECS](features/CC-006-pure-simulation.md) — pure, tested simulation assembly with ECS as a thin wrapper; absorbs CC-020–CC-024. Issue [#12](https://github.com/rtumelty/Cathartic-Colours/issues/12). The page is on `feature/CC-006-pure-simulation`.
 - [CC-033 Upgrade project to Unity 6000.6.9f1](features/CC-033-unity-6-6-upgrade.md) — editor upgrade, unused packages stripped, FMOD for Unity 2.04, Android module, test-runner smoke run. Issue [#45](https://github.com/rtumelty/Cathartic-Colours/issues/45).
+- [CC-041 Quick-fix batch](features/CC-041-quick-fixes.md) — eleven small bugs and chores fixed in one branch, one commit each, no approval stops. Issue [#75](https://github.com/rtumelty/Cathartic-Colours/issues/75). The page is on `feature/CC-041-quick-fixes`.
 - [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Issue [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46).
 
 ## Decisions

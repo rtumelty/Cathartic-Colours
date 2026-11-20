@@ -136,3 +136,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-20] schema | ~/.claude/CLAUDE.md | (not in git) §2.2: commit and push without waiting for long builds, report the build result afterwards; §2.3 step 5: the planning session archives a feature session once its PR is merged and its quiz answered (Ronan)
 ## [2026-11-20] approve | CC-002 | PR #78 squash-merged into develop as 3157453, identical to the branch tip; #8 and sub-issues #71-#74 Done; Core refactor phase finished and removed (phases renumbered)
 ## [2026-11-20] plan | CC-045 | New backlog item from the CC-002.1 reference check: 7 broken references in URP render settings (pre-existing)
+## [2026-11-20] plan | CC-041 | Feature page written from the approved plan (eleven fixes including CC-044, no-stops workflow); branch cut from develop after CC-002
