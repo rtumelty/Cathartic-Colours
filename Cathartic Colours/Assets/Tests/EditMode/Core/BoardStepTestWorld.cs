@@ -138,6 +138,35 @@ namespace ECS.Tests
             GameState = state;
         }
 
+        // ---- SaveGameSystem (CC-002.3) -----------------------------------------------------------------------
+
+        PresentationSystemGroup presentationGroup;
+
+        /// <summary>
+        /// Adds SaveGameSystem in a PresentationSystemGroup, as in the game. Only <see cref="UpdatePresentation"/>
+        /// runs it, so tests that don't call it are unaffected.
+        /// </summary>
+        public void AddSaveGameSystem()
+        {
+            presentationGroup = World.GetOrCreateSystemManaged<PresentationSystemGroup>();
+            presentationGroup.AddSystemToUpdateList(World.CreateSystem<SaveGameSystem>());
+            presentationGroup.SortSystems();
+        }
+
+        /// <summary>Runs one frame of the presentation group (SaveGameSystem only).</summary>
+        public void UpdatePresentation() => presentationGroup.Update();
+
+        /// <summary>
+        /// One frame of an accepted move as the game runs it: simulation systems, SaveGameSystem, then EndFrameSystem's
+        /// reset of WaitingForInput.
+        /// </summary>
+        public void MoveAndSave(int2 direction)
+        {
+            Move(direction);
+            UpdatePresentation();
+            EndFrame();
+        }
+
         // ---- Reading the world -------------------------------------------------------------------------------
 
         public GameStateComponent GameState

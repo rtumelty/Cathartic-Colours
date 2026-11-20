@@ -10,7 +10,11 @@ namespace SaveSystem
 {
     public static class SaveGameManager
     {
-        private static string SaveFilePath => Path.Combine(Application.persistentDataPath, "savegame.json");
+        /// <summary>Test-only: when set, the save file lives at this path instead of persistentDataPath. Null = default.</summary>
+        internal static string SaveFilePathOverride { get; set; }
+
+        /// <summary>The save file path. The single owner of the path: SaveGameSystem uses it too.</summary>
+        internal static string SaveFilePath => SaveFilePathOverride ?? Path.Combine(Application.persistentDataPath, "savegame.json");
 
         public static bool HasSaveGame()
         {

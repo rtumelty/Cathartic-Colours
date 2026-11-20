@@ -153,7 +153,7 @@ namespace ECS.Systems
 
         private string GetSaveFilePath()
         {
-            return Path.Combine(Application.persistentDataPath, "savegame.json");
+            return SaveGameManager.SaveFilePath;
         }
     }
 }

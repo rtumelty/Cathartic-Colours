@@ -97,13 +97,14 @@ There is none. `version` is written as `"1.0"` and never read; there is no forma
 - Platform cloud saves are future work: [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25).
 
 ## Known issues
-- `SaveGameSystem` has its own `DeleteSaveGame`; `SaveGameManager.DeleteSaveGame` is unused and the file path is duplicated in two places. (The per-frame `File.Exists` check was removed in CC-006.3.)
+- `SaveGameSystem` has its own `DeleteSaveGame`; `SaveGameManager.DeleteSaveGame` is unused. (Since CC-002.3 the file path has one owner, `SaveGameManager.SaveFilePath`, with a test-only override `SaveFilePathOverride`.) (The per-frame `File.Exists` check was removed in CC-006.3.)
 - The `LevelComplete` delete branch is unreachable. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
 - The resumed configuration replaces the shared static runtime configuration. [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
 - Cloud saves and sync do not exist yet. [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25)
 - `version` and `saveTimestamp` are written but never read, so there is no way to reject or migrate an incompatible save file (`Assets/Scripts/SaveSystem/SaveData.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
 - the save file is written in place with one `File.WriteAllText` (no temp-file-and-rename), so a crash or kill during the write can leave a truncated file; `HasSaveGame` would then show the resume button and `LoadSaveGame` would return null or default-filled data (`Assets/Scripts/ECS/Systems/SaveGameSystem.cs`, `SaveGame`). [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
-- `colorProfileName` and `currentFrameScore` are saved but ignored on restore (`Assets/Scripts/SaveSystem/SaveData.cs`); a save made with a different colour profile resumes with the current one. [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
+- `colorProfileName` is saved but ignored on restore (`Assets/Scripts/SaveSystem/SaveData.cs`); a save made with a different colour profile resumes with the current one. (`currentFrameScore` is restored, but nothing reads it.) [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
+- `RestoreWorldState` rebuilds the random generator with `new Random(randomState)`, which treats the saved state as a seed and advances it, so a resumed game doesn't continue the saved random sequence (`Assets/Scripts/SaveSystem/SaveGameManager.cs`). Found by CC-002.3. [CC-044](https://github.com/rtumelty/Cathartic-Colours/issues/77)
 - every move logs "Game saved to: <path>" and every load logs "Save game loaded from: <path>" with `Debug.Log`, which floods the Console (250 lines in one session) (`Assets/Scripts/ECS/Systems/SaveGameSystem.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-038](https://github.com/rtumelty/Cathartic-Colours/issues/65)
 
 ## Related test cases

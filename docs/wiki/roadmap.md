@@ -54,3 +54,4 @@ Every open roadmap id and its issue. Rows are removed when an item is merged or 
 | CC-040 | [#69](https://github.com/rtumelty/Cathartic-Colours/issues/69) | Commit the settings files that Unity 6.6 re-saves on every build |
 | CC-041 | [#75](https://github.com/rtumelty/Cathartic-Colours/issues/75) | Quick-fix batch (ten small bugs and chores in one branch) |
 | CC-042 | [#70](https://github.com/rtumelty/Cathartic-Colours/issues/70) | Rotating save files and reporting bad saves |
+| CC-044 | [#77](https://github.com/rtumelty/Cathartic-Colours/issues/77) | Resumed games don't continue the saved random sequence |
