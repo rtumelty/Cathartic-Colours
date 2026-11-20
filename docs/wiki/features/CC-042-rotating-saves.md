@@ -115,9 +115,12 @@ Implementation specifics only; no change to scope or to D2 to D5.
 - **CC-042.2, reporting details:** each `SaveRejected` subscriber runs in its own `try/catch`, so one that throws doesn't stop the load or the others. Order per rejected file: move aside, one warning, then the event. A legacy `savegame.bad.json` from CC-031 builds is left alone and doesn't count towards the three kept bad files. Worker: Sonnet, accepted on first review.
 
 ## Feature test plan
-1. Play three moves, quit to the menu, resume: the board is as left.
-2. Corrupt `savegame.json` (device: `adb shell run-as com.catharticcolours.game`, then edit the file under `files/`), restart the app, resume: the board is one move earlier, and a `savegame.bad.*.json` file exists.
-3. Finish a game: no save files remain, and the menu shows no Resume.
+1. Play three moves, quit to the menu, resume: the board is as left. Covered by [TP-SAVE-02](../test-plan.md#tp-save-02--resume-restores-the-saved-game) and [TP-SAVE-04](../test-plan.md#tp-save-04--play-continues-and-later-moves-are-saved).
+2. Corrupt `savegame.json` (device: `adb shell run-as com.catharticcolours.game`, then edit the file under `files/`), restart the app, resume: the board is one move earlier, and a `savegame.bad.*.json` file exists. Covered by [TP-SAVE-10](../test-plan.md#tp-save-10--a-broken-newest-save-resumes-one-move-earlier).
+3. Finish a game: no save files remain, and the menu shows no Resume. Covered by [TP-SAVE-11](../test-plan.md#tp-save-11--backups-belong-to-one-game).
+
+Folded into the comprehensive test plan (Save/Resume) in CC-042.3.
 
 ## Status log
 - 2026-11-20: Planned and approved by Ronan (no-stops workflow)
+- 2026-11-20: CC-042.1 and CC-042.2 implemented and pushed; feature test plan folded into test-plan.md (CC-042.3)

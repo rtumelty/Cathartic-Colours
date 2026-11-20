@@ -513,7 +513,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 
 ## Save/Resume (SAVE)
 
-Pass setup: start on the main menu with no Resume button (the state after TP-OVER-06). Use the Standard 6x6 preset. TP-SAVE-06 needs a build running on a device.
+Pass setup: start on the main menu with no Resume button (the state after TP-OVER-06). Use the Standard 6x6 preset. TP-SAVE-06 needs a build running on a device. TP-SAVE-10 and TP-SAVE-11 need access to the save folder (editor, or `adb` on a device); run them last.
 
 ### TP-SAVE-01 — Resume button appears after a move
 
