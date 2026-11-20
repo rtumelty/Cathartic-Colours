@@ -17,6 +17,7 @@ namespace CatharticColours.Build
         public const string DefaultProfile = "Development";
 
         const string DevelopmentProfileAssetName = "Android\u2122 Development";
+        const string DebuggableProfileAssetName = "Android\u2122 Development (Debuggable)";
         const string ReleaseProfileAssetName = "Android\u2122";
 
         /// <summary>Google Play's maximum versionCode.</summary>
@@ -112,8 +113,8 @@ namespace CatharticColours.Build
         }
 
         /// <summary>
-        /// Maps a profile name to its asset path. "Development" and "Release" (any case) are aliases for the
-        /// project's Android build profiles; any other name is used as the asset name.
+        /// Maps a profile name to its asset path. "Development", "Debuggable" and "Release" (any case) are aliases
+        /// for the project's Android build profiles; any other name is used as the asset name.
         /// </summary>
         public static string ProfileAssetPath(string profileName)
         {
@@ -123,6 +124,8 @@ namespace CatharticColours.Build
             string assetName;
             if (string.Equals(profileName, "Development", StringComparison.OrdinalIgnoreCase))
                 assetName = DevelopmentProfileAssetName;
+            else if (string.Equals(profileName, "Debuggable", StringComparison.OrdinalIgnoreCase))
+                assetName = DebuggableProfileAssetName;
             else if (string.Equals(profileName, "Release", StringComparison.OrdinalIgnoreCase))
                 assetName = ReleaseProfileAssetName;
             else

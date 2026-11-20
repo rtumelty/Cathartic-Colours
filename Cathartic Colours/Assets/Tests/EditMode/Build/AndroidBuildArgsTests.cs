@@ -136,6 +136,13 @@ namespace CatharticColours.Build.Tests
             Assert.AreEqual("Assets/Settings/Build Profiles/Android\u2122 Development.asset", AndroidBuildArgs.ProfileAssetPath("Development"));
         }
 
+        [TestCase("Debuggable")]
+        [TestCase("DEBUGGABLE")]
+        public void ProfileAssetPathMapsDebuggableAlias(string alias)
+        {
+            Assert.AreEqual("Assets/Settings/Build Profiles/Android\u2122 Development (Debuggable).asset", AndroidBuildArgs.ProfileAssetPath(alias));
+        }
+
         [Test]
         public void ProfileAssetPathMapsReleaseAlias()
         {

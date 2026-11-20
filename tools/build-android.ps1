@@ -5,8 +5,9 @@
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 [-Profile <name>] [-VersionCode <n>] [-UnityExe <path>] [-LogDir <dir>]
 #
 # Runs Unity in batch mode and calls CatharticColours.Build.AndroidBuild.CommandLine, which builds with the
-# named build profile: 'Development' (the default, the "Android Development" profile), 'Release' (the "Android"
-# profile), or the asset name of any profile in Assets/Settings/Build Profiles. The Android version code
+# named build profile: 'Development' (the default, the "Android Development" profile), 'Debuggable' (the "Android
+# Development (Debuggable)" profile: development build with script debugging on, for attaching a debugger), 'Release'
+# (the "Android" profile), or the asset name of any profile in Assets/Settings/Build Profiles. The Android version code
 # defaults to the number of commits on the current branch (git rev-list --count HEAD), so every build from a new
 # commit has a higher code. The APK or AAB is written to "Cathartic Colours/Builds/Android/". Exits with Unity's
 # exit code (0 ok, 1 build failed, 2 bad arguments, 3 build profile missing). Close the Unity editor first: a
