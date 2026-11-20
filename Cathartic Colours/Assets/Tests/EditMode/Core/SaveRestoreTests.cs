@@ -33,6 +33,8 @@ namespace ECS.Tests
         string folder;
         string savePath;
         World previousDefaultWorld;
+        Action<SaveRejection> rejectionHandler;
+        readonly List<SaveRejection> rejections = new List<SaveRejection>();
         readonly List<BoardStepTestWorld> worlds = new List<BoardStepTestWorld>();
 
         [OneTimeSetUp]
@@ -62,6 +64,7 @@ namespace ECS.Tests
         {
             SaveGameManager.SaveFilePathOverride = null;
             SaveGameManager.SimulateNoFileReplace = false;
+            StopListeningForRejections(); // SaveRejected is static
             World.DefaultGameObjectInjectionWorld = previousDefaultWorld;
 
             foreach (var world in worlds)
@@ -512,7 +515,23 @@ namespace ECS.Tests
 
         // ---- Save file robustness (CC-031) --------------------------------------------------------------------
 
-        string BadPath => Path.Combine(folder, "savegame.bad.json");
+        /// <summary>The timestamped bad files in the folder (savegame.bad.&lt;timestamp&gt;.json), oldest first. A legacy
+        /// savegame.bad.json is not included.</summary>
+        string[] BadFilesOnDisk()
+        {
+            if (!Directory.Exists(folder)) return new string[0];
+            var files = Array.FindAll(Directory.GetFiles(folder), f => BadFileName.IsMatch(Path.GetFileName(f)));
+            Array.Sort(files, StringComparer.Ordinal);
+            return files;
+        }
+
+        /// <summary>The content of the only bad file, failing if there is not exactly one.</summary>
+        string OnlyBadFileContent()
+        {
+            var files = BadFilesOnDisk();
+            Assert.AreEqual(1, files.Length, "exactly one bad file");
+            return File.ReadAllText(files[0]);
+        }
 
         [Test]
         public void ColorProfile_SavedByAssetName_AndRestoredWhenKnown()
@@ -563,11 +582,11 @@ namespace ECS.Tests
             Assert.That(json, Does.Contain("99.0"), "precondition: the version was rewritten");
             File.WriteAllText(savePath, json);
 
-            LogAssert.Expect(LogType.Warning, new Regex("unknown version \"99.0\""));
+            LogAssert.Expect(LogType.Warning, new Regex("^Save rejected: reason=UnknownVersion file=savegame\\.json detail=99\\.0 "));
             Assert.IsFalse(SaveGameManager.HasSaveGame(), "the menu would not offer Resume");
 
             Assert.IsFalse(File.Exists(savePath));
-            Assert.AreEqual(json, File.ReadAllText(BadPath), "the file is kept, unchanged, as savegame.bad.json");
+            Assert.AreEqual(json, OnlyBadFileContent(), "the file is kept, unchanged, as a savegame.bad.<timestamp>.json");
             LogAssert.Expect(LogType.Warning, "No save game file found");
             Assert.IsNull(SaveGameManager.LoadSaveGame());
         }
@@ -580,26 +599,31 @@ namespace ECS.Tests
             Directory.CreateDirectory(folder);
             File.WriteAllText(savePath, content);
 
-            LogAssert.Expect(LogType.Warning, new Regex("Save game is unusable"));
+            LogAssert.Expect(LogType.Warning, Unusable);
             Assert.IsNull(SaveGameManager.LoadSaveGame());
 
             Assert.IsFalse(SaveGameManager.HasSaveGame());
             Assert.IsFalse(File.Exists(savePath));
-            Assert.AreEqual(content, File.ReadAllText(BadPath));
+            Assert.AreEqual(content, OnlyBadFileContent());
             LogAssert.NoUnexpectedReceived();
         }
 
         [Test]
-        public void ASecondUnusableSave_ReplacesTheEarlierBadFile()
+        public void ASecondUnusableSave_IsKeptBesideTheEarlierBadFile()
         {
             Directory.CreateDirectory(folder);
-            File.WriteAllText(BadPath, "older bad save");
-            File.WriteAllText(savePath, "newer bad save");
-
-            LogAssert.Expect(LogType.Warning, new Regex("Save game is unusable"));
+            File.WriteAllText(savePath, "older bad save");
+            LogAssert.Expect(LogType.Warning, Unusable);
             Assert.IsFalse(SaveGameManager.HasSaveGame());
 
-            Assert.AreEqual("newer bad save", File.ReadAllText(BadPath));
+            File.WriteAllText(savePath, "newer bad save");
+            LogAssert.Expect(LogType.Warning, Unusable);
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            var bad = BadFilesOnDisk();
+            Assert.AreEqual(2, bad.Length, "both are kept");
+            Assert.AreEqual("older bad save", File.ReadAllText(bad[0]), "names sort in time order");
+            Assert.AreEqual("newer bad save", File.ReadAllText(bad[1]));
         }
 
         [Test]
@@ -660,7 +684,8 @@ namespace ECS.Tests
 
         // ---- Rotating saves and fallback on load (CC-042) ---------------------------------------------------
 
-        static readonly Regex Unusable = new Regex("Save game is unusable");
+        static readonly Regex Unusable = new Regex("^Save rejected: ");
+        static readonly Regex BadFileName = new Regex(@"^savegame\.bad\.\d{8}T\d{9}Z\.json$");
 
         string SlotPath(int slot) => SaveGameManager.SaveSlotPath(slot);
 
@@ -733,7 +758,7 @@ namespace ECS.Tests
 
             Assert.IsNotNull(saveData);
             Assert.AreEqual(2, saveData.moveCount);
-            Assert.AreEqual(content, File.ReadAllText(BadPath), "the unusable file is set aside, unchanged");
+            Assert.AreEqual(content, OnlyBadFileContent(), "the unusable file is set aside, unchanged");
             // Renumbered, so the next save rotates normally.
             Assert.AreEqual(2, MoveIn(0));
             Assert.AreEqual(1, MoveIn(1));
@@ -894,7 +919,7 @@ namespace ECS.Tests
 
             SaveGameManager.DeleteSaveGame();
 
-            Assert.AreEqual("bad", File.ReadAllText(BadPath), "bad files are kept for inspection");
+            Assert.AreEqual("bad", OnlyBadFileContent(), "bad files are kept for inspection");
         }
 
         [Test]
@@ -942,7 +967,211 @@ namespace ECS.Tests
         {
             for (int slot = 0; slot <= SaveGameManager.BackupCount; slot++)
                 Assert.IsFalse(SlotPath(slot).StartsWith(Application.persistentDataPath, StringComparison.OrdinalIgnoreCase));
-            Assert.IsFalse(BadPath.StartsWith(Application.persistentDataPath, StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(folder.StartsWith(Application.persistentDataPath, StringComparison.OrdinalIgnoreCase), "so bad files are too");
+        }
+
+        // ---- Rejection reasons and reporting (CC-042.2) -------------------------------------------------------
+
+        /// <summary>Starts recording every <see cref="SaveGameManager.SaveRejected"/> into <see cref="rejections"/>.</summary>
+        void ListenForRejections()
+        {
+            rejections.Clear();
+            rejectionHandler = r => rejections.Add(r);
+            SaveGameManager.SaveRejected += rejectionHandler;
+        }
+
+        void StopListeningForRejections()
+        {
+            if (rejectionHandler != null)
+                SaveGameManager.SaveRejected -= rejectionHandler;
+            rejectionHandler = null;
+        }
+
+        [TestCase("not json", SaveRejectReason.Unreadable, null, TestName = "Rejection_NotJson_IsUnreadable")]
+        [TestCase("", SaveRejectReason.Empty, "", TestName = "Rejection_EmptyFile_IsEmpty")]
+        [TestCase("{ \"version\": \"99.0\", \"gridWidth\": 4, \"gridHeight\": 4 }", SaveRejectReason.UnknownVersion, "99.0", TestName = "Rejection_VersionNotReadable_IsUnknownVersion")]
+        [TestCase("{ \"version\": \"1.0\" }", SaveRejectReason.InvalidGrid, "0x0", TestName = "Rejection_NoGridSize_IsInvalidGrid")]
+        [TestCase("{ \"version\": \"1.0\", \"gridWidth\": 0, \"gridHeight\": 4 }", SaveRejectReason.InvalidGrid, "0x4", TestName = "Rejection_ZeroWidth_IsInvalidGrid")]
+        public void SaveRejected_FiresOnceWithTheReasonForTheRejectedFile(string content, SaveRejectReason reason, string detail)
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(savePath, content);
+            ListenForRejections();
+
+            LogAssert.Expect(LogType.Warning, Unusable);
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            Assert.AreEqual(1, rejections.Count, "once per rejected file");
+            Assert.AreEqual(reason, rejections[0].Reason);
+            Assert.AreEqual("savegame.json", rejections[0].FileName);
+            if (detail != null)
+                Assert.AreEqual(detail, rejections[0].Detail);
+            else
+                Assert.IsNotEmpty(rejections[0].Detail, "the exception message");
+        }
+
+        [Test]
+        public void SaveRejected_FiresForEachRejectedFile_NewestFirst()
+        {
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            Corrupt(0, "first bad");
+            Corrupt(1, "{}");
+            ListenForRejections();
+
+            LogAssert.Expect(LogType.Warning, Unusable);
+            LogAssert.Expect(LogType.Warning, Unusable);
+            var saveData = SaveGameManager.LoadSaveGame();
+
+            Assert.AreEqual(1, saveData.moveCount, "the second backup is used");
+            Assert.AreEqual(2, rejections.Count);
+            Assert.AreEqual("savegame.json", rejections[0].FileName);
+            Assert.AreEqual("savegame.1.json", rejections[1].FileName);
+            Assert.AreEqual(SaveRejectReason.Unreadable, rejections[0].Reason);
+            Assert.AreEqual(SaveRejectReason.InvalidGrid, rejections[1].Reason);
+
+            var bad = BadFilesOnDisk();
+            Assert.AreEqual(2, bad.Length, "two files set aside, with different names");
+            Assert.AreEqual(rejections[0].SetAsidePath, bad[0], "names sort in time order");
+            Assert.AreEqual(rejections[1].SetAsidePath, bad[1]);
+        }
+
+        [Test]
+        public void SaveRejected_DoesNotFireForAValidSave()
+        {
+            WriteMove(1);
+            ListenForRejections();
+
+            Assert.IsTrue(SaveGameManager.HasSaveGame());
+            Assert.IsNotNull(SaveGameManager.LoadSaveGame());
+
+            Assert.AreEqual(0, rejections.Count);
+            Assert.AreEqual(0, BadFilesOnDisk().Length);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void SaveRejected_DoesNotFireWhenThereAreNoFiles()
+        {
+            ListenForRejections();
+
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            Assert.AreEqual(0, rejections.Count);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void SaveRejection_SetAsidePath_IsTheTimestampedFileHoldingTheRejectedContent()
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(savePath, "rejected content");
+            ListenForRejections();
+            LogAssert.Expect(LogType.Warning, Unusable);
+
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            string moved = rejections[0].SetAsidePath;
+            Assert.IsTrue(File.Exists(moved));
+            Assert.AreEqual("rejected content", File.ReadAllText(moved));
+            Assert.AreEqual(folder, Path.GetDirectoryName(moved));
+            StringAssert.IsMatch(BadFileName.ToString(), Path.GetFileName(moved));
+        }
+
+        [Test]
+        public void BadFiles_OnlyTheNewestThreeAreKept()
+        {
+            Directory.CreateDirectory(folder);
+            string[] old =
+            {
+                Path.Combine(folder, "savegame.bad.20200101T000000000Z.json"),
+                Path.Combine(folder, "savegame.bad.20200102T000000000Z.json"),
+                Path.Combine(folder, "savegame.bad.20200103T000000000Z.json")
+            };
+            foreach (string file in old)
+                File.WriteAllText(file, "old");
+            File.WriteAllText(savePath, "fourth bad save");
+            ListenForRejections();
+            LogAssert.Expect(LogType.Warning, Unusable);
+
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            var bad = BadFilesOnDisk();
+            Assert.AreEqual(SaveGameManager.KeptBadFiles, bad.Length);
+            Assert.IsFalse(File.Exists(old[0]), "the oldest was deleted");
+            Assert.IsTrue(File.Exists(old[1]));
+            Assert.IsTrue(File.Exists(old[2]));
+            Assert.AreEqual(rejections[0].SetAsidePath, bad[2], "the new one is the newest");
+            Assert.AreEqual("fourth bad save", File.ReadAllText(bad[2]));
+        }
+
+        [Test]
+        public void BadFiles_ALegacyBadFileIsLeftAloneAndNotCounted()
+        {
+            Directory.CreateDirectory(folder);
+            string legacy = Path.Combine(folder, "savegame.bad.json");
+            File.WriteAllText(legacy, "from an older build");
+            for (int day = 1; day <= 3; day++)
+                File.WriteAllText(Path.Combine(folder, $"savegame.bad.2020010{day}T000000000Z.json"), "old");
+            File.WriteAllText(savePath, "bad");
+            LogAssert.Expect(LogType.Warning, Unusable);
+
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            Assert.AreEqual("from an older build", File.ReadAllText(legacy), "not deleted or replaced");
+            Assert.AreEqual(SaveGameManager.KeptBadFiles, BadFilesOnDisk().Length, "three timestamped files besides the legacy one");
+            Assert.IsFalse(File.Exists(Path.Combine(folder, "savegame.bad.20200101T000000000Z.json")));
+        }
+
+        [Test]
+        public void RejectionLog_IsOneWarningInTheFixedFormat()
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(savePath, "{ \"version\": \"99.0\", \"gridWidth\": 4, \"gridHeight\": 4 }");
+            LogAssert.Expect(LogType.Warning, new Regex(
+                @"^Save rejected: reason=UnknownVersion file=savegame\.json detail=99\.0 movedTo=savegame\.bad\.\d{8}T\d{9}Z\.json$"));
+
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void FormatRejection_NamesTheFileAndShowsNoneWhenTheMoveFailed()
+        {
+            var moved = new SaveRejection(SaveRejectReason.InvalidGrid, "savegame.1.json", "0x4", Path.Combine(folder, "savegame.bad.20200101T000000000Z.json"));
+            var notMoved = new SaveRejection(SaveRejectReason.Empty, "savegame.2.json", "", null);
+
+            Assert.AreEqual("Save rejected: reason=InvalidGrid file=savegame.1.json detail=0x4 movedTo=savegame.bad.20200101T000000000Z.json",
+                SaveGameManager.FormatRejection(moved));
+            Assert.AreEqual("Save rejected: reason=Empty file=savegame.2.json detail= movedTo=none", SaveGameManager.FormatRejection(notMoved));
+        }
+
+        [Test]
+        public void ASubscriberThatThrows_DoesNotStopTheFallbackLoad()
+        {
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            Corrupt(0, "broken");
+            Action<SaveRejection> thrower = _ => throw new InvalidOperationException("boom");
+            SaveGameManager.SaveRejected += thrower;
+            ListenForRejections(); // after the thrower, so it shows the later subscribers still run
+            try
+            {
+                LogAssert.Expect(LogType.Warning, Unusable);
+                LogAssert.Expect(LogType.Exception, new Regex("InvalidOperationException: boom"));
+
+                var saveData = SaveGameManager.LoadSaveGame();
+
+                Assert.IsNotNull(saveData);
+                Assert.AreEqual(2, saveData.moveCount, "the load fell back as usual");
+                Assert.AreEqual(1, rejections.Count, "a subscriber after the broken one still ran");
+                LogAssert.NoUnexpectedReceived();
+            }
+            finally
+            {
+                SaveGameManager.SaveRejected -= thrower;
+            }
         }
 
         // ---- Known gaps: current behaviour, named issues -----------------------------------------------------

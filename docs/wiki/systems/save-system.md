@@ -9,7 +9,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Frame
 | File | Role |
 |---|---|
 | `Assets/Scripts/SaveSystem/SaveData.cs` | `SaveGameData` and `SavedBlock` (the serialised schema) |
-| `Assets/Scripts/SaveSystem/SaveGameManager.cs` | Static helper: `HasSaveGame`, `LoadSaveGame`, `DeleteSaveGame`, `InitializeFromSave` (starts a resumed game through `GameManager.StartResumedGame` without touching the menu's configuration), `RestoreWorldState`, `RestoreBlocks` |
+| `Assets/Scripts/SaveSystem/SaveGameManager.cs` | Also holds `SaveRejectReason`, `SaveRejection` and the `SaveRejected` event. Static helper: `HasSaveGame`, `LoadSaveGame`, `DeleteSaveGame`, `InitializeFromSave` (starts a resumed game through `GameManager.StartResumedGame` without touching the menu's configuration), `RestoreWorldState`, `RestoreBlocks` |
 | `Assets/Scripts/ECS/Systems/SaveGameSystem.cs` | Writes and deletes the save file (Presentation group) |
 | `Assets/Scripts/Gameplay/MainMenuController.cs` | Shows the resume button, sets the `LoadFromSave` PlayerPrefs flag (`ResumeGame`) |
 | `Assets/Scripts/Gameplay/GameRenderer.cs` | Reads the flag and calls the restore code (`InitializeGame`) |
@@ -23,7 +23,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Frame
 - **Rotating backups** (since CC-042, `SaveGameManager.WriteSave`): the files are `savegame.json` (newest, the name older builds used, so their saves still load), `savegame.1.json` (the move before) and `savegame.2.json` (the move before that). `SaveGameManager.SaveSlotPath(slot)` gives slot 0, 1 or 2; `BackupCount` is 2. On each save, after the temp file is written: delete `.2`, move `.1` to `.2`, then `File.Replace(tmp, savegame.json, savegame.1.json)`, which moves the old newest file into `.1` in the same call. Where `File.Replace` is not supported, `savegame.json` is moved to `.1` and the temp file moved in. A crash at any step leaves at least one complete earlier save.
 - **New game:** saves happen only after a move, so a save with `moveCount` 1 is a new game's first save. It deletes `.1` and `.2` and replaces `savegame.json` without keeping it, so a fallback never loads the previous game.
 - **Fallback on load** (since CC-042, `TryReadSave`): `HasSaveGame` and `LoadSaveGame` read slot 0, then 1, then 2, and use the first file that passes the checks. Each unusable file on the way is set aside. When a backup is used, the files are renumbered (`PromoteSlot`) so it becomes `savegame.json` and the next save rotates normally. A resume that fell back looks like a normal resume, one or two moves earlier; there is no player message (decision D5 on the [CC-042 page](../features/CC-042-rotating-saves.md)).
-- **Unusable saves** (since CC-031): a file that can't be parsed, is empty, has an unknown `version` or a grid smaller than 1x1 is moved to `savegame.bad.json` in the same folder (replacing an earlier one) with a `Debug.LogWarning` naming the file, and the next slot is tried. With no usable file there is no Resume button.
+- **Unusable saves** (since CC-031): a file that can't be parsed, is empty, has an unknown `version` or a grid smaller than 1x1 is moved to `savegame.bad.<UTC yyyyMMdd'T'HHmmssfff'Z'>.json` in the same folder (since CC-042.2; one file per rejection, and only the newest three are kept) with one `Debug.LogWarning`, and the next slot is tried. With no usable file there is no Resume button. See Reporting below.
 - **Test seams:** `SaveFilePathOverride` (the folder) and `SimulateNoFileReplace` (forces the no-`File.Replace` path), both internal.
 - **Cloud saves ([CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25)):** sync only the newest valid save (`LoadSaveGame`'s result); the backups stay on the device.
 
@@ -88,10 +88,25 @@ The test is simply `!WaitingForInput`, which `BoardStepSystem` sets only in the 
 3. **State.** `InitializeGame` creates the singletons as for a new game, builds the visual grid, then calls `RestoreWorldState(saveData)` instead of `SpawnInitialBlock`. The game resumes waiting for input: nothing runs until the first move, so the board, the white indicator, Moves and Score stay exactly as saved, and the file is not rewritten (fixed in CC-006.5, [CC-022](https://github.com/rtumelty/Cathartic-Colours/issues/34)).
 
 ### Versioning and migration
-Since CC-031 `version` is checked: `SaveGameManager.CurrentVersion` (`"1.0"`) is written, and a load accepts only versions listed in `ReadableVersions`; anything else is set aside as `savegame.bad.json`. There is no migration yet. When the format changes, bump `CurrentVersion` and keep an old version in `ReadableVersions` only if it can still be read (with a migration step if fields change meaning). Missing fields take their type defaults with `JsonUtility`. `saveTimestamp` is still written and not read.
+Since CC-031 `version` is checked: `SaveGameManager.CurrentVersion` (`"1.0"`) is written, and a load accepts only versions listed in `ReadableVersions`; anything else is set aside as a `savegame.bad.<timestamp>.json` file. There is no migration yet. When the format changes, bump `CurrentVersion` and keep an old version in `ReadableVersions` only if it can still be read (with a migration step if fields change meaning). Missing fields take their type defaults with `JsonUtility`. `saveTimestamp` is still written and not read.
+
+### Reporting (since CC-042)
+Each rejected file is reported once, in three ways: moved aside, logged and raised as an event. All are in `Assets/Scripts/SaveSystem/SaveGameManager.cs`.
+
+- **Reason:** `SaveRejectReason` is `Unreadable` (the file could not be read or parsed; the detail is the exception message), `Empty` (the file parsed to nothing; detail is empty), `UnknownVersion` (detail is the version, for example `99.0`) or `InvalidGrid` (detail is the size, for example `0x4`).
+- **Record:** `SaveRejection` is a read-only struct with `Reason`, `FileName` (the slot's file name, for example `savegame.1.json`), `Detail` and `SetAsidePath` (the full path of the bad file, or `null` if the move failed).
+- **Event:** `SaveGameManager.SaveRejected` (`event Action<SaveRejection>`) is raised once per rejected file, after the move and the log line. It runs synchronously on the calling thread, which is the main thread, during `HasSaveGame` or `LoadSaveGame`. A subscriber that throws is logged with `Debug.LogException` and does not stop the load or the other subscribers. Nothing subscribes yet.
+- **Log line:** exactly one warning per rejected file, built by `FormatRejection`: `Save rejected: reason=<Reason> file=<FileName> detail=<Detail> movedTo=<bad file name or none>`. If the move fails, the warning still shows `movedTo=none` and a `Debug.LogError` ("Could not move the rejected save aside: ...") follows.
+- **Bad files:** named `savegame.bad.<UTC yyyyMMdd'T'HHmmssfff'Z'>.json`. If the name exists, 1 ms is added until it is free, so names are unique and sort in time order. After each move, all but the newest three (`KeptBadFiles`) are deleted. A `savegame.bad.json` left by an older build does not match the name pattern, so it is not counted or deleted. A failure while trimming is logged as a warning and does not stop the load.
+
+**How CC-015 (analytics and crash reporting) should subscribe:**
+- Subscribe once at start-up, before the main menu calls `HasSaveGame`, for example from a bootstrap. A later subscriber misses the rejections already raised.
+- The handler runs inside the load, on the main thread. Keep it cheap and non-throwing: queue or send the event, do not block.
+- Never read, move or delete save files from the handler. The load is still working through the slots.
+- Send `Reason`, `FileName` and `Detail`. `Detail` for `Unreadable` is a parser message, so do not parse it.
 
 ### Error handling
-- Load: an unreadable or unknown file is set aside with `Debug.LogWarning` and the next backup is tried; `null` is returned when none is usable. The menu and `InitializeGame` both handle `null`. If renumbering after a fallback fails, a `Debug.LogError` is logged and the usable file stays in its slot, where the next load finds it again.
+- Load: an unreadable or unknown file is set aside with one `Debug.LogWarning` (and a `SaveRejected` event) and the next backup is tried; `null` is returned when none is usable. The menu and `InitializeGame` both handle `null`. If renumbering after a fallback fails, a `Debug.LogError` is logged and the usable file stays in its slot, where the next load finds it again.
 - Save and delete: wrapped in `try/catch`; failures are logged with `Debug.LogError` and the game continues.
 - If `GameManager.ActiveConfiguration` or `ActiveColorProfile` is null when saving, the corresponding fields are simply left at their defaults (mode `Standard`, size 0, empty name); the save is still written (`SaveGameSystem.CreateSaveData`). Unverified whether this can occur in practice.
 - The save system logs only warnings and errors: a missing file on load or an unusable save (`Debug.LogWarning`) and failures (`Debug.LogError`). Successful save, load and delete log nothing.
