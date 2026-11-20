@@ -11,6 +11,13 @@ namespace CatharticColours.Build
     public static class AndroidBuildArgs
     {
         public const string VersionCodeFlag = "-versionCode";
+        public const string BuildProfileFlag = "-buildProfile";
+
+        /// <summary>The build profile used when <see cref="BuildProfileFlag"/> is not passed.</summary>
+        public const string DefaultProfile = "Development";
+
+        const string DevelopmentProfileAssetName = "Android\u2122 Development";
+        const string ReleaseProfileAssetName = "Android\u2122";
 
         /// <summary>Google Play's maximum versionCode.</summary>
         public const int MaxVersionCode = 2100000000;
@@ -62,7 +69,74 @@ namespace CatharticColours.Build
             return true;
         }
 
-        public static string OutputFileName(string versionName, int versionCode)
+        /// <summary>
+        /// Reads the optional <see cref="BuildProfileFlag"/> argument. When the flag is absent the profile is
+        /// <see cref="DefaultProfile"/>. A flag without a value, or with an empty one, is an error.
+        /// </summary>
+        public static bool TryParseProfile(string[] args, out string profileName, out string error)
+        {
+            profileName = DefaultProfile;
+            error = null;
+
+            int index = -1;
+            if (args != null)
+            {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    if (string.Equals(args[i], BuildProfileFlag, StringComparison.Ordinal))
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+
+            if (index < 0)
+                return true;
+
+            if (index + 1 >= args.Length)
+            {
+                error = $"Argument {BuildProfileFlag} needs a value, for example {BuildProfileFlag} Release.";
+                return false;
+            }
+
+            string text = args[index + 1];
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                error = $"Argument {BuildProfileFlag} needs a non-empty profile name, for example {BuildProfileFlag} Release.";
+                return false;
+            }
+
+            profileName = text.Trim();
+            return true;
+        }
+
+        /// <summary>
+        /// Maps a profile name to its asset path. "Development" and "Release" (any case) are aliases for the
+        /// project's Android build profiles; any other name is used as the asset name.
+        /// </summary>
+        public static string ProfileAssetPath(string profileName)
+        {
+            if (string.IsNullOrWhiteSpace(profileName))
+                throw new ArgumentException("The profile name must not be null or empty.", nameof(profileName));
+
+            string assetName;
+            if (string.Equals(profileName, "Development", StringComparison.OrdinalIgnoreCase))
+                assetName = DevelopmentProfileAssetName;
+            else if (string.Equals(profileName, "Release", StringComparison.OrdinalIgnoreCase))
+                assetName = ReleaseProfileAssetName;
+            else
+                assetName = profileName;
+
+            if (assetName.IndexOfAny(new[] { '/', '\\' }) >= 0 || assetName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                throw new ArgumentException(
+                    $"The profile name '{profileName}' contains characters that are not valid in a file name.",
+                    nameof(profileName));
+
+            return $"Assets/Settings/Build Profiles/{assetName}.asset";
+        }
+
+        public static string OutputFileName(string versionName, int versionCode, bool development, bool appBundle)
         {
             if (string.IsNullOrWhiteSpace(versionName))
                 throw new ArgumentException("The version name must not be null or empty.", nameof(versionName));
@@ -72,7 +146,7 @@ namespace CatharticColours.Build
                     $"The version name '{versionName}' contains characters that are not valid in a file name.",
                     nameof(versionName));
 
-            return $"CatharticColours-{versionName}-{versionCode}-dev.apk";
+            return $"CatharticColours-{versionName}-{versionCode}-{(development ? "dev" : "release")}.{(appBundle ? "aab" : "apk")}";
         }
     }
 }
