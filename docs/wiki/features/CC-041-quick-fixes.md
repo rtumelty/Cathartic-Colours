@@ -72,7 +72,7 @@ None during the batch (workflow exception). Ronan's review of the PR and his mer
 - **D3 — CC-044 joins the batch** after CC-031, both touching the save restore code (Ronan, 2026-11-20).
 
 ## Divergences
-_None yet._
+- **CC-040:** `tools/build-android.ps1` had no revert step to remove; the revert was only advice on the [build-android](../systems/build-android.md) page, which is updated. A build re-saved three files with real changes (new default fields, plus URP 17.6 dropping `m_DebugLevel`); the other three it touched differed only in line endings, so nothing of theirs is committed.
 
 ## Feature test plan
 _Written at the end of the batch: the shortest pass that checks each fix in the editor and on a device._
