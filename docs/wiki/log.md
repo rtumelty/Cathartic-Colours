@@ -150,3 +150,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-20] implement | CC-043.3 | Development profile: symbols Symbol Table, script debugging off, profiler on; new Android™ Development (Debuggable) profile (-Profile Debuggable). Final runs: clean 13:17, unchanged 1:11, one-line 1:49, profile switch 12–28 min. build-android page and TP-DROID-05/06 added; release profile unchanged
 ## [2026-11-20] schema | ~/.claude/CLAUDE.md | (not in git) §1.4, §2.2 step 5, §2.3 step 1: device builds only when a PR is opened or where the approved plan asks for one, not per deliverable (Ronan, to lower iteration costs)
 ## [2026-11-20] approve | CC-043 | PR #84 squash-merged into develop as 8289364, identical to the branch tip; #76 and sub-issues #81-#83 Done; removed from roadmap.md
+## [2026-11-20] approve | CC-039 | Planned and approved by Ronan with no approval stops; #68 Approved; sub-issues created; feature page committed
