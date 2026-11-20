@@ -5,13 +5,14 @@
             <ui:Label text="Cathartic Colours" name="title" class="title"/>
             <ui:Label text="Moves: 0" name="move-count" class="move-count"/>
             <ui:Label text="Score: 0&#10;" name="score-label" class="score-label"/>
+            <ui:Label text="" name="status-label" class="status-label"/>
         </ui:VisualElement>
         <ui:VisualElement name="game-over-panel" class="modal-panel">
             <ui:VisualElement class="modal-content">
                 <ui:Label text="Grid Full!" class="modal-title"/>
                 <ui:Label text="No more moves available" class="modal-message"/>
                 <ui:VisualElement class="button-row">
-                    <ui:Button text="Restart" name="restart-button" class="modal-button primary-button"/>
+                    <ui:Button text="Restart" name="gameover-restart-button" class="modal-button primary-button"/>
                     <ui:Button text="Main Menu" name="main-menu-button" class="modal-button tertiary-button"/>
                 </ui:VisualElement>
             </ui:VisualElement>
@@ -22,7 +23,7 @@
                 <ui:Label text="All blocks cleared!" class="modal-message"/>
                 <ui:VisualElement class="button-row">
                     <ui:Button text="Next Level" name="next-level-button" class="modal-button primary-button"/>
-                    <ui:Button text="Restart" name="restart-button" class="modal-button secondary-button"/>
+                    <ui:Button text="Restart" name="levelcomplete-restart-button" class="modal-button secondary-button"/>
                     <ui:Button text="Main Menu" name="main-menu-button" class="modal-button tertiary-button"/>
                 </ui:VisualElement>
             </ui:VisualElement>

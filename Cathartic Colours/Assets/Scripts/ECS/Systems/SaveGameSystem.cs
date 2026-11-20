@@ -1,7 +1,6 @@
 using Unity.Entities;
 using Unity.Collections;
 using UnityEngine;
-using System.IO;
 using ECS.Components;
 using Data;
 using SaveSystem;
@@ -47,22 +46,8 @@ namespace ECS.Systems
         {
             try
             {
-                var saveData = CreateSaveData(ref state);
-                string json = JsonUtility.ToJson(saveData, true);
-                string savePath = GetSaveFilePath();
-                
-                // Ensure directory exists
-                string directory = Path.GetDirectoryName(savePath);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-                
-                File.WriteAllText(savePath, json);
-                
-                #if UNITY_EDITOR
-                Debug.Log($"Game saved to: {savePath}");
-                #endif
+                // Written to a temp file and moved into place, so a crash mid-write can't truncate the save (CC-031).
+                SaveGameManager.WriteSave(CreateSaveData(ref state));
             }
             catch (System.Exception e)
             {
@@ -88,7 +73,8 @@ namespace ECS.Systems
             var colorProfile = GameManager.ActiveColorProfile;
             if (colorProfile != null)
             {
-                saveData.colorProfileName = colorProfile.name;
+                // The asset's name, without the runtime copy's "(Clone)" suffix, so a resume can find the profile.
+                saveData.colorProfileName = SaveGameManager.ProfileAssetName(colorProfile);
             }
             
             // Get game state
@@ -136,24 +122,12 @@ namespace ECS.Systems
         {
             try
             {
-                string savePath = GetSaveFilePath();
-                if (File.Exists(savePath))
-                {
-                    File.Delete(savePath);
-                    #if UNITY_EDITOR
-                    Debug.Log("Save game deleted");
-                    #endif
-                }
+                SaveGameManager.DeleteSaveGame();
             }
             catch (System.Exception e)
             {
                 Debug.LogError($"Failed to delete save game: {e.Message}");
             }
-        }
-
-        private string GetSaveFilePath()
-        {
-            return SaveGameManager.SaveFilePath;
         }
     }
 }

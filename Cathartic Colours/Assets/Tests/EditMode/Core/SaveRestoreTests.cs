@@ -169,8 +169,7 @@ namespace ECS.Tests
             Assert.AreEqual(originalScore.TotalScore, resumed.Score.TotalScore);
             Assert.AreEqual(originalScore.CurrentFrameScore, resumed.Score.CurrentFrameScore);
             Assert.AreEqual(2, resumed.GameState.MoveCount);
-            // KNOWN BUG (CC-044, #77; see ResumedGame_RandomStateIsReSeeded_NotContinued): the restored state is not the saved one.
-            Assert.AreEqual(new Unity.Mathematics.Random(originalState.Random.state).state, resumed.GameState.Random.state);
+            Assert.AreEqual(originalState.Random.state, resumed.GameState.Random.state);
             Assert.IsFalse(resumed.GameState.GameOver);
             Assert.IsFalse(resumed.GameState.LevelComplete);
             Assert.IsTrue(resumed.GameState.WaitingForInput);
@@ -203,18 +202,35 @@ namespace ECS.Tests
         }
 
         [Test]
-        public void ResumedGame_RandomStateIsReSeeded_NotContinued()
+        public void ResumedGame_ContinuesTheSavedRandomSequence()
         {
-            // KNOWN BUG, current behaviour (CC-044, #77, found by CC-002.3): RestoreWorldState does
-            // `new Random(saveData.randomState)`, but Random(uint) takes a SEED and hashes it, while randomState holds the
-            // generator STATE (Random.state). So a resumed game does not continue the saved random sequence: the next
-            // spawn can differ from the one the original game would have made. Fix: `new Random { state = saved }`.
+            // CC-044 (#77): the generator state is restored directly, so the resumed game plays on exactly as the original.
             var game = PlayTwoMovesAndSave();
             var savedState = game.GameState.Random.state;
             var resumed = Resume();
 
-            Assert.AreNotEqual(savedState, resumed.GameState.Random.state);
-            Assert.AreEqual(new Unity.Mathematics.Random(savedState).state, resumed.GameState.Random.state);
+            Assert.AreEqual(savedState, resumed.GameState.Random.state);
+
+            game.MoveAndSave(BoardStepTestWorld.Left);
+            resumed.MoveAndSave(BoardStepTestWorld.Left);
+
+            CollectionAssert.AreEqual(Snapshot(game), Snapshot(resumed));
+            Assert.AreEqual(game.Score.TotalScore, resumed.Score.TotalScore);
+            Assert.AreEqual(game.GameState.Random.state, resumed.GameState.Random.state);
+        }
+
+        [Test]
+        public void RestoreWorldState_WithAZeroRandomState_UsesAValidGenerator()
+        {
+            // State 0 can only come from a hand-edited or broken file; Random rejects it, so a fixed seed is used.
+            var saveData = new SaveGameData { randomState = 0u, blocks = new SavedBlock[0] };
+            var resumed = CreateFreshWorldForResume();
+
+            SaveGameManager.RestoreWorldState(saveData);
+
+            var random = resumed.GameState.Random;
+            Assert.AreNotEqual(0u, random.state);
+            Assert.DoesNotThrow(() => random.NextUInt());
         }
 
         [Test]
@@ -291,7 +307,7 @@ namespace ECS.Tests
             Assert.IsTrue(resumed.GameState.GameOver);
             Assert.IsTrue(resumed.GameState.LevelComplete);
             Assert.AreEqual(7, resumed.GameState.MoveCount);
-            Assert.AreEqual(new Unity.Mathematics.Random(99u).state, resumed.GameState.Random.state);
+            Assert.AreEqual(99u, resumed.GameState.Random.state);
             Assert.AreEqual(123, resumed.Score.TotalScore);
             Assert.AreEqual(0, resumed.BlockCount, "a null blocks array restores no blocks");
         }
@@ -493,69 +509,166 @@ namespace ECS.Tests
             Assert.AreSame(before, GameManager.ActiveConfiguration);
         }
 
-        // ---- Known gaps: current behaviour, named issues -----------------------------------------------------
+        // ---- Save file robustness (CC-031) --------------------------------------------------------------------
+
+        string BadPath => Path.Combine(folder, "savegame.bad.json");
 
         [Test]
-        public void KnownGap_ColorProfileName_IsSavedButIgnoredOnRestore_CC031()
+        public void ColorProfile_SavedByAssetName_AndRestoredWhenKnown()
         {
-            // CC-031 (https://github.com/rtumelty/Cathartic-Colours/issues/43): colorProfileName is saved but a resume
-            // uses whatever colour profile is passed in. When CC-031 changes this, update the second assertion.
             InitializeGameManager(GameMode.Standard, 4, 4, true, "ProfileA");
             var game = CreateWorld(GameMode.Standard, RoundTripBoard);
             game.MoveAndSave(BoardStepTestWorld.Right);
             var saveData = SaveGameManager.LoadSaveGame();
-            StringAssert.StartsWith("ProfileA", saveData.colorProfileName, "saved (with the runtime copy's \"(Clone)\" suffix)");
+            Assert.AreEqual("ProfileA", saveData.colorProfileName, "the asset name, without the runtime copy's \"(Clone)\"");
 
-            SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 6, 6, false), NewProfile("ProfileB"));
+            var profileA = NewProfile("ProfileA");
+            var profileB = NewProfile("ProfileB");
+            SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 6, 6, false), profileB, new[] { profileB, profileA });
 
-            StringAssert.StartsWith("ProfileB", GameManager.ActiveColorProfile.name, "the saved profile is not used");
+            StringAssert.StartsWith("ProfileA", GameManager.ActiveColorProfile.name, "the saved profile is used");
         }
 
         [Test]
-        public void KnownGap_VersionIsNeverChecked_CC031()
+        public void ColorProfile_FromAnOlderSaveWithTheCloneSuffix_IsStillFound()
         {
-            // CC-031 (#43): version and saveTimestamp are written but never read, so a save from any "version" loads.
+            var saveData = new SaveGameData { gridWidth = 4, gridHeight = 4, colorProfileName = "ProfileA(Clone)" };
+
+            SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 4, 4, false), NewProfile("ProfileB"),
+                new[] { NewProfile("ProfileA") });
+
+            StringAssert.StartsWith("ProfileA", GameManager.ActiveColorProfile.name);
+        }
+
+        [TestCase("Missing")]
+        [TestCase(null)]
+        public void ColorProfile_NotKnown_FallsBackToTheTemplate(string savedName)
+        {
+            var saveData = new SaveGameData { gridWidth = 4, gridHeight = 4, colorProfileName = savedName };
+
+            SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 4, 4, false), NewProfile("ProfileB"),
+                new[] { NewProfile("ProfileA") });
+
+            StringAssert.StartsWith("ProfileB", GameManager.ActiveColorProfile.name);
+        }
+
+        [Test]
+        public void UnknownVersion_IsSetAsideAndNotOffered()
+        {
             PlayTwoMovesAndSave();
             var json = File.ReadAllText(savePath).Replace("\"version\": \"1.0\"", "\"version\": \"99.0\"");
             Assert.That(json, Does.Contain("99.0"), "precondition: the version was rewritten");
             File.WriteAllText(savePath, json);
 
-            var saveData = SaveGameManager.LoadSaveGame();
+            LogAssert.Expect(LogType.Warning, new Regex("unknown version \"99.0\""));
+            Assert.IsFalse(SaveGameManager.HasSaveGame(), "the menu would not offer Resume");
 
-            Assert.IsNotNull(saveData);
-            Assert.AreEqual("99.0", saveData.version);
-            Assert.AreEqual(2, saveData.moveCount);
-        }
-
-        [Test]
-        public void KnownGap_UnreadableSave_StillCountsAsASaveButLoadsAsNull_CC031()
-        {
-            // CC-031 (#43): HasSaveGame only checks that the file exists, so a corrupt or truncated file makes the menu
-            // offer Resume, and the load then fails.
-            Directory.CreateDirectory(folder);
-            File.WriteAllText(savePath, "{ \"version\": \"1.0\", \"gameMode\": ");
-
-            Assert.IsTrue(SaveGameManager.HasSaveGame());
-            LogAssert.Expect(LogType.Error, new Regex("Failed to load save game"));
+            Assert.IsFalse(File.Exists(savePath));
+            Assert.AreEqual(json, File.ReadAllText(BadPath), "the file is kept, unchanged, as savegame.bad.json");
+            LogAssert.Expect(LogType.Warning, "No save game file found");
             Assert.IsNull(SaveGameManager.LoadSaveGame());
         }
 
-        [Test]
-        public void KnownGap_ConfigurationOutsideTheFourSavedFieldsComesFromTheTemplate_CC027()
+        [TestCase("{ \"version\": \"1.0\", \"gameMode\": ", TestName = "UnreadableSave_Truncated_IsSetAside")]
+        [TestCase("", TestName = "UnreadableSave_Empty_IsSetAside")]
+        [TestCase("{}", TestName = "UnreadableSave_NoGrid_IsSetAside")]
+        public void UnreadableSave_IsSetAsideAndLoadsAsNull(string content)
         {
-            // CC-027 (#39): a resume replaces the shared runtime configuration (the menu then shows the resumed game's
-            // settings) and only gameMode, grid size and spawnNextColourSystem are saved: the tier points are
-            // whatever the template has.
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(savePath, content);
+
+            LogAssert.Expect(LogType.Warning, new Regex("Save game is unusable"));
+            Assert.IsNull(SaveGameManager.LoadSaveGame());
+
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+            Assert.IsFalse(File.Exists(savePath));
+            Assert.AreEqual(content, File.ReadAllText(BadPath));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void ASecondUnusableSave_ReplacesTheEarlierBadFile()
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(BadPath, "older bad save");
+            File.WriteAllText(savePath, "newer bad save");
+
+            LogAssert.Expect(LogType.Warning, new Regex("Save game is unusable"));
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+
+            Assert.AreEqual("newer bad save", File.ReadAllText(BadPath));
+        }
+
+        [Test]
+        public void Save_IsWrittenThroughATempFile_ThatIsGoneAfterwards()
+        {
+            PlayTwoMovesAndSave(); // two saves: a first write, then a replace of an existing file
+
+            Assert.IsFalse(File.Exists(savePath + ".tmp"), "the temp file was moved into place");
+            Assert.AreEqual(2, SaveGameManager.LoadSaveGame().moveCount);
+            Assert.AreEqual(SaveGameManager.CurrentVersion, SaveGameManager.LoadSaveGame().version);
+        }
+
+        [Test]
+        public void Save_OverALeftoverTempFile_FromACrashedWrite_Succeeds()
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(savePath + ".tmp", "{ \"version\": \"1.0\", \"gam"); // a write that never finished
+
+            PlayTwoMovesAndSave();
+
+            Assert.IsFalse(File.Exists(savePath + ".tmp"));
+            Assert.AreEqual(2, SaveGameManager.LoadSaveGame().moveCount);
+        }
+
+        [Test]
+        public void DeleteSaveGame_AlsoRemovesALeftoverTempFile()
+        {
+            PlayTwoMovesAndSave();
+            File.WriteAllText(savePath + ".tmp", "partial");
+
+            SaveGameManager.DeleteSaveGame();
+
+            Assert.IsFalse(File.Exists(savePath));
+            Assert.IsFalse(File.Exists(savePath + ".tmp"));
+        }
+
+        [Test]
+        public void Resume_LeavesTheMenuConfigurationUnchanged()
+        {
+            // CC-027 (#39): a resume starts the game with its own configuration; the menu's copy is not replaced or edited.
             InitializeGameManager(GameMode.ColorMerge, 3, 5, false);
             var game = CreateWorld(GameMode.ColorMerge, "Rs . . .|. . . .|. . . .|. . . .");
             game.MoveAndSave(BoardStepTestWorld.Right);
             var saveData = SaveGameManager.LoadSaveGame();
-            var configBefore = GameManager.ActiveConfiguration;
+            var menuBefore = GameManager.MenuConfiguration;
 
             SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 6, 6, true, tier1Points: 4242), NewProfile("ProfileA"));
 
-            Assert.AreNotSame(configBefore, GameManager.ActiveConfiguration, "the shared runtime configuration was replaced");
+            Assert.AreSame(menuBefore, GameManager.MenuConfiguration, "the menu configuration instance is kept");
+            Assert.AreEqual(GameMode.ColorMerge, GameManager.MenuConfiguration.gameMode);
+            Assert.AreEqual(3, GameManager.MenuConfiguration.gridWidth);
+            Assert.AreEqual(5, GameManager.MenuConfiguration.gridHeight);
+            Assert.AreNotSame(menuBefore, GameManager.ActiveConfiguration, "the resumed game has its own configuration");
             Assert.AreEqual(GameMode.ColorMerge, GameManager.ActiveConfiguration.gameMode);
+            Assert.AreEqual(3, GameManager.ActiveConfiguration.gridWidth);
+            Assert.AreEqual(5, GameManager.ActiveConfiguration.gridHeight);
+        }
+
+        // ---- Known gaps: current behaviour, named issues -----------------------------------------------------
+
+        [Test]
+        public void Resume_TierPointsComeFromTheTemplateBecauseTheyAreNotSaved()
+        {
+            // Current behaviour (not part of CC-027): only gameMode, grid size and spawnNextColourSystem are saved, so
+            // the tier points are whatever the template has.
+            InitializeGameManager(GameMode.ColorMerge, 3, 5, false);
+            var game = CreateWorld(GameMode.ColorMerge, "Rs . . .|. . . .|. . . .|. . . .");
+            game.MoveAndSave(BoardStepTestWorld.Right);
+            var saveData = SaveGameManager.LoadSaveGame();
+
+            SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 6, 6, true, tier1Points: 4242), NewProfile("ProfileA"));
+
             Assert.AreEqual(4242, GameManager.ActiveConfiguration.tier1Points, "tier points are not saved: the template's value is used");
         }
 
@@ -563,7 +676,8 @@ namespace ECS.Tests
         public void KnownGap_RestoreAcceptsBlocksOutsideTheSavedGridWithoutValidation()
         {
             // No validation of restored data (docs/wiki/systems/save-system.md, "SaveGameManager"): positions outside the
-            // grid are restored as-is. Not tied to an issue yet; CC-031 (#43) is the nearest (save file robustness).
+            // grid are restored as-is. Since CC-031 (#43) a load rejects unknown versions and a missing grid size, but block
+            // positions are not checked. Not tied to an issue yet.
             var saveData = new SaveGameData
             {
                 randomState = 5u,

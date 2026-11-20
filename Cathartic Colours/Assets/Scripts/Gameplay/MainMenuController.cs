@@ -16,7 +16,7 @@ namespace CatharticColours.UI
         [SerializeField] private GameConfiguration defaultConfiguration;
         [SerializeField] private ColorProfile defaultColorProfile;
         [SerializeField] private GameConfiguration[] presetConfigurations;
-        [SerializeField] private string gameSceneName = "GameScene";
+        [SerializeField] private string gameSceneName = "Gameplay scene";
         
         [Header("UI")]
         [SerializeField] private UIDocument uiDocument;
@@ -29,6 +29,7 @@ namespace CatharticColours.UI
         private SliderInt heightSlider;
         private Label widthValue;
         private Label heightValue;
+        private Toggle spawnToggle;
         private Button startButton;
         private Button resumeGameButton;
 
@@ -69,6 +70,7 @@ namespace CatharticColours.UI
             heightSlider = root.Q<SliderInt>("height-slider");
             widthValue = root.Q<Label>("width-value");
             heightValue = root.Q<Label>("height-value");
+            spawnToggle = root.Q<Toggle>("spawn-toggle");
             startButton = root.Q<Button>("start-button");
             
             resumeGameButton = root.Q<Button>("resume-game-button");
@@ -130,7 +132,7 @@ namespace CatharticColours.UI
 
             gameModeDropdown.RegisterValueChangedCallback(evt =>
             {
-                var config = GameManager.ActiveConfiguration;
+                var config = GameManager.MenuConfiguration;
                 if (config == null) return;
 
                 config.gameMode = evt.newValue switch
@@ -150,7 +152,7 @@ namespace CatharticColours.UI
             {
                 widthSlider.RegisterValueChangedCallback(evt =>
                 {
-                    var config = GameManager.ActiveConfiguration;
+                    var config = GameManager.MenuConfiguration;
                     if (config == null) return;
 
                     widthValue.text = evt.newValue.ToString();
@@ -162,11 +164,22 @@ namespace CatharticColours.UI
             {
                 heightSlider.RegisterValueChangedCallback(evt =>
                 {
-                    var config = GameManager.ActiveConfiguration;
+                    var config = GameManager.MenuConfiguration;
                     if (config == null) return;
 
                     heightValue.text = evt.newValue.ToString();
                     config.gridHeight = evt.newValue;
+                });
+            }
+
+            if (spawnToggle != null)
+            {
+                spawnToggle.RegisterValueChangedCallback(evt =>
+                {
+                    var config = GameManager.MenuConfiguration;
+                    if (config == null) return;
+
+                    config.spawnNextColourSystem = evt.newValue;
                 });
             }
         }
@@ -199,7 +212,7 @@ namespace CatharticColours.UI
 
         private void LoadActiveConfiguration()
         {
-            var config = GameManager.ActiveConfiguration;
+            var config = GameManager.MenuConfiguration;
             if (config == null) return;
 
             // Set game mode
@@ -217,20 +230,30 @@ namespace CatharticColours.UI
             heightSlider.value = config.gridHeight;
             widthValue.text = config.gridWidth.ToString();
             heightValue.text = config.gridHeight.ToString();
+
+            // Set spawn toggle (without raising the change callback)
+            if (spawnToggle != null)
+            {
+                spawnToggle.SetValueWithoutNotify(config.spawnNextColourSystem);
+            }
         }
 
         private void LoadPreset(GameConfiguration preset)
         {
             if (preset == null) return;
-            
-            var config = GameManager.ActiveConfiguration;
+
+            var config = GameManager.MenuConfiguration;
             if (config == null) return;
 
-            // Copy preset values to active configuration (runtime instance)
+            // Copy every gameplay field of the preset to the menu configuration (runtime instance)
             config.gameMode = preset.gameMode;
             config.gridWidth = preset.gridWidth;
             config.gridHeight = preset.gridHeight;
             config.spawnNextColourSystem = preset.spawnNextColourSystem;
+            config.tier1Points = preset.tier1Points;
+            config.tier2Points = preset.tier2Points;
+            config.tier3Points = preset.tier3Points;
+            config.tier4Points = preset.tier4Points;
 
             // Update UI to reflect preset values
             LoadActiveConfiguration();
@@ -259,6 +282,8 @@ namespace CatharticColours.UI
 
         private void StartGame()
         {
+            // A new game uses the menu's settings, not those of a game that was resumed earlier
+            GameManager.UseMenuConfiguration();
             SceneManager.LoadScene(gameSceneName);
         }
 

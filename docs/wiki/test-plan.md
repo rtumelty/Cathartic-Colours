@@ -101,6 +101,26 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Expected | The main menu loads. The mode and sliders still show Standard, width 5, height 7 (the last runtime settings are kept). There is no Resume button, because no move was made. |
 | Roadmap id | — |
 
+### TP-MENU-07 — Next colour indicator toggle
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-07` |
+| Preconditions | Main menu open (after TP-MENU-06) |
+| Steps | 1. Choose the Standard 6x6 preset and look at the "Next colour indicator" toggle. 2. Untick it and tap Start. 3. Make three moves. 4. Return to the menu with the footer Main Menu button and tick the toggle again. |
+| Expected | Step 1: the toggle is ticked (the preset enables it). Step 3: the first move turns the starting white block into a colour and no new white block ever appears. Step 4: the toggle is unticked when you return, then ticked after you tick it. |
+| Roadmap id | CC-027 |
+
+### TP-MENU-08 — Resuming a game does not change the menu settings
+
+| Field | Content |
+|---|---|
+| Id | `TP-MENU-08` |
+| Preconditions | A saved game exists in Color Merge 4x4 (start the Color Merge 4x4 preset, make one move, return to the menu) |
+| Steps | 1. On the menu, choose Standard and set width 5, height 7. 2. Tap Resume. 3. Check the resumed game is Color Merge 4x4. 4. Tap the footer Main Menu button. 5. Look at the mode and sliders. 6. Tap Start. |
+| Expected | Step 5: the menu still shows Standard, 5 x 7 (not the resumed game's settings). Step 6: a new Standard 5 x 7 game starts. |
+| Roadmap id | CC-027 |
+
 ## Standard mode (STD)
 
 Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start. Keep the same game for TP-STD-01 to TP-STD-07 (return to the menu only if the board becomes full). TP-STD-08 and TP-STD-09 need a touch device and a gamepad. Since CC-006 the colour of each new block and the cell of the next white block come from separate random draws, so they are independent: do not expect any pattern linking them. (Not reliably observable by hand, so there is no case for it.)
@@ -180,10 +200,10 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Field | Content |
 |---|---|
 | Id | `TP-STD-08` |
-| Preconditions | Game in progress on a touch device (or the editor with a touch simulator). A coloured block has an empty neighbouring cell |
+| Preconditions | Game in progress on a touch device, or in the editor using the mouse (left-button drag works as a swipe since CC-030). A coloured block has an empty neighbouring cell |
 | Steps | 1. Swipe a long distance (at least 50 pixels) in each of the four directions. 2. Make a short touch drag of about 10 pixels. |
 | Expected | Each long swipe makes the same move as the matching arrow key and Moves increases by 1. The short drag makes no move and Moves does not change. |
-| Roadmap id | — |
+| Roadmap id | CC-030 |
 
 ### TP-STD-09 — Gamepad moves blocks
 
@@ -191,9 +211,19 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 |---|---|
 | Id | `TP-STD-09` |
 | Preconditions | Game in progress; a gamepad is connected |
-| Steps | 1. Push the left stick in each direction. 2. Press each D-pad direction. |
-| Expected | Each input moves blocks one cell in that direction and Moves increases by 1. Known to fail until CC-030. |
+| Steps | 1. Push the left stick in each direction, hold it for a second, then let it return to the centre. 2. Press each D-pad direction. |
+| Expected | Each push or press moves blocks one cell in that direction and Moves increases by exactly 1; holding the stick does not repeat the move. |
 | Roadmap id | CC-030 |
+
+### TP-STD-10 — All eight keys move, with no Console errors (editor)
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-10` |
+| Preconditions | Running in the Unity editor (Play mode), Console cleared, Standard game in progress |
+| Steps | 1. Press the up, down, left and right arrows, then W, S, A and D, letting each move finish. 2. Look at the Console. |
+| Expected | Each key moves blocks one cell in its direction. The Console shows no `InvalidOperationException` (the up arrow used to throw one on every press) and no "Game saved to" or "Save game loaded from" lines. |
+| Roadmap id | CC-037, CC-038 |
 
 ## Color Merge mode (CM)
 
@@ -330,7 +360,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Id | `TP-ACM-07` |
 | Preconditions | Two Large White blocks adjacent in a line, front one against a wall or unmergeable block |
 | Steps | 1. Note the Score. 2. Press towards the front block (`[. . Wl Wl]` pressing right). |
-| Expected | Both blocks disappear and Score +200. Particles at the merge cell are expected to be visible. Known to fail until CC-032 (the clear result colour is None, which the colour profile maps to transparent). |
+| Expected | Both blocks disappear and Score +200. White particles are visible at the merge cell. |
 | Roadmap id | CC-032 |
 
 ## Gameplay HUD (HUD)
@@ -344,7 +374,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Id | `TP-HUD-01` |
 | Preconditions | New Standard 6x6 game, no moves made |
 | Steps | 1. Read the header and footer. |
-| Expected | The header shows the title, "Moves: 0" and "Score: 0". The footer shows an instruction line describing the mode, the text "Swipe / Arrow Keys / WASD to Move" and a Main Menu button. |
+| Expected | The header shows the title, "Moves: 0", "Score: 0" and the status line "Your turn...". The footer shows an instruction line describing the mode, the text "Swipe / Arrow Keys / WASD to Move" and a Main Menu button. |
 | Roadmap id | — |
 
 ### TP-HUD-02 — Board fits between header and footer
@@ -364,7 +394,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Id | `TP-HUD-03` |
 | Preconditions | Game waiting for input |
 | Steps | 1. Look for a status line in the HUD. |
-| Expected | A status line reading "Your turn..." is visible while the game waits for input. Known to fail until CC-028 (the element is missing, so no status text is displayed). |
+| Expected | A status line reading "Your turn..." is visible in the header, under the score, while the game waits for input. It reads "Grid Full!" when the game is over. |
 | Roadmap id | CC-028 |
 
 ### TP-HUD-04 — Move counter
@@ -396,6 +426,16 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Steps | 1. Press a direction and watch the blocks. 2. Cause a merge and watch the merge cell. |
 | Expected | Blocks wobble for about 0.6 seconds after each accepted move. A merge emits particles at the merge cell in the colour of the merge result (for a Standard Large-pair clear, the pair's colour). Blocks jump to their new cell without sliding. |
 | Roadmap id | — |
+
+### TP-HUD-07 — Grid cells use the profile's grid colour
+
+| Field | Content |
+|---|---|
+| Id | `TP-HUD-07` |
+| Preconditions | New game just loaded |
+| Steps | 1. Look at the empty grid cells. |
+| Expected | The empty cells are a light grey (the default colour profile's grid colour, 0.66), slightly lighter than before CC-029 (0.59), and all cells look the same. |
+| Roadmap id | CC-029 |
 
 ## Game over (OVER)
 
@@ -448,8 +488,8 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Id | `TP-OVER-04` |
 | Preconditions | Game-over panel showing |
 | Steps | 1. Tap Restart once. |
-| Expected | The panel disappears. The board is empty apart from one white block at (2, 2). Score reads 0 and Moves reads 0. The game accepts moves again. One click currently restarts twice (CC-028) and leaves old grid cells behind (CC-029); the visible effect is not confirmed, so record anything unusual. |
-| Roadmap id | — |
+| Expected | The panel disappears. The board is empty apart from one white block at (2, 2). Score reads 0 and Moves reads 0. The game accepts moves again. One click restarts once. |
+| Roadmap id | CC-028 |
 
 ### TP-OVER-05 — Restart does not duplicate grid cells (editor only)
 
@@ -458,7 +498,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Id | `TP-OVER-05` |
 | Preconditions | Running in the Unity editor (Play mode). The Standard 4x4 game from TP-OVER-02 was the first game since the gameplay scene loaded, and Restart was clicked once in TP-OVER-04. On a device build, mark this case "not applicable" |
 | Steps | 1. In the Hierarchy, expand the object that carries `GameRenderer` (the GameManager prefab instance). 2. Type `Cell_` in the Hierarchy search box and count the results. |
-| Expected | Exactly 16 `Cell_<x>_<y>` objects (one per cell of the 4x4 board). Known to fail until CC-029: restart keeps the old cells and the single click restarts twice (CC-028), so code reading predicts 48 today (16 + 2 × 16); record the actual count. |
+| Expected | Exactly 16 `Cell_<x>_<y>` objects (one per cell of the 4x4 board). |
 | Roadmap id | CC-029 |
 
 ### TP-OVER-06 — No resume offered after a finished game
@@ -545,6 +585,26 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Expected | The Resume button shows. The game loads with the Moves and Score from after the last completed move in step 2. |
 | Roadmap id | — |
 
+### TP-SAVE-08 — An unusable save is set aside (editor)
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-08` |
+| Preconditions | Running in the Unity editor. A saved game exists (make one move, then stop Play mode). Know the save folder: `Application.persistentDataPath` (on Windows `%USERPROFILE%\AppData\LocalLow\<company>\<product>`) |
+| Steps | 1. Open `savegame.json` in a text editor and change `"version": "1.0"` to `"version": "99.0"`; save. 2. Enter Play mode on the main menu. 3. Look at the menu and the Console. 4. Look in the save folder. |
+| Expected | No Resume button. The Console shows one warning that the save is unusable (unknown version "99.0") and was moved. The folder has `savegame.bad.json` (with your edit) and no `savegame.json`. Repeat with a file cut off half-way: same result. |
+| Roadmap id | CC-031 |
+
+### TP-SAVE-09 — Saving leaves no temporary file
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-09` |
+| Preconditions | A game in progress (any device or the editor) |
+| Steps | 1. Make several moves. 2. Look in the save folder (editor: as in TP-SAVE-08). |
+| Expected | Only `savegame.json` is there (no `savegame.json.tmp`), and Resume restores the last move as in TP-SAVE-02. |
+| Roadmap id | CC-031 |
+
 ## Audio (AUDIO)
 
 Pass setup: start on the main menu, choose the Standard 4x4 settings (custom width and height 4) and tap Start with speakers or headphones on and the device volume up. The Color Merge and Advanced Color Merge clear sounds are the same as the Standard Large pair sound; test them only if time allows. TP-AUDIO-06 starts from a fresh clone and plays the game in the Unity editor. TP-AUDIO-05 is a separate check in FMOD Studio and needs no game running.
@@ -620,8 +680,8 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Id | `TP-DROID-01` |
 | Preconditions | Sandbox on the branch under test, editor closed |
 | Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1`. 2. Note the `APK:` path printed at the end. 3. Run `aapt dump badging <apk>` from the Android SDK's `build-tools` folder. |
-| Expected | Exit code 0 and the APK path is printed. The file is in `Cathartic Colours/Builds/Android/`. `aapt` shows package `com.catharticcolours.game` and `versionCode` equal to `git rev-list --count HEAD`. |
-| Roadmap id | CC-004, CC-002 |
+| Expected | Exit code 0 and the APK path is printed. The file is in `Cathartic Colours/Builds/Android/`. `aapt` shows package `com.catharticcolours.game` and `versionCode` equal to `git rev-list --count HEAD`. `git status` shows no modified files after the build. |
+| Roadmap id | CC-004, CC-002, CC-040 |
 
 ### TP-DROID-02 — Failed build exits non-zero
 
@@ -696,6 +756,16 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-fmod-banks.ps1`. 2. Run `git status`. |
 | Expected | The script exits with code 0 and lists the Desktop and Mobile banks as written. `git status` is clean (only the ignored `.cache/` is new), so the rebuilt banks are unchanged. |
 | Roadmap id | CC-003 |
+
+### TP-TOOL-05 — Play mode does not change the block material
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-05` |
+| Preconditions | Editor open on a clean working tree |
+| Steps | 1. Play a game of several moves in the editor and stop Play mode. 2. Run `git status`. |
+| Expected | `Assets/Materials/BlockMaterial.mat` is not modified (the jelly wobble writes to a runtime copy since CC-032). The Console shows no CS0414 warning after a recompile. |
+| Roadmap id | CC-032 |
 
 ## Project tracking (TRACK)
 

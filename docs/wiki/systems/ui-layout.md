@@ -41,23 +41,23 @@ The gameplay scene (`Assets/Scenes/Gameplay scene.unity`) has no `UIDocument` of
 |---|---|---|---|---|
 | `Q<Label>("move-count")` | Label | `moveCountLabel` | yes | in `header` |
 | `Q<Label>("score-label")` | Label | `scoreLabel` | yes | in `header` |
-| `Q<Label>("status-label")` | Label | `statusLabel` | **NO** | Not in `GameUI.uxml` (only a `.status-label` style exists in the USS), so `statusLabel` is always null and the status text ("Your turn...", "Processing...", "Grid Full!", "Level Complete!") is never shown |
+| `Q<Label>("status-label")` | Label | `statusLabel` | yes | in `header`, below `score-label`; a plain label using the existing `.status-label` style (CC-028) |
 | `Query<Label>(className: "instruction-text").First()` | Label (by class) | `instructionLabel` | yes | The Label in the footer. A different element, a `VisualElement` *named* `instruction-text`, wraps it and is not queried |
 | `Q<VisualElement>("game-over-panel")` | VisualElement | `gameOverPanel` | yes | |
 | `Q<VisualElement>("level-complete-panel")` | VisualElement | `levelCompletePanel` | yes | |
-| `Q<Button>("restart-button")` | Button | `restartButton` | yes, **twice** | One in each panel. `Q` returns the first in document order, the **game-over** panel's button |
+| `gameOverPanel?.Q<Button>("gameover-restart-button")` | Button | `gameOverRestartButton` | yes | game-over panel |
+| `levelCompletePanel?.Q<Button>("levelcomplete-restart-button")` | Button | `levelCompleteRestartButton` | yes | level-complete panel |
 | `levelCompletePanel?.Q<Button>("next-level-button")` | Button | `nextLevelButton` | yes | |
 | `Q<Button>("footer-main-menu-button")` | Button | `footerMainMenuButton` | yes | in `footer` |
 
-Looked up from inside the panels in `HookUpEvents` / `UnhookEvents`:
+Main-menu buttons, also looked up inside the panels in `CacheUIElements` (fields `gameOverMainMenuButton`, `levelCompleteMainMenuButton`):
 
 | Query | In UXML | Notes |
 |---|---|---|
-| `gameOverPanel?.Q<Button>("restart-button")` | yes | The same element as `restartButton`, so the game-over restart button gets its click handler **twice** (see Known issues) |
 | `gameOverPanel?.Q<Button>("main-menu-button")` | yes | |
 | `levelCompletePanel?.Q<Button>("main-menu-button")` | yes | |
 
-The level-complete panel's own `restart-button` (the second one in `GameUI.uxml`) is never queried, so it has no handler.
+Each button is hooked exactly once. `HookUpEvents` calls `UnhookEvents` first, and both use stored method delegates (`RaiseRestartRequested`, `RaiseNextLevelRequested`, `ReturnToMainMenu`), so unsubscribing works and repeated hooking is safe. There is no HUD restart button; the restart names are unique per panel (CC-028).
 
 `LayoutObserver.CalculateAndNotifyLayout` (`LayoutObserver.cs`):
 
@@ -77,15 +77,16 @@ The level-complete panel's own `restart-button` (the second one in `GameUI.uxml`
 | `Q<SliderInt>("height-slider")` | SliderInt | `heightSlider` | yes | `SliderInt` (low 4, high 10) |
 | `Q<Label>("width-value")` | Label | `widthValue` | yes | `Label` |
 | `Q<Label>("height-value")` | Label | `heightValue` | yes | `Label` |
+| `Q<Toggle>("spawn-toggle")` | Toggle | `spawnToggle` | yes | `Toggle` labelled "Next colour indicator", in its own `menu-section` after the grid height section (CC-027) |
 | `Q<Button>("start-button")` | Button | `startButton` | yes | `Button` |
 | `Q<Button>("resume-game-button")` | Button | `resumeGameButton` | yes | `Button` |
 
-All nine menu names match. No other script queries the UI (search of `Assets/Scripts` for `Q<`, `.Q(`, `Query`, `rootVisualElement`).
+All ten menu names match. No other script queries the UI (search of `Assets/Scripts` for `Q<`, `.Q(`, `Query`, `rootVisualElement`).
 
-Elements in the UXML that no code queries: `root`, `header` (menu), `title`, `menu-content`, `controls-hint`, `instruction-text` (the container), `footer` (menu), the level-complete `restart-button`.
+Elements in the UXML that no code queries: `root`, `header` (menu), `title`, `menu-content`, `controls-hint`, `instruction-text` (the container), `footer` (menu).
 
 ### Panels and how they are shown
-- `GameUI.uxml` structure: `root` contains `header` (title, `move-count`, `score-label`), `game-over-panel`, `level-complete-panel`, then a wrapper holding `footer` (`instruction-text` container, `controls-hint`, `footer-main-menu-button`).
+- `GameUI.uxml` structure: `root` contains `header` (title, `move-count`, `score-label`, `status-label`), `game-over-panel`, `level-complete-panel`, then a wrapper holding `footer` (`instruction-text` container, `controls-hint`, `footer-main-menu-button`).
 - Both panels use class `modal-panel` (`GameUI.uss`): `position: absolute`, full size, centred content, `rgba(0,0,0,0.8)` background, `display: none`.
 - `InitializeUIState` sets both to `DisplayStyle.None` at set-up. After that `GameRenderer.Update` calls `UpdateUI`, which calls `GameUIManager.UpdateGameState(gameState, score)` **every frame** (`GameRenderer.cs`, `Update`/`UpdateUI`). That method sets `gameOverPanel.style.display` to `Flex` while `GameOver` is true and `None` otherwise, and the same for `levelCompletePanel` with `LevelComplete`.
 - The game-over panel therefore appears the frame after `BoardStepSystem` sets `GameOver`, and disappears when a restart recreates the state. `LevelComplete` is never set by any system, so the level-complete panel never appears ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)).
@@ -98,7 +99,7 @@ All in `GameUIManager`:
 |---|---|---|
 | `move-count` | `Moves: {MoveCount}` | each frame (`UpdateGameState`) |
 | `score-label` | `Score: {TotalScore}` | each frame |
-| `status-label` | "Grid Full!" / "Level Complete!" / "Your turn..." / "Processing..." (in that precedence) | each frame, but the element does not exist in the UXML (above) |
+| `status-label` | "Grid Full!" / "Level Complete!" / "Your turn..." / "Processing..." (in that precedence) | each frame |
 | `instruction-text` label | One of three mode descriptions from `UpdateInstructionText(GameMode)` (Standard, Color Merge, Advanced Color Merge; fallback "Merge matching tiles") | once per `GameRenderer.InitializeGame` (new game or restart) |
 | Static labels | Title, "Swipe / Arrow Keys / WASD to Move", modal titles and messages | baked into the UXML |
 
@@ -142,11 +143,7 @@ The camera is only fitted when a layout event fires; `RestartGame` does not call
 ## Known issues
 - The level-complete panel (and the next-level button) can never appear. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
 - Aesthetic rework of gameplay and UI is planned. [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30)
-- Scene-name capitalisation (`"Gameplay Scene"` vs `Gameplay scene.unity`) and missing guards. [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
-- `status-label` does not exist in `GameUI.uxml`, so the status text is never displayed although `GameUIManager.UpdateGameState` writes it every frame (`Assets/Scripts/Gameplay/GameUIManager.cs`, `CacheUIElements`; `Assets/UI/GameUI.uxml`). [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40)
-- `restart-button` is not unique in `GameUI.uxml`; `Q<Button>("restart-button")` returns the game-over panel's button, and `HookUpEvents` then subscribes the same element a second time through `gameOverPanel.Q`, so one click raises `OnRestartRequested` twice (two `RestartGame` runs). The level-complete panel's restart button is never hooked (`Assets/Scripts/Gameplay/GameUIManager.cs`, `HookUpEvents`). Derived from code reading; not run. [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40)
-- `UnhookEvents` unsubscribes with new lambda instances (`clicked -= () => ...`), which never match the subscribed ones, so those handlers are not removed (`Assets/Scripts/Gameplay/GameUIManager.cs`, `UnhookEvents`). Harmless while the whole UI is destroyed with the scene. [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40)
 
 ## Related test cases
-- [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-04, TP-MENU-06. [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-01 to TP-HUD-05 (TP-HUD-03 status label, CC-028).
+- [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-04, TP-MENU-06 to TP-MENU-08 (TP-MENU-07 indicator toggle, CC-027). [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-01 to TP-HUD-05 (TP-HUD-03 status label, CC-028).
 - [Game over](../test-plan.md#game-over-over): TP-OVER-02, TP-OVER-04 (game-over panel, restart).

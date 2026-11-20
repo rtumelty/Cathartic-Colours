@@ -1,20 +1,21 @@
 # Input
 
 ## Purpose
-Describes how player input (keyboard, and touch swipes on devices) becomes a move command in the ECS world: which Unity Input System objects are used, how raw input is turned into one of four grid directions, and the lifecycle of the `MoveDirectionComponent` entity that carries the command. What a move does once accepted is in [ecs-frame-order.md](ecs-frame-order.md) and [merge-rules.md](merge-rules.md).
+Describes how player input (keyboard, gamepad, and touch or mouse swipes) becomes a move command in the ECS world: which Unity Input System objects are used, how raw input is turned into one of four grid directions, and the lifecycle of the `MoveDirectionComponent` entity that carries the command. What a move does once accepted is in [ecs-frame-order.md](ecs-frame-order.md) and [merge-rules.md](merge-rules.md).
 
 All paths are relative to the Unity project folder (`Cathartic Colours/`).
 
 ## Key files
 | File | Role |
 |---|---|
-| `Assets/Scripts/Gameplay/GameInputHandler.cs` | Keyboard action, direction mapping, `SendMoveCommand`, `OnSwipe` |
-| `Assets/Scripts/Gameplay/SwipeDetector.cs` | Touch swipe detection, calls `GameInputHandler.OnSwipe` |
+| `Assets/Scripts/Gameplay/GameInputHandler.cs` | Reads `Gameplay/Move` from the assigned actions asset, one-tilt-one-move arming, `SendMoveCommand`, `OnSwipe` |
+| `Assets/Scripts/ECS/Utilities/InputDirection.cs` | Pure direction rule (dead zone, dominant axis) |
+| `Assets/Scripts/Gameplay/SwipeDetector.cs` | Touch or mouse-drag swipe detection, calls `GameInputHandler.OnSwipe` |
 | `Assets/Scripts/ECS/Components/MoveDirectionComponent.cs` | The command component (`int2 Direction`) |
 | `Assets/Scripts/ECS/Systems/BoardStepSystem.cs` | Accepts or rejects the command and runs the move |
 | `Assets/Scripts/ECS/Systems/ClearMoveDirectionSystem.cs` | Destroys the command |
-| `Assets/Prefabs/GameManager.prefab` | Carries `GameInputHandler` and `SwipeDetector` |
-| `Assets/Input/GameControls.inputactions` | Project-wide Input Actions asset (not used by the game code) |
+| `Assets/Prefabs/GameManager.prefab` | Carries `GameInputHandler` (with the `actions` reference) and `SwipeDetector` |
+| `Assets/Input/GameControls.inputactions` | Project-wide Input Actions asset; `Gameplay/Move` drives keyboard and gamepad input |
 
 ## How it works
 
@@ -27,36 +28,36 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | `UI` | `Navigate`, `Submit`, `Cancel`, `Point`, `Click`, `RightClick`, `MiddleClick`, `ScrollWheel`, `TrackedDevicePosition`, `TrackedDeviceOrientation` | The standard Unity UI action set (gamepad, joystick, keyboard WASD/arrows for Navigate, mouse, pen, touch, XR) |
 | `Gameplay` | `Move` (Value, `Vector2`) | Gamepad left stick and D-pad; a `2DVector` composite on the arrow keys; a second `2DVector` composite on W/A/S/D |
 
-  Control schemes: Keyboard&Mouse, Gamepad, Touch, Joystick. No script, scene or prefab references this asset by name or guid (search of `Assets/Scripts`, `Assets/Scenes`, `Assets/Prefabs`).
-- **The game does not use that asset.** `GameInputHandler` builds its own actions in code (`Assets/Scripts/Gameplay/GameInputHandler.cs`):
-  - `Awake`: `GetComponent<PlayerInput>()`, adding a `PlayerInput` component at runtime if there is none. The prefab has none (`Assets/Prefabs/GameManager.prefab` carries `GameInputHandler`, `GameRenderer` and `SwipeDetector` on the root object), so a `PlayerInput` is always added at runtime.
-  - `OnEnable`: if `playerInput.actions` is null, creates an empty `InputActionAsset` with `ScriptableObject.CreateInstance`; finds or adds the action map `Gameplay` and the action `Move` (Value type); if `Move` is not found, adds it with a default binding of `<Keyboard>/upArrow` plus a `2DVector` composite: Up = up arrow and W, Down = down arrow and S, Left = left arrow and A, Right = right arrow and D. It enables the action and subscribes `OnMove` to `performed`. `OnDisable` unsubscribes and disables it.
-  - Because the new asset is empty, the `Move` action is always created by this code and the gamepad bindings in `GameControls.inputactions` are not available in the game. Whether `PlayerInput` behaves as expected when its `actions` are assigned after it is already enabled was not run; unverified.
-  - `PlayerInput` is not used for messages or events; only the action's own `performed` callback is used.
+  Control schemes: Keyboard&Mouse, Gamepad, Touch, Joystick. Referenced by `GameManager.prefab` (`GameInputHandler.actions`).
+- **The game uses that asset** (CC-030). `GameInputHandler` has `[SerializeField] private InputActionAsset actions`, assigned to `GameControls.inputactions` on `Assets/Prefabs/GameManager.prefab` (main asset object `fileID: -944628639613478452`, the same reference `ProjectSettings` uses for the project-wide actions). `OnEnable` does `actions.FindAction("Gameplay/Move", throwIfNotFound: false)`; if the asset or the action is missing it logs one `Debug.LogError` and input handling stays off (no exception). It subscribes `performed` and `canceled`, then enables the action; `OnDisable` unsubscribes and disables it. No `PlayerInput` component is created or needed (nothing else used it). Because the bindings come from the asset, keyboard (arrows, WASD), gamepad (left stick, D-pad) all work and any binding change is made in the asset.
 
-### Keyboard path (`GameInputHandler.OnMove`)
-1. Reads the composite's `Vector2` (`context.ReadValue<Vector2>()`).
-2. Maps it to an `int2` direction:
-   - if `|x| > |y|`: `direction.x = +1` for positive x, `-1` for negative;
-   - else if `|y| > 0.1`: `direction.y = +1` for positive y, `-1` for negative;
-   - otherwise (including `0,0`, as when a key is released) no direction is produced and nothing is sent.
-   A diagonal press (two keys held; the composite yields about 0.707 on both axes) fails the strict `|x| > |y|` test, so it resolves to a vertical move.
-3. Calls `SendMoveCommand(direction)`.
+### The direction rule (`ECS.Utilities.InputDirection.Resolve`)
+One pure function (`Assets/Scripts/ECS/Utilities/InputDirection.cs`, no Input System types, tested in `Assets/Tests/EditMode/Core/InputDirectionTests.cs`) used by keyboard, gamepad and swipe:
+- If the vector's magnitude is below the dead zone (`DeadZone = 0.5`) there is no direction, `(0, 0)`.
+- Otherwise the dominant axis wins: `|x| > |y|` gives left/right, else up/down. An exact tie (a perfect diagonal) resolves to vertical.
 
 Directions are grid directions: `(1, 0)` right, `(-1, 0)` left, `(0, 1)` up, `(0, -1)` down. The renderer places y increasing upwards (`GameRenderer.UpdateVisuals`), so "up" on the keyboard and "up" on screen agree.
 
+### Keyboard, D-pad and stick path (`GameInputHandler.OnMove`)
+One tilt (or key press) sends one move:
+1. Reads the `Vector2` from `Move` (key composites give magnitude 1, or about 0.707 per axis with two keys; a stick gives analogue values).
+2. While **armed**, it calls `InputDirection.Resolve`; a direction other than `(0, 0)` disarms the handler and calls `SendMoveCommand`.
+3. While **disarmed**, further values send nothing. It re-arms when the magnitude drops below `ReleaseZone = 0.25` (stick back near centre) or when the action is `canceled` (all keys released).
+Consequences: a held key or stick does not repeat; a wobbling stick that stays past 0.25 does not spam moves; pressing a second key while the first is still held does not change direction or fire (release everything, then press again). A move that `SendMoveCommand` drops because one is already pending is not retried.
+
 ### Swipe path (`SwipeDetector` and `GameInputHandler.OnSwipe`)
 `Assets/Scripts/Gameplay/SwipeDetector.cs`:
-- Declared as `Gameplay.CatharticColours.SwipeDetector`: the class sits in a namespace `CatharticColours` **nested inside** `namespace Gameplay`. The prefab's serialised type is `Assembly-CSharp::Gameplay.CatharticColours.SwipeDetector` (`Assets/Prefabs/GameManager.prefab`), so this is how it is actually referenced.
-- Fields: `swipeThreshold` (default 50, prefab value 50, in pixels) and `inputHandler` (`GameInputHandler`, assigned to the same object's handler in the prefab).
-- `Update` runs only when `Touchscreen.current != null`. On `primaryTouch.press.wasPressedThisFrame` it stores the start position and sets `isSwiping`. On `wasReleasedThisFrame` while swiping it computes `end - start`; if its magnitude is at least `swipeThreshold` it calls `inputHandler.OnSwipe(swipe.normalized)`. `isSwiping` is cleared on release. There is no time limit, no mid-swipe trigger, and **no mouse support**: dragging with a mouse on a desktop does nothing.
-- `GameInputHandler.OnSwipe(Vector2)` picks the larger axis (`|x| > |y|` gives horizontal, otherwise vertical, with sign `> 0` for positive) and calls `SendMoveCommand`. There is no 0.1 dead-zone as in the keyboard path. A diagonal tie resolves to vertical.
-- Touch input is read directly from the device, not through the UI: swipes that start on a UI button or over the game-over panel still count.
+- Declared as `Gameplay.CatharticColours.SwipeDetector`: the class sits in a namespace `CatharticColours` **nested inside** `namespace Gameplay`. The prefab's serialised type is `Assembly-CSharp::Gameplay.CatharticColours.SwipeDetector` (`Assets/Prefabs/GameManager.prefab`), so this is how it is actually referenced and the name must not change.
+- Fields: `swipeThreshold` (default 50, prefab value 50, in pixels) and `inputHandler` (`GameInputHandler`, assigned to the same object's handler in the prefab; `Update` does nothing if it is null).
+- Pointer source: the touchscreen's `primaryTouch` while a touch is pressed or just pressed/released; otherwise the mouse (`leftButton` and `position`). So a left-button mouse drag swipes in the editor and on desktop.
+- On press it stores the start position and sets `isSwiping`. On release while swiping it computes `end - start`; if its magnitude is at least `swipeThreshold` it calls `inputHandler.OnSwipe(swipe.normalized)`. There is no time limit and no mid-swipe trigger. A click without movement is below the threshold, so clicking UI buttons with the mouse does not move the board.
+- `GameInputHandler.OnSwipe(Vector2)` passes the normalised vector through `InputDirection.Resolve` (always above the dead zone) and calls `SendMoveCommand`.
+- Pointer input is read directly from the device, not through the UI: a swipe that starts on a UI button or over the game-over panel still counts if it travels far enough.
 
 ### `SendMoveCommand` and the `MoveDirectionComponent` lifecycle
 `GameInputHandler.SendMoveCommand(int2)`:
 1. Returns if `World.DefaultGameObjectInjectionWorld` is null.
-2. Creates an `EntityQuery` for `MoveDirectionComponent`; if any such entity exists it returns (a command already pending is never replaced or queued).
+2. Creates an `EntityQuery` for `MoveDirectionComponent`, checks whether it is empty and disposes the query; if any such entity exists it returns (a command already pending is never replaced or queued).
 3. Otherwise creates a new entity with `MoveDirectionComponent { Direction = direction }`.
 
 Lifecycle:
@@ -67,7 +68,7 @@ Lifecycle:
 | Accept / reject and use | `BoardStepSystem` | Rejects without effect or sound if `!WaitingForInput` or `GameOver` (and `BoardSimulation.Step` rejects any direction other than the four unit vectors). Otherwise runs the move, sets `WaitingForInput = false`, increments `MoveCount` and records `LastMoveDirection` |
 | Destroy | `ClearMoveDirectionSystem` (after `BoardStepSystem`) | Destroys the command entity every frame it exists, whether accepted or not |
 
-The full per-frame order is in [ecs-frame-order.md](ecs-frame-order.md#one-player-move-frame-by-frame). Consequences: at most one move per frame; input received while the game is not waiting (during the move frame) or after game over is discarded at the end of that frame, not buffered; a held key does not repeat (the `Move` action only performs on value changes).
+The full per-frame order is in [ecs-frame-order.md](ecs-frame-order.md#one-player-move-frame-by-frame). Consequences: at most one move per frame; input received while the game is not waiting (during the move frame) or after game over is discarded at the end of that frame, not buffered; a held key or tilted stick does not repeat (see the arming rule above).
 
 ### Input blocking while UI is open
 There is none in the input code. `GameInputHandler` and `SwipeDetector` do not check for open panels, `UIDocument` focus, or pointer-over-UI. The only blocking is the simulation's: `BoardStepSystem` ignores commands once `GameOver` is true, and the game-over panel (`GameUIManager.UpdateGameState`) is a full-screen overlay for pointer events on UI but does not stop keyboard or touch swipes reaching the handler. The level-complete panel can never show ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)). See [ui-layout.md](ui-layout.md).
@@ -79,11 +80,8 @@ There is none in the input code. `GameInputHandler` and `SwipeDetector` do not c
 - The handler lives on the `GameManager` prefab with `GameRenderer` ([configuration.md](configuration.md)).
 
 ## Known issues
-- `GameControls.inputactions` (project-wide actions, including gamepad and a `Gameplay/Move` action) is unused: `GameInputHandler` creates its own empty `InputActionAsset` and adds a keyboard-only `Move` action in code, so there are two definitions of the same controls and gamepads do not work (`Assets/Scripts/Gameplay/GameInputHandler.cs`, `OnEnable`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
-- `SwipeDetector` handles touchscreens only; a mouse drag does nothing, so swipe cannot be tested in the editor without a touch simulator (`Assets/Scripts/Gameplay/SwipeDetector.cs`, `Update`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
-- `SwipeDetector` sits in the nested namespace `Gameplay.CatharticColours`, unlike every other gameplay class (`Assets/Scripts/Gameplay/SwipeDetector.cs`); renaming it would break the prefab's serialised type reference. [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
-- keyboard and swipe paths use different dead-zone rules (`|y| > 0.1` for keyboard, none for swipe) and both resolve diagonal ties to vertical (`Assets/Scripts/Gameplay/GameInputHandler.cs`, `OnMove` and `OnSwipe`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
-- `OnEnable` adds `Move` with a plain `<Keyboard>/upArrow` binding next to the `2DVector` composite. That binding yields a `float`, so `OnMove`'s `ReadValue<Vector2>()` throws `InvalidOperationException` on every up-arrow press; `SendMoveCommand` also creates an undisposed entity query per move (`Assets/Scripts/Gameplay/GameInputHandler.cs`). [CC-037](https://github.com/rtumelty/Cathartic-Colours/issues/64)
+- `SwipeDetector` sits in the nested namespace `Gameplay.CatharticColours`, unlike every other gameplay class (`Assets/Scripts/Gameplay/SwipeDetector.cs`); renaming it would break the prefab's serialised type reference.
+- Input is not blocked while UI panels are open (see above).
 
 ## Related test cases
 - [Standard](../test-plan.md#standard-mode-std): TP-STD-02 (keyboard), TP-STD-08 (swipe), TP-STD-09 (gamepad, CC-030).

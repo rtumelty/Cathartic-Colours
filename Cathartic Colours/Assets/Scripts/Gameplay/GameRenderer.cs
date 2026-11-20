@@ -13,6 +13,8 @@ namespace Gameplay
     public class GameRenderer : MonoBehaviour
     {
         private static readonly int MainColor = Shader.PropertyToID("_MainColor");
+        // The Cell prefab uses URP/Unlit (CellMaterial), whose colour property is _BaseColor.
+        private static readonly int CellBaseColor = Shader.PropertyToID("_BaseColor");
 
         // Structure to cache all visual components
         private struct BlockVisual
@@ -46,7 +48,10 @@ namespace Gameplay
         private int gridHeight;
         private int gridWidth;
         private GameObject[,] gridCells;
+        private readonly List<GameObject> cellObjects = new List<GameObject>(); // destroyed in CleanUp so a restart doesn't stack grids (CC-029)
+        private MaterialPropertyBlock cellPropertyBlock;
         private EntityManager entityManager;
+        private bool entitiesCreated; // set once InitializeGame has made the entities; CleanUp skips ECS work until then (CC-025)
         
         private Entity gameStateEntity;
         private Entity scoreEntity;
@@ -155,7 +160,9 @@ namespace Gameplay
                 if (saveData != null)
                 {
                     // Initialize configuration from save data
-                    SaveGameManager.InitializeFromSave(saveData, config, GameManager.ActiveColorProfile);
+                    // The saved colour profile is used if it is one this scene knows (CC-031); otherwise the current one.
+                    SaveGameManager.InitializeFromSave(saveData, GameManager.MenuConfiguration ?? config, GameManager.ActiveColorProfile,
+                        new[] { GameManager.ActiveColorProfile, fallbackColorProfile });
                     config = GameManager.ActiveConfiguration; // Get updated config
                 }
                 else
@@ -219,6 +226,7 @@ namespace Gameplay
                     SpawnEnabled = config.spawnNextColourSystem
                 }
             });
+            entitiesCreated = true;
             lastSeenMoveCount = -1;
 
             // Update instruction text via UI manager
@@ -247,6 +255,9 @@ namespace Gameplay
 
         private void CreateVisualGrid()
         {
+            DestroyGridCells();
+            cellPropertyBlock ??= new MaterialPropertyBlock();
+            Color gridColor = GameManager.ActiveColorProfile.GridBackgroundColor;
             gridCells = new GameObject[gridWidth, gridHeight];
 
             for (int y = 0; y < gridHeight; y++)
@@ -262,15 +273,38 @@ namespace Gameplay
                     GameObject cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
                     cell.name = $"Cell_{x}_{y}";
                     
-                    var renderer = cell.GetComponent<SpriteRenderer>();
-                    if (renderer != null)
+                    var spriteRenderer = cell.GetComponent<SpriteRenderer>();
+                    if (spriteRenderer != null)
                     {
-                        renderer.color = GameManager.ActiveColorProfile.GridBackgroundColor;
+                        spriteRenderer.color = gridColor;
+                    }
+
+                    var meshRenderer = cell.GetComponent<MeshRenderer>();
+                    if (meshRenderer != null)
+                    {
+                        // Property block, not renderer.material: avoids a material instance per cell.
+                        meshRenderer.GetPropertyBlock(cellPropertyBlock);
+                        cellPropertyBlock.SetColor(CellBaseColor, gridColor);
+                        meshRenderer.SetPropertyBlock(cellPropertyBlock);
                     }
 
                     gridCells[x, y] = cell;
+                    cellObjects.Add(cell);
                 }
             }
+        }
+
+        private void DestroyGridCells()
+        {
+            foreach (var cell in cellObjects)
+            {
+                if (cell != null)
+                {
+                    Destroy(cell);
+                }
+            }
+            cellObjects.Clear();
+            gridCells = null;
         }
 
         private void SpawnInitialBlock()
@@ -326,6 +360,13 @@ namespace Gameplay
                         continue;
                     }
                     
+                    // Use the jelly manager's runtime material copy so the wobble never writes to BlockMaterial.mat.
+                    var jellyMaterial = PresentationRegistry.JellyManager != null
+                        ? PresentationRegistry.JellyManager.RuntimeMaterial
+                        : null;
+                    if (jellyMaterial != null)
+                        renderer.sharedMaterial = jellyMaterial;
+
                     visual = new BlockVisual(gameObject, blockComponent, renderer);
                     blockVisuals[entity] = visual;
                 }
@@ -418,31 +459,40 @@ namespace Gameplay
 
         private void CleanUp()
         {
-            // Clean up existing entities
-            var query = entityManager.CreateEntityQuery(typeof(BlockComponent));
-            entityManager.DestroyEntity(query);
-
-            // Clean up cached entities if they exist
-            if (gameStateEntity != Entity.Null && entityManager.Exists(gameStateEntity))
+            // Entity work needs a live world: InitializeGame may never have run, and the world is already
+            // disposed when the scene is torn down (CC-025). An EntityManager from a disposed world must not be touched.
+            var world = World.DefaultGameObjectInjectionWorld;
+            if (entitiesCreated && world != null && world.IsCreated)
             {
-                entityManager.DestroyEntity(gameStateEntity);
-                gameStateEntity = Entity.Null;
+                entityManager = world.EntityManager;
+
+                // Clean up existing entities
+                var query = entityManager.CreateEntityQuery(typeof(BlockComponent));
+                entityManager.DestroyEntity(query);
+
+                // Clean up cached entities if they exist
+                if (gameStateEntity != Entity.Null && entityManager.Exists(gameStateEntity))
+                {
+                    entityManager.DestroyEntity(gameStateEntity);
+                    gameStateEntity = Entity.Null;
+                }
+
+                if (scoreEntity != Entity.Null && entityManager.Exists(scoreEntity))
+                {
+                    entityManager.DestroyEntity(scoreEntity);
+                    scoreEntity = Entity.Null;
+                }
+
+                query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
+                entityManager.DestroyEntity(query);
+
+                query = entityManager.CreateEntityQuery(typeof(GameModeComponent));
+                entityManager.DestroyEntity(query);
+
+                query = entityManager.CreateEntityQuery(typeof(ScoringConfigComponent));
+                entityManager.DestroyEntity(query);
             }
-
-            if (scoreEntity != Entity.Null && entityManager.Exists(scoreEntity))
-            {
-                entityManager.DestroyEntity(scoreEntity);
-                scoreEntity = Entity.Null;
-            }
-
-            query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
-            entityManager.DestroyEntity(query);
-
-            query = entityManager.CreateEntityQuery(typeof(GameModeComponent));
-            entityManager.DestroyEntity(query);
-
-            query = entityManager.CreateEntityQuery(typeof(ScoringConfigComponent));
-            entityManager.DestroyEntity(query);
+            entitiesCreated = false;
 
             // Clean up visuals
             foreach (var visual in blockVisuals.Values)
@@ -453,6 +503,8 @@ namespace Gameplay
                 }
             }
             blockVisuals.Clear();
+
+            DestroyGridCells();
         }
         
         public void RestartGame()

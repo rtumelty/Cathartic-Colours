@@ -91,15 +91,8 @@ Ronan's phone needs Developer options and USB debugging on, and the phone must a
 ## FMOD banks
 Android builds pack the Mobile banks, `Cathartic Colours - FMOD/Build/Mobile/`, not the Desktop ones. This is set by the `PlatformAndroid` entry in `Assets/Resources/FMOD/FMODStudioSettings.asset` ([CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10)). See [Audio and FMOD](audio-fmod.md#fmod-for-unity-settings) for the settings and the bank layout.
 
-## Build side effects
-Each build re-saves five settings files, adding default fields that the Unity 6.6 upgrade introduced. The build commits leave them out, so revert them with `git checkout` after a build and do not commit them:
-- `Cathartic Colours/Assets/Graphics/UniversalRenderPipelineGlobalSettings.asset`
-- `Cathartic Colours/Assets/Settings/Rendering/UniversalRP.asset`
-- `Cathartic Colours/ProjectSettings/GraphicsSettings.asset`
-- `Cathartic Colours/ProjectSettings/EntitiesClientSettings.asset`
-- `Cathartic Colours/ProjectSettings/ProjectAuditorSettings.asset`
-
-`ProjectSettings.asset` comes back unchanged, because the build restores the version code.
+## Working tree after a build
+The five settings files that Unity 6.6 re-saved on every build (adding default fields from the upgrade) were committed with their new defaults in [CC-040](https://github.com/rtumelty/Cathartic-Colours/issues/69), so a build now leaves the working tree clean. The Android version code is still set and restored by the build itself.
 
 ## Later work
 - [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57): release signing (the keystore stays out of git, in local gitignored config), the release profile producing an App Bundle, and Google Play upload. CC-036 also confirms that the commit-count version code works for store uploads.
