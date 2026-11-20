@@ -621,7 +621,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | Sandbox on the branch under test, editor closed |
 | Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1`. 2. Note the `APK:` path printed at the end. 3. Run `aapt dump badging <apk>` from the Android SDK's `build-tools` folder. |
 | Expected | Exit code 0 and the APK path is printed. The file is in `Cathartic Colours/Builds/Android/`. `aapt` shows package `com.catharticcolours.game` and `versionCode` equal to `git rev-list --count HEAD`. |
-| Roadmap id | CC-004 |
+| Roadmap id | CC-004, CC-002 |
 
 ### TP-DROID-02 — Failed build exits non-zero
 
@@ -651,7 +651,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | The newer build installed (TP-DROID-03), sound audible |
 | Steps | 1. Launch the app from the phone's launcher. 2. Start a Standard game, play a few swipe moves, then go back to the menu. 3. Repeat in Color Merge and Advanced Color Merge. 4. Resume a game. |
 | Expected | The app starts without waiting for a debugger. Swipes move blocks, merge sounds play, each mode plays, and Resume restores the saved game. Report any difference from the editor. |
-| Roadmap id | CC-004 |
+| Roadmap id | CC-004, CC-002 |
 
 ## Editor and tooling (TOOL)
 
@@ -663,9 +663,9 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 |---|---|
 | Id | `TP-TOOL-02` |
 | Preconditions | Editor closed |
-| Steps | 1. Run the EditMode `-runTests` command from project `CLAUDE.md` §4. 2. Run the same command with `-testPlatform PlayMode`. |
-| Expected | Each run exits with code 0 and writes its results XML. The EditMode XML reports the `CatharticColours.Simulation.Tests` cases (CC-006), all passed; PlayMode reports 0 test cases until CC-002 adds PlayMode tests. |
-| Roadmap id | CC-033, CC-006 |
+| Steps | 1. Run the EditMode `-runTests` command from project `CLAUDE.md` §4. 2. Run the same command with `-testPlatform PlayMode`. 3. Open each results XML and check the `<test-run>` result. |
+| Expected | Each run exits with code 0 and writes its results XML, with no failed cases. The EditMode XML reports the Simulation (CC-006), Core and Build.Editor test cases, all passed. The PlayMode XML reports the two `CatharticColours.PlayMode.Tests` smoke tests (gameplay scene move, main menu start), both passed. Neither run creates, changes or deletes the player's real `savegame.json`. |
+| Roadmap id | CC-033, CC-006, CC-002 |
 
 ### TP-TOOL-01 — Project opens on 6000.6.9f1 without errors
 
@@ -674,8 +674,8 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Id | `TP-TOOL-01` |
 | Preconditions | Editor closed |
 | Steps | 1. Open the project from Unity Hub with 6000.6.9f1. 2. Wait for the import to finish. 3. Check the Console. |
-| Expected | No upgrade or version prompt. The Console has no compile errors and no "below the supported minimum" warnings about `.meta` files. (A first import of a fresh checkout may log two "Host type is not matching any asset type" errors from the URP package; they don't come back on the next open.) |
-| Roadmap id | CC-033 |
+| Expected | No upgrade or version prompt. The Console has no compile errors, no missing-script warnings (open the main menu and gameplay scenes) and no "below the supported minimum" warnings about `.meta` files. (A first import of a fresh checkout may log two "Host type is not matching any asset type" errors from the URP package; they don't come back on the next open.) |
+| Roadmap id | CC-033, CC-002 |
 
 ### TP-TOOL-03 — Only the kept packages are installed
 

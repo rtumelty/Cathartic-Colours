@@ -17,7 +17,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Frame
 ## How it works
 
 ### File location and format
-- Path: `Path.Combine(Application.persistentDataPath, "savegame.json")`. The path is built twice, independently: `SaveGameManager.SaveFilePath` and `SaveGameSystem.GetSaveFilePath` (`Assets/Scripts/SaveSystem/SaveGameManager.cs`, `Assets/Scripts/ECS/Systems/SaveGameSystem.cs`).
+- Path: `Path.Combine(Application.persistentDataPath, "savegame.json")`. Since CC-002.3 the path has one owner, `SaveGameManager.SaveFilePath`, which `SaveGameSystem.GetSaveFilePath` also uses; tests redirect it with the internal `SaveFilePathOverride` (`Assets/Scripts/SaveSystem/SaveGameManager.cs`, `Assets/Scripts/ECS/Systems/SaveGameSystem.cs`; see [assemblies](assemblies.md)).
 - Format: `JsonUtility.ToJson(saveData, true)` (pretty-printed) written with `File.WriteAllText`; read with `File.ReadAllText` and `JsonUtility.FromJson<SaveGameData>` (`SaveGameSystem.SaveGame`, `SaveGameManager.LoadSaveGame`). Enums (`GameMode`, `BlockColor`, `BlockSize`) are serialised by `JsonUtility` as integers.
 - `SaveGame` creates the directory if missing, but does not write to a temporary file first (a write is one `WriteAllText` call).
 

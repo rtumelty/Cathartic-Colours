@@ -31,4 +31,8 @@ Written in CC-001 (core simulation and supporting systems):
 - [ui-layout](ui-layout.md)
 - [presentation](presentation.md)
 
+Added later:
+
+- [assemblies](assemblies.md) (CC-002)
+
 Pages that exist are listed in [index.md](../index.md).
