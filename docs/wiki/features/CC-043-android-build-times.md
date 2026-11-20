@@ -202,6 +202,35 @@ Suggested order, by the evidence above:
 3. Script debugging and profiler connection, which drive the 31 against 14 minute clean build.
 4. A fixed version code for development builds, so a new commit doesn't make Gradle repackage. Android allows installing an equal version code over itself.
 
+### CC-043.2 — experiments (2026-11-20)
+Development profile, version code fixed at 79, Defender exclusions on. The experiments were cumulative: E1 stays in, E2 was timed and then reverted, and E3a and E3b were added on top of E1. "Objects" is the number of C++ object files recompiled. Runs by the Sonnet worker, read and judged by the primary model.
+
+| Exp | Change | First build after the change | Unchanged | One-line change | `libil2cpp.so` | Result |
+|---|---|---|---|---|---|---|
+| — | Baseline (CC-043.1) | — | 1:05 | 4:33 (Gradle 120 s) | 352 MB | — |
+| E1 | Debug symbols Full (4) → SymbolTable (2) | 1:15, 0 objects | 1:02 | **2:46** (Gradle 28 s) | 352 MB | **Meets the target.** New base |
+| E2 | Engine Diagnostics off (`UnityConnectSettings.asset`, project-wide) | 29:40, 874 objects | — | — | 352 MB | Symbol step 9 s → 0 s, but toggling it recompiles all C++. Reverted |
+| E3a | E1 + script debugging off | 13:47, 869 objects | 1:11 | **1:49** (Gradle 16 s) | **96 MB** | Fastest. No managed debugger. Awaiting Ronan |
+| E3b | E3a + profiler connection off | 1:47, 2 objects | 0:54 | 1:42 | 96 MB | No real gain (within noise). Not recommended |
+
+**Notes**
+- **Why E1 helps:** with level Full, Unity's Gradle project sets `debugSymbolLevel "full"`, and Gradle extracts full native debug metadata from the 352 MB library on every changed build. SymbolTable keeps function names in native stack traces and loses only file and line numbers. Managed (C#) debugging is unaffected.
+- **E1 side effect:** after a one-line change, the APK file on disk was 235 MB for 136 MB of contents. Gradle's incremental packaging leaves the old compressed `libil2cpp.so` (99 MB) as dead space. It installs the same, but `adb install` copies the larger file. The dead space didn't come back after the E3a rebuild.
+- **Why E3a helps:** script debugging makes IL2CPP emit debugger sequence points and checks in every method. That makes the C++ 3.7× larger (352 → 96 MB) and doubles a clean build (31 against 14 minutes, the same as release).
+- **Not run:**
+  - The shared player settings (IL2CPP code generation, stripping, test assemblies), Gradle properties and Mono. The target was met first, and the plan says to stop there.
+  - E4, a fixed version code. With E1, a version-code-only change costs about the same as a one-line change, because the Gradle step is the part that changed, so it isn't needed.
+- **Tests:** no code changed in CC-043.2. No phone was attached, so no device install was done; that happens in CC-043.3.
+
+**Recommendations for CC-043.3** (each with its cost):
+1. **Keep E1 (SymbolTable).** It cuts a one-line rebuild from 4:33 to 2:46. Cost: native crash stacks show function names but no line numbers. Full symbols are still possible with a debuggable profile.
+2. **Script debugging (E3a): Ronan's call.**
+   - Off: a one-line rebuild drops by another minute (2:46 → 1:49) and the APK's library by 73%.
+   - Cost: no attaching Rider or Visual Studio to the game on the phone.
+   - If debugging is still wanted now and then, keep a second profile, `Android™ Development (Debuggable)`, built with `-Profile`. Switching between the two profiles recompiles all C++, about 14 to 30 minutes each way.
+3. **Keep the profiler connection on (E3b off).** It costs nothing measurable and is needed for on-device profiling ([CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29)).
+4. **Leave Engine Diagnostics on for now (E2).** It saves 9 s per build, but it's project-wide: it also changes release builds and what the shipped game reports to Unity. Toggling it recompiles all C++. It's a privacy and release decision, so it fits [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) better.
+
 ## Divergences
 - **CC-043.1, `-Profile` values:**
   - `-Profile` takes the aliases `Development` (default) and `Release`, or any profile asset name, instead of the asset name only. This keeps the ™ character out of the PowerShell 5.1 command line.
