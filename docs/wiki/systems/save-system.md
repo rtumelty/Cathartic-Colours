@@ -38,7 +38,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Frame
 | `gameOver` | bool | `GameStateComponent.GameOver` | Written back |
 | `levelComplete` | bool | `GameStateComponent.LevelComplete` | Written back |
 | `moveCount` | int | `GameStateComponent.MoveCount` | Written back |
-| `randomState` | uint | `GameStateComponent.Random.state` | `new Random(randomState)` |
+| `randomState` | uint | `GameStateComponent.Random.state` | Restored directly (`new Random { state = randomState }`, since CC-044), so a resumed game continues the same random sequence; a zero state, which `Random` rejects, falls back to a fixed seed |
 | `totalScore` | int | `ScoreComponent.TotalScore` | Written back |
 | `currentFrameScore` | int | `ScoreComponent.CurrentFrameScore` | Written back into `ScoreComponent`, but nothing reads it later (`BoardStepSystem` resets it every frame) |
 | `blocks` | `SavedBlock[]` | every entity with `BlockComponent` (`QueryBuilder().WithAll<BlockComponent>()`) | `RestoreBlocks` creates one entity per element |
@@ -57,7 +57,7 @@ Not saved: tier points and any other `GameConfiguration` fields beyond the four 
 | `WriteSave(saveData)` (internal) | Sets `version` to `CurrentVersion` and writes atomically through `savegame.json.tmp` (see File location and format). Called by `SaveGameSystem` |
 | `DeleteSaveGame()` | Deletes the save and any leftover `.tmp` if present. `SaveGameSystem` calls it on game over (since CC-031) |
 | `InitializeFromSave(saveData, configTemplate, colorProfileTemplate, knownColorProfiles = null)` | Logs an error and returns if `saveData` is null. Otherwise instantiates `configTemplate`, overwrites `gameMode`, `gridWidth`, `gridHeight`, `spawnNextColourSystem` from the save, and calls `GameManager.Initialize` (which instantiates both again) with the profile from `knownColorProfiles` whose asset name matches `colorProfileName`, or else `colorProfileTemplate`. `GameRenderer` passes the current profile and its fallback profile; the game has one profile today (`DefaultColorProfile`) |
-| `RestoreWorldState(saveData)` | Returns if `saveData` is null. Using `World.DefaultGameObjectInjectionWorld`: if a `GameStateComponent` entity exists, sets `WaitingForInput = true` and overwrites `GameOver`, `LevelComplete`, `MoveCount`, `Random` from the save; if a `ScoreComponent` entity exists, replaces it with the saved totals; then calls `RestoreBlocks` |
+| `RestoreWorldState(saveData)` | Returns if `saveData` is null. Using `World.DefaultGameObjectInjectionWorld`: if a `GameStateComponent` entity exists, sets `WaitingForInput = true` and overwrites `GameOver`, `LevelComplete`, `MoveCount`, `Random` (state restored directly via `RestoreRandom`, CC-044) from the save; if a `ScoreComponent` entity exists, replaces it with the saved totals; then calls `RestoreBlocks` |
 | `RestoreBlocks` (private) | Returns if the array is null or empty. Creates one entity per saved block with only a `BlockComponent` and sets the data, the same shape as blocks in a fresh game (since CC-006.3; before that, restored blocks got a `MovingBlockTag`, which let a restored indicator slide on the first move) |
 
 Beyond the load checks (version, grid size), restored data is not validated: grid positions outside the saved width/height, overlapping blocks, or a `blocks` array of an unexpected size are all accepted as-is.
@@ -103,7 +103,6 @@ Since CC-031 `version` is checked: `SaveGameManager.CurrentVersion` (`"1.0"`) is
 - The resumed configuration replaces the shared static runtime configuration. [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
 - Cloud saves and sync do not exist yet. [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25)
 - `currentFrameScore` is restored, but nothing reads it.
-- `RestoreWorldState` rebuilds the random generator with `new Random(randomState)`, which treats the saved state as a seed and advances it, so a resumed game doesn't continue the saved random sequence (`Assets/Scripts/SaveSystem/SaveGameManager.cs`). Found by CC-002.3. [CC-044](https://github.com/rtumelty/Cathartic-Colours/issues/77)
 
 ## Related test cases
 - [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-01 to TP-SAVE-06.

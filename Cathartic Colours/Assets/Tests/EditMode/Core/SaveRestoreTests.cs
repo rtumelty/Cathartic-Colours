@@ -169,8 +169,7 @@ namespace ECS.Tests
             Assert.AreEqual(originalScore.TotalScore, resumed.Score.TotalScore);
             Assert.AreEqual(originalScore.CurrentFrameScore, resumed.Score.CurrentFrameScore);
             Assert.AreEqual(2, resumed.GameState.MoveCount);
-            // KNOWN BUG (CC-044, #77; see ResumedGame_RandomStateIsReSeeded_NotContinued): the restored state is not the saved one.
-            Assert.AreEqual(new Unity.Mathematics.Random(originalState.Random.state).state, resumed.GameState.Random.state);
+            Assert.AreEqual(originalState.Random.state, resumed.GameState.Random.state);
             Assert.IsFalse(resumed.GameState.GameOver);
             Assert.IsFalse(resumed.GameState.LevelComplete);
             Assert.IsTrue(resumed.GameState.WaitingForInput);
@@ -203,18 +202,35 @@ namespace ECS.Tests
         }
 
         [Test]
-        public void ResumedGame_RandomStateIsReSeeded_NotContinued()
+        public void ResumedGame_ContinuesTheSavedRandomSequence()
         {
-            // KNOWN BUG, current behaviour (CC-044, #77, found by CC-002.3): RestoreWorldState does
-            // `new Random(saveData.randomState)`, but Random(uint) takes a SEED and hashes it, while randomState holds the
-            // generator STATE (Random.state). So a resumed game does not continue the saved random sequence: the next
-            // spawn can differ from the one the original game would have made. Fix: `new Random { state = saved }`.
+            // CC-044 (#77): the generator state is restored directly, so the resumed game plays on exactly as the original.
             var game = PlayTwoMovesAndSave();
             var savedState = game.GameState.Random.state;
             var resumed = Resume();
 
-            Assert.AreNotEqual(savedState, resumed.GameState.Random.state);
-            Assert.AreEqual(new Unity.Mathematics.Random(savedState).state, resumed.GameState.Random.state);
+            Assert.AreEqual(savedState, resumed.GameState.Random.state);
+
+            game.MoveAndSave(BoardStepTestWorld.Left);
+            resumed.MoveAndSave(BoardStepTestWorld.Left);
+
+            CollectionAssert.AreEqual(Snapshot(game), Snapshot(resumed));
+            Assert.AreEqual(game.Score.TotalScore, resumed.Score.TotalScore);
+            Assert.AreEqual(game.GameState.Random.state, resumed.GameState.Random.state);
+        }
+
+        [Test]
+        public void RestoreWorldState_WithAZeroRandomState_UsesAValidGenerator()
+        {
+            // State 0 can only come from a hand-edited or broken file; Random rejects it, so a fixed seed is used.
+            var saveData = new SaveGameData { randomState = 0u, blocks = new SavedBlock[0] };
+            var resumed = CreateFreshWorldForResume();
+
+            SaveGameManager.RestoreWorldState(saveData);
+
+            var random = resumed.GameState.Random;
+            Assert.AreNotEqual(0u, random.state);
+            Assert.DoesNotThrow(() => random.NextUInt());
         }
 
         [Test]
@@ -291,7 +307,7 @@ namespace ECS.Tests
             Assert.IsTrue(resumed.GameState.GameOver);
             Assert.IsTrue(resumed.GameState.LevelComplete);
             Assert.AreEqual(7, resumed.GameState.MoveCount);
-            Assert.AreEqual(new Unity.Mathematics.Random(99u).state, resumed.GameState.Random.state);
+            Assert.AreEqual(99u, resumed.GameState.Random.state);
             Assert.AreEqual(123, resumed.Score.TotalScore);
             Assert.AreEqual(0, resumed.BlockCount, "a null blocks array restores no blocks");
         }

@@ -210,7 +210,7 @@ namespace SaveSystem
                 gameState.GameOver = saveData.gameOver;
                 gameState.LevelComplete = saveData.levelComplete;
                 gameState.MoveCount = saveData.moveCount;
-                gameState.Random = new Unity.Mathematics.Random(saveData.randomState);
+                gameState.Random = RestoreRandom(saveData.randomState);
                 
                 entityManager.SetComponentData(gameStateEntity, gameState);
             }
@@ -229,6 +229,17 @@ namespace SaveSystem
             }
 
             RestoreBlocks(entityManager, saveData.blocks);
+        }
+
+        /// <summary>
+        /// Rebuilds the generator from its saved STATE (not a seed: Random(uint) would hash it), so a resumed game
+        /// continues the saved sequence. CC-044.
+        /// </summary>
+        internal static Unity.Mathematics.Random RestoreRandom(uint savedState)
+        {
+            // State 0 is invalid for Random's xorshift; only a hand-edited or broken file can hold it.
+            if (savedState == 0u) return new Unity.Mathematics.Random(1u);
+            return new Unity.Mathematics.Random { state = savedState };
         }
 
         private static void RestoreBlocks(EntityManager entityManager, SavedBlock[] savedBlocks)
