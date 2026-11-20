@@ -43,10 +43,14 @@ The app starts without waiting for a debugger, but a debugger can still attach l
 
 ## Build code
 - The build class lives in its own editor-only assembly, `CatharticColours.Build.Editor`, so its EditMode tests can reference it ([D4](../features/CC-004-android-dev-builds.md#decisions)). This follows the `CatharticColours.Simulation` pattern.
-- `AndroidBuild.Development` reads `-versionCode <n>` from the command line, loads the profile, sets the version code and calls `BuildPipeline.BuildPlayer` with the profile. It restores the previous version code in a `finally` block and saves the assets.
-- The output path is `Cathartic Colours/Builds/Android/CatharticColours-<versionName>-<versionCode>-dev.apk`, built by `AndroidBuildArgs.OutputFileName`.
-- Exit codes: `0` success, `1` build failed (the build report's errors are logged), `2` bad arguments (missing or non-numeric `-versionCode`), `3` build profile not found.
-- Only the argument parsing and the file name are unit-tested. The Unity build call is not.
+- `AndroidBuild.CommandLine` (the script's entry point; `AndroidBuild.Development` is kept and does the same):
+  - reads `-versionCode <n>` and the optional `-buildProfile <name>` from the command line;
+  - loads the profile from `AndroidBuildArgs.ProfileAssetPath`;
+  - sets the version code and calls `BuildPipeline.BuildPlayer` with the profile;
+  - restores the previous version code in a `finally` block and saves the assets.
+- The profile's own `m_Development` and `m_BuildAppBundle` flags are read through `SerializedObject`, without changing the asset. They name the output `Cathartic Colours/Builds/Android/CatharticColours-<versionName>-<versionCode>-<dev|release>.<apk|aab>` (`AndroidBuildArgs.OutputFileName`). The log line is `APK: <path>` or `AAB: <path>`.
+- Exit codes: `0` success, `1` build failed (the build report's errors are logged), `2` bad arguments (missing or non-numeric `-versionCode`, empty `-buildProfile`, a profile name with path characters), `3` build profile not found.
+- Only the argument parsing, profile names and file name are unit-tested. The Unity build call is not.
 
 ## Running a build
 From the repo root, with the Unity editor closed:
@@ -56,6 +60,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1
 ```
 
 Options:
+- `-Profile <name>`: the build profile. `Development` (the default) is `Android™ Development`. `Release` is `Android™`, the release profile, which makes an App Bundle (`...-release.aab`, debug-signed when no keystore is set; for timing comparisons only, not for upload). Any other name is the asset name of a profile in `Assets/Settings/Build Profiles/` ([CC-043](https://github.com/rtumelty/Cathartic-Colours/issues/76)).
 - `-VersionCode <n>`: use this code instead of the commit count.
 - `-UnityExe <path>`: the Unity editor, default `C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe`.
 - `-LogDir <dir>`: where `unity-build.log` goes, default a new folder under `%TEMP%`.
@@ -68,6 +73,25 @@ Notes:
 - The first build took about 36 minutes (IL2CPP and Gradle from cold). A rebuild with a warm `Library/` took about 3 minutes.
 - Output: the APK, plus a `_BackUpThisFolder_ButDontShipItWithYourGame` folder holding the IL2CPP symbols. Keep the symbols for crash reports; do not ship them.
 - Run the script from Git Bash or a normal terminal. A background PowerShell runner once killed the wrapper (exit 255) while Unity carried on building.
+
+## Reading a slow build
+Added by [CC-043](https://github.com/rtumelty/Cathartic-Colours/issues/76) ([feature page](../features/CC-043-android-build-times.md)). Unity's own records are enough to see where the time went. No custom tooling is needed.
+
+| Source | Where | What it shows |
+|---|---|---|
+| Unity build trace | `Library/Bee/buildreport.json` (overwritten by each build; copy it to keep it) | The whole player build as a timeline: every step Unity, IL2CPP, the C++ compiler, the linker and the post-process tasks take, per thread. Chrome trace format. |
+| Bee backend traces | `Library/Bee/backend*.traceevents` (rotating) | The same backend steps, plus why each node ran: `OutputFilesMissingFor <node>` means its output was missing, `CheckInputSignature` that its inputs were checked. |
+| Editor log | the `-LogDir` folder, `unity-build.log` | `Android PostProcess task "<name>" took <n> ms` lines (Gradle, symbol upload, moving the output), `Asset Pipeline Refresh ... Total` at startup, and the `Android build Succeeded: ... <time>` summary. |
+
+To open a trace, go to `ui.perfetto.dev` (it runs locally in the browser and uploads nothing) or `chrome://tracing`, and load the file. In the `Unity` process, `Build player` → `Postprocess built player` holds most of the time. Inside it, `Incremental player build` is the IL2CPP and C++ part. `Building Gradle project` is Gradle. Look for `IL2CPP_CodeGen`, `C_Android_arm64` (one per C++ object file compiled), `Link_Android_arm64` and the `CopyFiles` of `libil2cpp.so`.
+
+For a quick text summary of the log:
+
+```
+Select-String -Path "<log dir>\unity-build.log" -Pattern 'PostProcess task .* took \d{4,}|Android build Succeeded|InitialRefreshV2'
+```
+
+**Not used:** the Build Report Inspector package (`com.unity.build-report-inspector` 0.3.0-preview, from 2022) doesn't compile on Unity 6.6. The analyzer rejects its use of `BinaryFormatter` (error UAC0023). Gradle's online build scans publish to an outside service, so they aren't used either.
 
 ## Checking an APK
 The Android SDK is installed with Unity at `C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK`. To check the package and version code:

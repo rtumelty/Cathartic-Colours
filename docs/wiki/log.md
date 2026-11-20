@@ -143,3 +143,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-20] approve | CC-041 | PR #80 squash-merged into develop as 04f6116, identical to the branch tip; #75 and its eleven sub-issues closed; the batch removed from roadmap.md (CC-043 and CC-045 remain in Quick fixes)
 ## [2026-11-20] plan | CC-043 | Feature page written: official Unity build tools first, Defender exclusions first, development and release baselines, then one setting at a time (Ronan's review)
 ## [2026-11-20] approve | CC-043 | Approved by Ronan; #76 Approved; sub-issues #81-#83 created
+## [2026-11-20] implement | CC-043.1 | build-android.ps1 -Profile (Development/Release); Defender pair and baselines recorded (dev clean 31:14, unchanged 1:05, one-line 4:33; release 13:52 / 1:19 / 1:57); Gradle 120 s and the 352 MB libil2cpp.so are the main rebuild cost; profile switch costs a clean rebuild
+## [2026-11-20] diverge | CC-043.1 | -Profile takes aliases; Build Report Inspector 0.3.0-preview doesn't compile on Unity 6.6 (reverted); no custom summary needed; release one-line/unchanged runs have totals only

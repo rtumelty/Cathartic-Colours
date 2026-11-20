@@ -28,7 +28,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 ## Systems
 - [System page format](systems/README.md) — how system pages describe current behaviour, cite sources and link known issues.
 - [Assemblies](systems/assemblies.md): the Simulation, Core, Presentation, editor and test assemblies, which folders feed each, reference rules, where new code goes, the save path override and how to run the tests.
-- [Android build](systems/build-android.md): player settings, the development build profile, the command-line build script and its exit codes, checking and installing an APK, and what CC-036 adds later.
+- [Android build](systems/build-android.md): player settings, the development build profile, the command-line build script (`-Profile`) and its exit codes, reading a slow build from Unity's own traces, checking and installing an APK, and what CC-036 adds later.
 - [ECS frame order](systems/ecs-frame-order.md): every system, its group and ordering constraints, tags, event entities, singletons, and one move frame by frame.
 - [Merge rules](systems/merge-rules.md): merge rules per mode with worked examples, sliding, scoring, spawning and end conditions.
 - [Configuration and game start](systems/configuration.md): `GameConfiguration`, `ColorProfile`, their assets, static `GameManager`, and the path from menu to running game.

@@ -143,8 +143,72 @@ Until the experiments pay off, a build takes about 15 to 20 minutes. CC-043.1 ne
 - **D3 — Defender exclusions first** (Ronan, 2026-11-20), measured before and after.
 - **D4 — Background software is a sunk cost** (Ronan, 2026-11-20). Timing runs don't need other apps closed.
 
+## Results
+
+### CC-043.1 — measurements (2026-11-20)
+All runs used `tools/build-android.ps1`, with Ronan's editor open in the manual copy as background (D4). "Total" is the script's elapsed time, and Unity's own `totalTime` is about 30 s less (editor start-up and shutdown). Logs and traces are in the session scratchpad, not the repo.
+
+**Defender exclusions (MANUAL 1).** The before-and-after pair wasn't like for like. The "before" run also had a version-code change: the last APK came from the CC-041 branch, code 88, and this branch counts 78. A third run, with exclusions and only the version code changed, separates the two effects:
+
+| Run | Total | Gradle | Asset refresh at start | Symbol upload step |
+|---|---|---|---|---|
+| Before exclusions (version code 88 → 78) | 3:54 | 129 s | 21 s | 21 s |
+| After exclusions, nothing changed | 1:05 | 12 s | 7 s | 10 s |
+| After exclusions, version code 78 → 79 only | 3:02 | 120 s | 8 s | 9 s |
+
+The exclusions save about 25 s (asset refresh and the symbol step), and they're kept. The Gradle difference comes from the version code.
+
+**Baselines** (exclusions in place, version code fixed at 79):
+
+| Profile | Clean (`Library/Bee` deleted) | Unchanged rebuild | One-line script change |
+|---|---|---|---|
+| Development | 31:14 | 1:05 | 4:33 |
+| Release (`-Profile Release`, App Bundle) | 13:52 | 1:19 | 1:57 |
+
+| Output | Package | `libil2cpp.so` inside |
+|---|---|---|
+| Development APK | 136.5 MB | 352 MB uncompressed (99 MB compressed) |
+| Release AAB | 79.2 MB | 91 MB, with its 78 MB of symbols kept apart in bundle metadata |
+
+**Development one-line change, step by step** (4:33; from `Library/Bee/buildreport.json`):
+
+| Step | Time |
+|---|---|
+| Asset refresh at start-up, script compile, prepare | about 25 s |
+| UnityLinker (managed stripping) | 10 s |
+| IL2CPP code generation | 20 s |
+| C++ compile (3 object files) and Burst | 11 s |
+| Link `libil2cpp.so` | 24 s |
+| Copy the 352 MB `libil2cpp.so` to the symbols folder and the Gradle project | 24 s |
+| `objcopy` strip | 4 s |
+| Unity Services Symbol Upload (scans the symbols, then stops: no Unity Cloud token, so nothing is uploaded) | 9 s |
+| Gradle | 120 s |
+| Moving the APK | 6 s |
+
+**What this shows:**
+1. **The 17–21 minute builds from planning weren't unchanged rebuilds.** They followed C# changes on other branches, and Bee had hundreds of object files missing (`OutputFilesMissingFor`, 259 in the 2026-11-20 00:24 build). An unchanged rebuild doesn't recompile C++.
+2. **Switching profiles throws away the other profile's C++ cache.** The development rebuild after the release runs took 30:01, the same as a clean build. Each switch costs one clean build, which matters if CC-043.3 keeps a second, debuggable development profile.
+3. **Gradle is the biggest cost for any rebuild that changes something.** That includes every new commit, because the version code is the commit count. It takes 120 s in development, but release's whole one-line rebuild is 117 s. The likely cause is the 352 MB unstripped `libil2cpp.so` (symbol level 4) that Gradle compresses into the APK.
+4. **Debug features roughly double the clean build:** 31 minutes for development against 14 for release.
+
+### Gaps in the official tools
+- **Build Report Inspector:** `com.unity.build-report-inspector` 0.3.0-preview, the latest, from 2022, doesn't compile on Unity 6.6 (`BinaryFormatter`, analyzer error UAC0023), so it was reverted. Gap: no size-by-asset view. Nothing was done about it, since the asset content is about 10 MB and isn't the cost.
+- **Per-run summary in batch mode:** not needed. The `PostProcess task … took` lines in the log plus `Library/Bee/buildreport.json` give it, and the [build-android](../systems/build-android.md#reading-a-slow-build) page shows how to read them. No custom tooling was added.
+
+### Input for CC-043.2
+Suggested order, by the evidence above:
+1. Debug symbol level 4 → lower. This targets Gradle's 120 s and the 24 s copy.
+2. Symbol upload off for development builds (9 s).
+3. Script debugging and profiler connection, which drive the 31 against 14 minute clean build.
+4. A fixed version code for development builds, so a new commit doesn't make Gradle repackage. Android allows installing an equal version code over itself.
+
 ## Divergences
-_None yet._
+- **CC-043.1, `-Profile` values:**
+  - `-Profile` takes the aliases `Development` (default) and `Release`, or any profile asset name, instead of the asset name only. This keeps the ™ character out of the PowerShell 5.1 command line.
+  - The parameter's variable is `$BuildProfile` with the alias `-Profile`, because `$Profile` would hide PowerShell's `$PROFILE`.
+  - The output is named `...-release.aab` for the release profile, because that profile builds an App Bundle. The release profile is unchanged.
+- **CC-043.1, cache folder:** `Library/Il2cppBuildCache` doesn't exist in Unity 6.6, so a clean build deletes `Library/Bee` only.
+- **CC-043.1, release runs:** the release unchanged and one-line runs have totals only. A logging mistake in the chained run lost their per-step logs, and rerunning them would mean another clean release build plus a 30-minute development re-warm. Their totals already show the point (Gradle is much shorter for release).
 
 ## Feature test plan
 1. `tools/build-android.ps1` twice with no changes: the second run meets the target. Open `Library/Bee/fullprofile.json` in Perfetto to see the steps.
