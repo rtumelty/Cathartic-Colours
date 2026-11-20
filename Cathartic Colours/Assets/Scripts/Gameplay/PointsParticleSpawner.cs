@@ -24,6 +24,8 @@ public class PointsParticleSpawner : MonoBehaviour
     [Header("Positioning")]
     public bool centerAlignment = true; // Whether to center the group of numbers
 
+    private bool warnedMissingDigits;
+
     private void Awake()
     {
         PresentationRegistry.ActivePointsParticleSpawner = this;
@@ -36,16 +38,22 @@ public class PointsParticleSpawner : MonoBehaviour
 
     private void SpawnParticles(Vector3 worldPosition, BlockColor blockColor, int count)
     {
+        // A clear (Advanced Color Merge White Large + White Large) has result colour None, which the colour
+        // profile maps to transparent. The cleared blocks were White, so use that.
+        if (blockColor == BlockColor.None)
+            blockColor = BlockColor.White;
+
         ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
         emitParams.position = worldPosition;
         emitParams.startColor = GameManager.ActiveColorProfile.GetColor(blockColor);
         
+        if (blobParticleSystem == null) return;
         blobParticleSystem.Emit(emitParams, count);
     }
 
     public void SpawnNumberParticle(int value, Vector3 worldPosition)
     {
-        if (value > digitParticleSystems.Length || value < 0) 
+        if (digitParticleSystems == null || value >= digitParticleSystems.Length || value < 0)
             return;
         
         // Create emission parameters with minimal overrides
@@ -53,6 +61,15 @@ public class PointsParticleSpawner : MonoBehaviour
         emitParams.position = worldPosition;
         
         var digitParticleSystem = digitParticleSystems[value];
+        if (digitParticleSystem == null)
+        {
+            if (!warnedMissingDigits)
+            {
+                warnedMissingDigits = true;
+                Debug.LogWarning("PointsParticleSpawner: digitParticleSystems has an unassigned entry; Text mode particles are skipped.", this);
+            }
+            return;
+        }
         
         // Emit a single particle
         digitParticleSystem.Emit(emitParams, 1);

@@ -23,11 +23,31 @@ namespace Gameplay
         
         private Coroutine wobbleCoroutine = null;
         private float timeSinceEvent = 0;
-        private bool wobbleActive = false;
+        private Material runtimeMaterial = null;
         
         private Vector2 currentWobbleDirection = Vector2.zero;
         private Vector2 targetWobbleDirection = Vector2.zero;
         
+        /// <summary>
+        /// Per-run copy of <c>jellyMaterial</c> that the wobble is written to, so the saved
+        /// <c>BlockMaterial.mat</c> asset is never modified. <see cref="GameRenderer"/> assigns it to each block
+        /// renderer; its per-block <c>_MainColor</c> MaterialPropertyBlock still applies on top. Falls back to the
+        /// shared material if none is assigned.
+        /// </summary>
+        public Material RuntimeMaterial => runtimeMaterial;
+
+        void Awake()
+        {
+            if (jellyMaterial != null)
+                runtimeMaterial = new Material(jellyMaterial) { name = jellyMaterial.name + " (Runtime)" };
+        }
+
+        void OnDestroy()
+        {
+            if (runtimeMaterial != null)
+                Destroy(runtimeMaterial);
+        }
+
         void OnEnable()
         {
             PresentationRegistry.JellyManager = this;
@@ -50,26 +70,28 @@ namespace Gameplay
         }
         
         IEnumerator WobbleCoroutine() {
-            wobbleActive = true;
             timeSinceEvent = 0;
 
             while (timeSinceEvent < wobblePeriod)
             {
+                // Exponential smoothing: directionSmoothing is the fraction closed per 1/60 s frame, so the feel is
+                // identical at 60 fps and independent of the actual frame rate.
+                float smoothing = 1f - Mathf.Pow(1f - directionSmoothing, Time.deltaTime * 60f);
                 currentWobbleDirection =
-                    Vector2.Lerp(currentWobbleDirection, targetWobbleDirection, directionSmoothing);
-                jellyMaterial.SetVector(MoveDirection, currentWobbleDirection);
+                    Vector2.Lerp(currentWobbleDirection, targetWobbleDirection, smoothing);
+                var material = runtimeMaterial != null ? runtimeMaterial : jellyMaterial;
+                material.SetVector(MoveDirection, currentWobbleDirection);
 
                 float t = timeSinceEvent / wobblePeriod;
                 
-                jellyMaterial.SetFloat(WobbleStrength, wobbleStrengthCurve.Evaluate(t) * wobbleScale);
-                jellyMaterial.SetFloat(DirectionInfluence, directionInfluenceCurve.Evaluate(t) * directionInfluenceScale);
-                jellyMaterial.SetFloat(DirectionWobbleFrequency, directionWobbleFrequencyCurve.Evaluate(t) * directionFrequencyScale);
+                material.SetFloat(WobbleStrength, wobbleStrengthCurve.Evaluate(t) * wobbleScale);
+                material.SetFloat(DirectionInfluence, directionInfluenceCurve.Evaluate(t) * directionInfluenceScale);
+                material.SetFloat(DirectionWobbleFrequency, directionWobbleFrequencyCurve.Evaluate(t) * directionFrequencyScale);
 
                 timeSinceEvent += Time.deltaTime;
                 yield return 0;
             }
             
-            wobbleActive = false;
             wobbleCoroutine = null;
         }
     }

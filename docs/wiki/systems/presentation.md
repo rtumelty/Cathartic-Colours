@@ -11,7 +11,6 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | `Assets/Scripts/Gameplay/GameRenderer.cs` | Grid, block visuals, camera, singleton creation |
 | `Assets/Scripts/Gameplay/Block.cs` | Wrapper over the block `Animator` (global namespace) |
 | `Assets/Scripts/Gameplay/JellyManager.cs` | Drives the jelly shader properties after a move |
-| `Assets/Scripts/Gameplay/JellyController.cs` | Per-sprite wobble helper (not used by any prefab or scene) |
 | `Assets/Scripts/Gameplay/PointsParticleSpawner.cs` | Emits score particles (global namespace) |
 | `Assets/Prefabs/GameManager.prefab` | Root object: `GameRenderer`, `GameInputHandler`, `SwipeDetector`; children `JellyManager` and `GameUI` |
 | `Assets/Prefabs/Block.prefab`, `Assets/Prefabs/Cell.prefab`, `Assets/Prefabs/ScoreParticles.prefab` | Instantiated or placed visuals |
@@ -48,18 +47,18 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 ### `Block`
 `Assets/Scripts/Gameplay/Block.cs` (global namespace). Serialised `animator`; property `Size` (setter calls `animator.SetInteger("Size", value)`), `Disappear()` (`animator.SetTrigger("Disappear")`), `Dispose()` (`Destroy(gameObject)`, called from the animation event). The controller `Assets/AnimationClips/Block.controller` has parameters `Size` (int) and `Disappear` (trigger), and states `Appear` (default), `Small_to_Medium`, `Medium_to_Large` and `Disappear`; transitions use `Size` thresholds (greater than 1 and greater than 2) and the trigger. The exact transition wiring was not traced.
 
-### `JellyManager` and `JellyController`
-**What the wobble is.** `JellyManager` sets shader properties on one shared material, `BlockMaterial.mat`, for `wobblePeriod` seconds after a move; the blocks' `JellyShader` (Shader Graph, `Assets/Shaders/JellyShader.shadergraph`) uses them to wobble the mesh (properties in the graph: `_MainColor`, `_WobbleStrength`, `_DirectionInfluence`, `_DirectionWobbleFrequency`, `_MoveDirection`, `_RandomWobbleFrequency`, `_MinimumOpacity`, `_VolumeIntensity`, `_VolumePower`, `_Texture2D`).
+### `JellyManager`
+**What the wobble is.** `JellyManager` sets shader properties on one material for `wobblePeriod` seconds after a move. Since CC-032 that material is a runtime copy (`new Material(jellyMaterial)` made in `Awake`, destroyed in `OnDestroy`, exposed as `RuntimeMaterial`), so the saved `BlockMaterial.mat` asset is never written. `GameRenderer` assigns the copy to each new block's renderer as `sharedMaterial`; the per-block `_MainColor` `MaterialPropertyBlock` still applies on top. The shared asset stays the fallback if the copy is missing. The blocks' `JellyShader` (Shader Graph, `Assets/Shaders/JellyShader.shadergraph`) uses these properties to wobble the mesh (properties in the graph: `_MainColor`, `_WobbleStrength`, `_DirectionInfluence`, `_DirectionWobbleFrequency`, `_MoveDirection`, `_RandomWobbleFrequency`, `_MinimumOpacity`, `_VolumeIntensity`, `_VolumePower`, `_Texture2D`).
 
 **Trigger.** `GameRenderer.UpdateUI` calls `WobbleOnNewMove`, which calls `PresentationRegistry.JellyManager.StartWobble(LastMoveDirection)` (null-checked) when `GameStateComponent.MoveCount` has increased since the last frame. After a game starts or resumes, the first read only records the count, so resuming does not wobble. No simulation code calls presentation (since CC-006.3, ADR-001 §4). Because MonoBehaviour `Update` and the ECS groups run at different points in the player loop, the wobble can start one frame after the move. `JellyManager.OnEnable` registers itself in `PresentationRegistry.JellyManager`; `OnDisable` clears it.
 
 **`StartWobble(Vector2 target)`.** Stores the target direction and resets the timer; starts `WobbleCoroutine` if none is running (a move during a running wobble restarts the timer and re-targets, without starting a second coroutine).
 
-**`WobbleCoroutine`.** While `timeSinceEvent < wobblePeriod`, each frame: `currentWobbleDirection = Lerp(current, target, directionSmoothing)` (this is a fixed fraction per frame, so it is frame-rate dependent); sets `_MoveDirection`; with `t = timeSinceEvent / wobblePeriod`, sets `_WobbleStrength` = `wobbleStrengthCurve(t) * wobbleScale`, `_DirectionInfluence` = `directionInfluenceCurve(t) * directionInfluenceScale`, `_DirectionWobbleFrequency` = `directionWobbleFrequencyCurve(t) * directionFrequencyScale`. When the period ends it clears its flags; it does not write final values, so the properties keep the last evaluated values.
+**`WobbleCoroutine`.** While `timeSinceEvent < wobblePeriod`, each frame: `currentWobbleDirection = Lerp(current, target, 1 - (1 - directionSmoothing)^(deltaTime * 60))` (exponential smoothing: `directionSmoothing` is the fraction closed per 1/60 s, so the feel is the same at 60 fps and independent of frame rate, since CC-032); sets `_MoveDirection`; with `t = timeSinceEvent / wobblePeriod`, sets `_WobbleStrength` = `wobbleStrengthCurve(t) * wobbleScale`, `_DirectionInfluence` = `directionInfluenceCurve(t) * directionInfluenceScale`, `_DirectionWobbleFrequency` = `directionWobbleFrequencyCurve(t) * directionFrequencyScale`. When the period ends it clears its flags; it does not write final values, so the properties keep the last evaluated values.
 
 | Parameter | Prefab value | Scene override (`Gameplay scene.unity`) |
 |---|---|---|
-| `jellyMaterial` | `BlockMaterial.mat` | n/a |
+| `jellyMaterial` (source of the runtime copy) | `BlockMaterial.mat` | n/a |
 | `wobblePeriod` | 0.6 | n/a |
 | `directionSmoothing` | 0.7 | n/a |
 | `wobbleScale` | 0.1 | 0.05 |
@@ -67,23 +66,23 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | `directionFrequencyScale` | 0.3 | 0.5 |
 | the three curves | set in the prefab (values not transcribed here) | n/a |
 
-`JellyController` (`RequireComponent(SpriteRenderer)`) animates `_WobbleStrength` and `_DistortionStrength` on `spriteRenderer.material` and has a `Jiggle(intensity)` coroutine. It is not attached to any prefab or scene (no reference found in `Assets/Prefabs` or `Assets/Scenes`), and its sprite-material properties do not match the mesh-based block shader.
+`JellyController`, an unused per-sprite wobble helper, was deleted in CC-032.
 
 ### `PointsParticleSpawner`
 `Assets/Scripts/Gameplay/PointsParticleSpawner.cs` (global namespace). `Awake` registers `PresentationRegistry.ActivePointsParticleSpawner`; `OnDestroy` clears it. `MergeEffectsSystem` calls `Emit(points, mergeColor, worldPosition)` once per `MergeEventComponent` (points are carried on the event), with the world position computed from the grid position and `GameRenderer.cellSize`/`cellSpacing`, pushed back in z by 5. If the spawner or renderer is missing it skips the effect but still destroys the event (`Assets/Scripts/Gameplay/MergeEffectsSystem.cs`, Presentation assembly since CC-002).
 
 `Emit` branches on `spawnMode`:
 - `Text`: `SpawnPoints` splits the points into digits and emits one particle from `digitParticleSystems[digit]` per digit, spaced `particleWidth * spacingMultiplier` apart and centred if `centerAlignment`. Skips if `points <= 0`.
-- `ParticleCount`: `SpawnBlobParticles` emits `max(1, points / pointsPerBlobParticle)` particles from `blobParticleSystem`, with start colour from `ColorProfile.GetColor(mergeColor)`.
+- `ParticleCount`: `SpawnBlobParticles` emits `max(1, points / pointsPerBlobParticle)` particles from `blobParticleSystem`, with start colour from `ColorProfile.GetColor(mergeColor)`; a `None` colour (the Advanced Color Merge White Large clear, whose result colour is `None`) is drawn as `White` instead of the profile's transparent `None` (since CC-032).
 
-Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); the scene instance (named `BlobParticles`) overrides `blobParticleSystem` and `pointsPerBlobParticle` = 2 and `InitialModule.startLifetime` = 0.6 (`Assets/Scenes/Gameplay scene.unity`). All ten `digitParticleSystems` slots in the prefab are empty (`fileID: 0`), so `Text` mode would throw a null reference.
+Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); the scene instance (named `BlobParticles`) overrides `blobParticleSystem` and `pointsPerBlobParticle` = 2 and `InitialModule.startLifetime` = 0.6 (`Assets/Scenes/Gameplay scene.unity`). All ten `digitParticleSystems` slots in the prefab are empty (`fileID: 0`). Since CC-032 `Text` mode skips an unassigned digit system (one warning, then silent) instead of throwing, and the stale serialised fields (`particleSystem`, `minAngle`, `maxAngle`, `minSpeed`, `maxSpeed`) were removed from the prefab. The prefab on its own still has no `blobParticleSystem`; the scene instance supplies it, and a missing one is skipped.
 
 ### ECS state read and written, per component
 | Component | Reads | Writes |
 |---|---|---|
 | `GameRenderer` | `BlockComponent` (all, per frame); `GameStateComponent` and `ScoreComponent` (via cached entities, per frame, for the UI); `GameManager.ActiveConfiguration`, `ActiveColorProfile` | Creates `GridConfigComponent`, `GameStateComponent`, `ScoreComponent`, `GameModeComponent` and `ScoringConfigComponent` (`InitializeGame`); starts the jelly wobble on a new move (`WobbleOnNewMove`); creates the initial indicator `BlockComponent` (`SpawnInitialBlock`); destroys blocks and singletons (`CleanUp`); `PlayerPrefs` (`LoadFromSave`) |
 | `Block` | none (receives `Size` from the renderer) | none (animator parameters only) |
-| `JellyManager` | none (receives a direction from `GameRenderer.WobbleOnNewMove`) | shared material `BlockMaterial.mat` properties |
+| `JellyManager` | none (receives a direction from `GameRenderer.WobbleOnNewMove`) | properties of its runtime material copy (not the asset) |
 | `PointsParticleSpawner` | none (receives points, colour and position from `MergeEffectsSystem`); `ColorProfile` colours | none |
 
 ### Prefabs, materials and shaders
@@ -108,12 +107,7 @@ Current wiring: `ScoreParticles.prefab` has `spawnMode: 1` (`ParticleCount`); th
 - The indicator's colour is chosen on the following move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
 - Visuals are an aesthetic prototype (instant moves, scale-only animation); rework planned. [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30)
 - `GameRenderer` allocates every frame (a new `EntityQuery`, arrays, a `HashSet`, and a `MaterialPropertyBlock` per block); profiling is planned. [CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29)
-- Dead ECS code ([CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36)) was removed in CC-006.3; presentation-layer cleanup (including the unused `JellyController`) is [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44).
-- `JellyManager` writes wobble properties on the shared `BlockMaterial.mat` asset (not an instance), so in the editor play sessions change the asset's saved values (the committed material has non-default `_WobbleStrength` etc.) (`Assets/Scripts/Gameplay/JellyManager.cs`, `Assets/Materials/BlockMaterial.mat`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
-- `JellyController` is not used by any prefab or scene (`Assets/Scripts/Gameplay/JellyController.cs`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
-- `ScoreParticles.prefab` serialises fields that no longer exist on `PointsParticleSpawner` (`particleSystem`, `minAngle`, `maxAngle`) and has no `digitParticleSystems` assigned; only the scene override supplies `blobParticleSystem`, so the prefab on its own does not work (`Assets/Prefabs/ScoreParticles.prefab`, `Assets/Scripts/Gameplay/PointsParticleSpawner.cs`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
-- the wobble smoothing `Lerp(current, target, 0.7)` is applied per frame rather than per second, so it is frame-rate dependent (`Assets/Scripts/Gameplay/JellyManager.cs`, `WobbleCoroutine`). [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
-- The Advanced Color Merge White Large clear has result colour `None`, which `DefaultColorProfile` maps to `(0,0,0,0)`, so its particles are fully transparent (`Assets/Scripts/Simulation/AdvancedColorMergeRules.cs`, `Assets/Data/Color Profiles/DefaultColorProfile.asset`). Found by code reading; not run. [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44)
+- Dead ECS code ([CC-024](https://github.com/rtumelty/Cathartic-Colours/issues/36)) was removed in CC-006.3.
 
 ## Related test cases
 - [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-02 (camera fit), TP-HUD-06 (wobble, particles, instant moves).

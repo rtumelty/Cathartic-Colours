@@ -46,7 +46,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d2f1700ebded4d9cb8ada22a38e4044, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PointsParticleSpawner
-  particleSystem: {fileID: 2281520140598774800}
   digitParticleSystems:
   - {fileID: 0}
   - {fileID: 0}
@@ -62,10 +61,6 @@ MonoBehaviour:
   particleWidth: 0.1
   spacingMultiplier: 1.2
   centerAlignment: 1
-  minAngle: -45
-  maxAngle: 45
-  minSpeed: 2
-  maxSpeed: 5
 --- !u!198 &2281520140598774800
 ParticleSystem:
   m_ObjectHideFlags: 0

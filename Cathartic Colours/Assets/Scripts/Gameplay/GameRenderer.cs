@@ -360,6 +360,13 @@ namespace Gameplay
                         continue;
                     }
                     
+                    // Use the jelly manager's runtime material copy so the wobble never writes to BlockMaterial.mat.
+                    var jellyMaterial = PresentationRegistry.JellyManager != null
+                        ? PresentationRegistry.JellyManager.RuntimeMaterial
+                        : null;
+                    if (jellyMaterial != null)
+                        renderer.sharedMaterial = jellyMaterial;
+
                     visual = new BlockVisual(gameObject, blockComponent, renderer);
                     blockVisuals[entity] = visual;
                 }
