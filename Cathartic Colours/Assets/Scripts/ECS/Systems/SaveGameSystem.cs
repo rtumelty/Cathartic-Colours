@@ -47,6 +47,7 @@ namespace ECS.Systems
             try
             {
                 // Written to a temp file and moved into place, so a crash mid-write can't truncate the save (CC-031).
+                // The two saves before it are kept as backups for a fallback load (CC-042).
                 SaveGameManager.WriteSave(CreateSaveData(ref state));
             }
             catch (System.Exception e)

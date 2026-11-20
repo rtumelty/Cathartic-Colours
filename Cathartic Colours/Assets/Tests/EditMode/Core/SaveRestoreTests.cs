@@ -61,6 +61,7 @@ namespace ECS.Tests
         public void TearDown()
         {
             SaveGameManager.SaveFilePathOverride = null;
+            SaveGameManager.SimulateNoFileReplace = false;
             World.DefaultGameObjectInjectionWorld = previousDefaultWorld;
 
             foreach (var world in worlds)
@@ -555,7 +556,9 @@ namespace ECS.Tests
         [Test]
         public void UnknownVersion_IsSetAsideAndNotOffered()
         {
-            PlayTwoMovesAndSave();
+            // One move, so there is no backup to fall back to (CC-042).
+            InitializeGameManager(GameMode.Standard, 4, 4, true);
+            CreateWorld(GameMode.Standard, RoundTripBoard).MoveAndSave(BoardStepTestWorld.Right);
             var json = File.ReadAllText(savePath).Replace("\"version\": \"1.0\"", "\"version\": \"99.0\"");
             Assert.That(json, Does.Contain("99.0"), "precondition: the version was rewritten");
             File.WriteAllText(savePath, json);
@@ -653,6 +656,293 @@ namespace ECS.Tests
             Assert.AreEqual(GameMode.ColorMerge, GameManager.ActiveConfiguration.gameMode);
             Assert.AreEqual(3, GameManager.ActiveConfiguration.gridWidth);
             Assert.AreEqual(5, GameManager.ActiveConfiguration.gridHeight);
+        }
+
+        // ---- Rotating saves and fallback on load (CC-042) ---------------------------------------------------
+
+        static readonly Regex Unusable = new Regex("Save game is unusable");
+
+        string SlotPath(int slot) => SaveGameManager.SaveSlotPath(slot);
+
+        /// <summary>Writes a minimal valid save for the given move, as SaveGameSystem would after that move.</summary>
+        static void WriteMove(int move)
+        {
+            SaveGameManager.WriteSave(new SaveGameData { gridWidth = 4, gridHeight = 4, moveCount = move, randomState = 7u, blocks = new SavedBlock[0] });
+        }
+
+        int MoveIn(int slot) => JsonUtility.FromJson<SaveGameData>(File.ReadAllText(SlotPath(slot))).moveCount;
+
+        void Corrupt(int slot, string content) => File.WriteAllText(SlotPath(slot), content);
+
+        /// <summary>The save-slot files in the folder (not the temp or bad files), so a stray name shows up.</summary>
+        string[] SlotFilesOnDisk() => Directory.Exists(folder)
+            ? Array.FindAll(Directory.GetFiles(folder, "savegame*.json"), f => !Path.GetFileName(f).StartsWith("savegame.bad", StringComparison.Ordinal))
+            : new string[0];
+
+        [Test]
+        public void SlotPaths_AreTheBackupsBesideTheSave()
+        {
+            Assert.AreEqual(savePath, SlotPath(0));
+            Assert.AreEqual(Path.Combine(folder, "savegame.1.json"), SlotPath(1));
+            Assert.AreEqual(Path.Combine(folder, "savegame.2.json"), SlotPath(2));
+        }
+
+        [TestCase(1, false)]
+        [TestCase(2, false)]
+        [TestCase(3, false)]
+        [TestCase(4, false)]
+        [TestCase(4, true, TestName = "Rotation_After4Saves_WithoutFileReplace")]
+        public void Rotation_NewestIsSaveJson_AndOnlyTwoBackupsExist(int saves, bool noFileReplace)
+        {
+            SaveGameManager.SimulateNoFileReplace = noFileReplace;
+
+            for (int move = 1; move <= saves; move++)
+                WriteMove(move);
+
+            Assert.AreEqual(saves, MoveIn(0), "the newest save is savegame.json");
+            if (saves >= 2) Assert.AreEqual(saves - 1, MoveIn(1), "savegame.1.json is the move before");
+            if (saves >= 3) Assert.AreEqual(saves - 2, MoveIn(2), "savegame.2.json is the move before that");
+            Assert.AreEqual(Math.Min(saves, 3), SlotFilesOnDisk().Length, "never more than the newest save and two backups");
+            Assert.IsFalse(File.Exists(SaveGameManager.TempFilePath));
+        }
+
+        [Test]
+        public void Rotation_ThroughSaveGameSystem_KeepsTheLastThreeMoves()
+        {
+            var game = PlayTwoMovesAndSave();
+            game.MoveAndSave(BoardStepTestWorld.Left);
+            game.MoveAndSave(BoardStepTestWorld.Up);
+
+            Assert.AreEqual(4, MoveIn(0));
+            Assert.AreEqual(3, MoveIn(1));
+            Assert.AreEqual(2, MoveIn(2));
+            Assert.AreEqual(3, SlotFilesOnDisk().Length);
+        }
+
+        [TestCase("{ \"version\": \"1.0\", \"gridWi", TestName = "Fallback_TruncatedNewest_LoadsTheMoveBefore")]
+        [TestCase("not json at all", TestName = "Fallback_CorruptNewest_LoadsTheMoveBefore")]
+        [TestCase("{ \"version\": \"99.0\", \"gridWidth\": 4, \"gridHeight\": 4, \"moveCount\": 3 }", TestName = "Fallback_UnknownVersionNewest_LoadsTheMoveBefore")]
+        public void Fallback_UnusableNewest_LoadsTheMoveBefore(string content)
+        {
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            Corrupt(0, content);
+
+            LogAssert.Expect(LogType.Warning, Unusable);
+            var saveData = SaveGameManager.LoadSaveGame();
+
+            Assert.IsNotNull(saveData);
+            Assert.AreEqual(2, saveData.moveCount);
+            Assert.AreEqual(content, File.ReadAllText(BadPath), "the unusable file is set aside, unchanged");
+            // Renumbered, so the next save rotates normally.
+            Assert.AreEqual(2, MoveIn(0));
+            Assert.AreEqual(1, MoveIn(1));
+            Assert.IsFalse(File.Exists(SlotPath(2)));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void Fallback_NewestAndFirstBackupUnusable_LoadsTheSecondBackup()
+        {
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            Corrupt(0, "");
+            Corrupt(1, "{}");
+
+            LogAssert.Expect(LogType.Warning, Unusable);
+            LogAssert.Expect(LogType.Warning, Unusable);
+            Assert.IsTrue(SaveGameManager.HasSaveGame());
+
+            Assert.AreEqual(1, MoveIn(0), "the second backup is now savegame.json");
+            Assert.AreEqual(1, SlotFilesOnDisk().Length);
+            Assert.AreEqual(1, SaveGameManager.LoadSaveGame().moveCount);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void Fallback_NoUsableFile_HasSaveGameIsFalse()
+        {
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            Corrupt(0, "");
+            Corrupt(1, "x");
+            Corrupt(2, "{}");
+
+            for (int i = 0; i < 3; i++)
+                LogAssert.Expect(LogType.Warning, Unusable);
+            Assert.IsFalse(SaveGameManager.HasSaveGame(), "the menu would not offer Resume");
+
+            Assert.AreEqual(0, SlotFilesOnDisk().Length, "every unusable file was moved aside");
+            LogAssert.Expect(LogType.Warning, "No save game file found");
+            Assert.IsNull(SaveGameManager.LoadSaveGame());
+        }
+
+        [Test]
+        public void Fallback_OnlyBackupsLeft_LoadsTheNewestBackup()
+        {
+            // As after a crash between the two moves of the no-File.Replace path: savegame.json is gone, .1 is complete.
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            File.Delete(savePath);
+
+            Assert.IsTrue(SaveGameManager.HasSaveGame());
+            Assert.AreEqual(2, SaveGameManager.LoadSaveGame().moveCount);
+            Assert.AreEqual(1, MoveIn(1));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void Fallback_ThenTheNextSaveRotatesNormally()
+        {
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            Corrupt(0, "broken");
+            LogAssert.Expect(LogType.Warning, Unusable);
+            Assert.AreEqual(2, SaveGameManager.LoadSaveGame().moveCount, "precondition: resumed one move earlier");
+
+            WriteMove(3); // the resumed game's next move
+            WriteMove(4);
+
+            Assert.AreEqual(4, MoveIn(0));
+            Assert.AreEqual(3, MoveIn(1));
+            Assert.AreEqual(2, MoveIn(2));
+        }
+
+        [Test]
+        public void Fallback_ThroughAResume_RestoresTheBoardOneMoveEarlier()
+        {
+            PlayTwoMovesAndSave();
+            var afterFirstMove = JsonUtility.FromJson<SaveGameData>(File.ReadAllText(SlotPath(1)));
+            Corrupt(0, "{ \"version\": \"1.0\", \"gam");
+
+            LogAssert.Expect(LogType.Warning, Unusable);
+            var resumed = Resume();
+
+            Assert.AreEqual(1, resumed.GameState.MoveCount);
+            Assert.AreEqual(afterFirstMove.totalScore, resumed.Score.TotalScore);
+            Assert.AreEqual(afterFirstMove.blocks.Length, resumed.BlockCount);
+        }
+
+        [Test]
+        public void NewGame_FirstSave_ClearsTheEarlierGamesFiles()
+        {
+            for (int move = 1; move <= 5; move++)
+                WriteMove(move);
+
+            WriteMove(1); // a new game's first move
+
+            Assert.AreEqual(1, MoveIn(0));
+            Assert.AreEqual(1, SlotFilesOnDisk().Length, "no backup from the earlier game is kept");
+
+            WriteMove(2);
+            Assert.AreEqual(1, MoveIn(1), "the new game's own saves are kept as backups");
+        }
+
+        [Test]
+        public void NewGame_FirstSave_WithoutFileReplace_AlsoClearsTheEarlierGamesFiles()
+        {
+            SaveGameManager.SimulateNoFileReplace = true;
+            for (int move = 1; move <= 5; move++)
+                WriteMove(move);
+
+            WriteMove(1);
+
+            Assert.AreEqual(1, MoveIn(0));
+            Assert.AreEqual(1, SlotFilesOnDisk().Length);
+        }
+
+        [Test]
+        public void NewGame_ThroughSaveGameSystem_LeavesNoFallbackToTheOldGame()
+        {
+            var oldGame = PlayTwoMovesAndSave();
+            oldGame.MoveAndSave(BoardStepTestWorld.Left);
+
+            InitializeGameManager(GameMode.ColorMerge, 4, 4, false);
+            CreateWorld(GameMode.ColorMerge, "Rs . . .|. . . .|. . . .|. . . .", spawnEnabled: false).MoveAndSave(BoardStepTestWorld.Right);
+            Corrupt(0, "");
+
+            LogAssert.Expect(LogType.Warning, Unusable);
+            Assert.IsFalse(SaveGameManager.HasSaveGame(), "the old game's saves were cleared, so nothing is resumed");
+        }
+
+        [Test]
+        public void GameOver_DeletesTheSaveAllBackupsAndTheTempFile()
+        {
+            var game = PlayTwoMovesAndSave();
+            game.MoveAndSave(BoardStepTestWorld.Left);
+            Assert.AreEqual(3, SlotFilesOnDisk().Length, "precondition: the save and two backups");
+            File.WriteAllText(SaveGameManager.TempFilePath, "partial");
+
+            var state = game.GameState;
+            state.GameOver = true;
+            game.GameState = state;
+            game.UpdatePresentation();
+
+            Assert.AreEqual(0, SlotFilesOnDisk().Length);
+            Assert.IsFalse(File.Exists(SaveGameManager.TempFilePath));
+            Assert.IsFalse(SaveGameManager.HasSaveGame());
+        }
+
+        [Test]
+        public void GameOver_KeepsSetAsideBadFiles()
+        {
+            for (int move = 1; move <= 2; move++)
+                WriteMove(move);
+            Corrupt(0, "bad");
+            LogAssert.Expect(LogType.Warning, Unusable);
+            Assert.IsTrue(SaveGameManager.HasSaveGame());
+
+            SaveGameManager.DeleteSaveGame();
+
+            Assert.AreEqual("bad", File.ReadAllText(BadPath), "bad files are kept for inspection");
+        }
+
+        [Test]
+        public void Compatibility_ASingleSaveFromAnEarlierBuild_LoadsAndBecomesTheFirstBackup()
+        {
+            // The layout before CC-042: one savegame.json and nothing else.
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(savePath,
+                "{\n    \"version\": \"1.0\",\n    \"saveTimestamp\": \"-8585000000000000000\",\n    \"gameMode\": 0,\n" +
+                "    \"gridWidth\": 4,\n    \"gridHeight\": 4,\n    \"spawnNextColourSystem\": true,\n    \"colorProfileName\": \"ProfileA\",\n" +
+                "    \"waitingForInput\": true,\n    \"gameOver\": false,\n    \"levelComplete\": false,\n    \"moveCount\": 6,\n" +
+                "    \"randomState\": 12345,\n    \"totalScore\": 40,\n    \"currentFrameScore\": 0,\n    \"blocks\": [\n" +
+                "        {\n            \"color\": 1,\n            \"size\": 0,\n            \"gridX\": 2,\n            \"gridY\": 3,\n" +
+                "            \"isNextColorIndicator\": false\n        }\n    ]\n}");
+
+            Assert.IsTrue(SaveGameManager.HasSaveGame());
+            var saveData = SaveGameManager.LoadSaveGame();
+            Assert.AreEqual(6, saveData.moveCount);
+            Assert.AreEqual(40, saveData.totalScore);
+            Assert.AreEqual(1, saveData.blocks.Length);
+
+            WriteMove(7);
+            Assert.AreEqual(7, MoveIn(0));
+            Assert.AreEqual(6, MoveIn(1), "the old file is now the first backup");
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void LeftoverTempFile_WithBackupsPresent_DoesNotBlockTheNextSave()
+        {
+            for (int move = 1; move <= 3; move++)
+                WriteMove(move);
+            File.WriteAllText(SaveGameManager.TempFilePath, "{ \"version\": \"1.0\", \"gam"); // a write that never finished
+
+            WriteMove(4);
+
+            Assert.AreEqual(4, MoveIn(0));
+            Assert.AreEqual(3, MoveIn(1));
+            Assert.AreEqual(2, MoveIn(2));
+            Assert.IsFalse(File.Exists(SaveGameManager.TempFilePath));
+        }
+
+        [Test]
+        public void TheBackupsAlsoLiveInTheTemporaryFolder_NotPersistentDataPath()
+        {
+            for (int slot = 0; slot <= SaveGameManager.BackupCount; slot++)
+                Assert.IsFalse(SlotPath(slot).StartsWith(Application.persistentDataPath, StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(BadPath.StartsWith(Application.persistentDataPath, StringComparison.OrdinalIgnoreCase));
         }
 
         // ---- Known gaps: current behaviour, named issues -----------------------------------------------------

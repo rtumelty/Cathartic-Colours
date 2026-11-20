@@ -108,7 +108,10 @@ None during the work. On your return, during PR review: TP-SAVE device cases. Pl
 - **D6 — Runs in its own git worktree, in parallel with CC-039 in the sandbox** (Ronan, 2026-11-20). The two features touch different files. The worktree has no Unity Library at first, so its first batchmode run imports the project.
 
 ## Divergences
-_None yet._
+Implementation specifics only; no change to scope or to D2 to D5.
+- **CC-042.1, new game's first save:** the plan said it "clears `.1` and `.2` before rotating". Rotating would then move the old game's `savegame.json` into `.1`, which D5 rules out. So the first save deletes `.1` and `.2` and replaces `savegame.json` without keeping a backup (`File.Replace` with no backup name). The new game has backups from its second move on.
+- **CC-042.1, test seam:** `SaveGameManager.SimulateNoFileReplace` (internal, test-only, like `SaveFilePathOverride`) makes `WriteSave` take the path used where `File.Replace` isn't supported, so both paths are tested.
+- **CC-042.1, real-save check:** the editor's real save folder (`%USERPROFILE%\AppData\LocalLow\Ronan Tumelty\Cathartic Colours`) had no `savegame*.json` before the runs; checked again after each run instead of planting a sentinel file there, since the manual copy shares that folder.
 
 ## Feature test plan
 1. Play three moves, quit to the menu, resume: the board is as left.
