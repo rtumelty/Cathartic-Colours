@@ -103,7 +103,7 @@ Wiring:
 
 ### Resume from save (entry point only)
 - `MainMenuController.ResumeGame` loads the save file; if it loads, it sets `PlayerPrefs` key `LoadFromSave` to "true" and loads the gameplay scene.
-- In `GameRenderer.InitializeGame`, if that key is "true" it deletes the key, loads the save again, and calls `SaveGameManager.InitializeFromSave(saveData, config, ActiveColorProfile)`, which builds a configuration from the template (the current `ActiveConfiguration`, then `gameMode`, `gridWidth`, `gridHeight`, `spawnNextColourSystem` from the save) and passes it with the colour profile to `GameManager.StartResumedGame`. That sets only `ActiveConfiguration` and `ActiveColorProfile` (runtime copies); `MenuConfiguration` is untouched, so the menu still shows its own settings after the resumed game. Entity creation then proceeds as for a new game and `SaveGameManager.RestoreWorldState` overwrites game state, score and blocks instead of `SpawnInitialBlock`.
+- In `GameRenderer.InitializeGame`, if that key is "true" it deletes the key, loads the save again, and calls `SaveGameManager.InitializeFromSave(saveData, MenuConfiguration, ActiveColorProfile, known profiles)`, which builds a configuration from the template (the current `ActiveConfiguration`, then `gameMode`, `gridWidth`, `gridHeight`, `spawnNextColourSystem` from the save) and passes it with the colour profile to `GameManager.StartResumedGame`. That sets only `ActiveConfiguration` and `ActiveColorProfile` (runtime copies); `MenuConfiguration` is untouched, so the menu still shows its own settings after the resumed game. Entity creation then proceeds as for a new game and `SaveGameManager.RestoreWorldState` overwrites game state, score and blocks instead of `SpawnInitialBlock`.
 - If the save cannot be loaded the game starts as a new one. Save format and triggers: [save-system.md](save-system.md).
 
 ## Interactions with other systems
@@ -116,4 +116,4 @@ Wiring:
 
 ## Related test cases
 - [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-06 (defaults, presets, sliders, start).
-- [Game over](../test-plan.md#game-over-over): TP-OVER-04, TP-OVER-05 (restart, duplicate cells CC-029). [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-02 (resume restores the saved configuration).
+- [Game over](../test-plan.md#game-over-over): TP-OVER-04, TP-OVER-05 (restart builds one grid, CC-028 and CC-029). [Main menu](../test-plan.md#main-menu-menu): TP-MENU-07 (indicator toggle), TP-MENU-08 (resume keeps the menu settings), both CC-027. [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-02 (resume restores the saved configuration).

@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#75](https://github.com/rtumelty/Cathartic-Colours/issues/75) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-041-quick-fixes` (from `develop` after CC-002 merged, created by the planning session) |
-| PR | — |
+| PR | — (opened at the end of the batch) |
 | Depends on | [CC-002](https://github.com/rtumelty/Cathartic-Colours/issues/8) (Core and Presentation assemblies, done) |
 
 ## Goal
@@ -73,10 +73,29 @@ None during the batch (workflow exception). Ronan's review of the PR and his mer
 
 ## Divergences
 - **CC-040:** `tools/build-android.ps1` had no revert step to remove; the revert was only advice on the [build-android](../systems/build-android.md) page, which is updated. A build re-saved three files with real changes (new default fields, plus URP 17.6 dropping `m_DebugLevel`); the other three it touched differed only in line endings, so nothing of theirs is committed.
+- **CC-031:** `HasSaveGame` now reads and checks the file (it used to check only that it exists), so it is also where an unusable save is set aside; the main menu calls it on open. The load also rejects a grid smaller than 1x1, which catches an empty `{}` file. Writing and deleting moved into `SaveGameManager` (`WriteSave`, `DeleteSaveGame`), so `SaveGameSystem` no longer touches files itself. The colour profile is saved by asset name (no "(Clone)" suffix); `GameRenderer` offers the current and fallback profiles, the only ones a scene knows today. The format version stays `"1.0"` because the fields didn't change.
+- **CC-025:** added EditMode tests for the `GameManager.Initialize` guards (not in the plan, but Core code). `GameRenderer.CleanUp` takes its `EntityManager` from the live world rather than the cached field.
+- **CC-028:** the new status label sits in the header under the score, using the existing `.status-label` style, so the header is one line taller and the board is laid out slightly smaller.
+- **CC-029:** cells now take the profile's grid colour (0.66 grey) instead of the material's (0.59), a slight visible change.
+- **CC-027:** design chosen in this session: `GameManager` keeps a `MenuConfiguration` (the menu edits only this) beside `ActiveConfiguration` (the game being played). `Initialize` sets both to one instance; a resume (`StartResumedGame`) sets only the active one; Start (`UseMenuConfiguration`) switches back. A resume uses the menu configuration as the template for the fields a save doesn't hold (tier points). The menu toggle is labelled "Next colour indicator".
+- **CC-032:** the jelly effect writes to one runtime copy of `BlockMaterial` that `GameRenderer` gives each new block (a property block would be overwritten by the per-block colour block each frame). The top-tier clear's particles are drawn white, since the merge event carries only the result colour (None). Two more stale prefab fields (`minSpeed`, `maxSpeed`) were removed. The committed `BlockMaterial.mat` keeps its old near-zero wobble values; it is no longer changed by play.
+- **CC-030:** the direction rule lives in `ECS.Utilities.InputDirection` (Core, Unity.Mathematics only) with EditMode tests: dead zone 0.5, re-arm below 0.25, the larger axis wins and an exact tie goes vertical. One press or tilt makes one move; a second key pressed while the first is held does nothing until all are released. `PlayerInput` is no longer added.
+- **Worker routing:** as planned. Every worker's output was reviewed by the primary model before its commit; none was rejected.
 
 ## Feature test plan
-_Written at the end of the batch: the shortest pass that checks each fix in the editor and on a device._
+The shortest pass, in this order (cases are in [test-plan.md](../test-plan.md)):
+
+1. **Editor, main menu:** TP-MENU-07 (indicator toggle), then TP-MENU-08 (resume keeps the menu settings). CC-027.
+2. **Editor, Standard game:** TP-HUD-01, TP-HUD-03 (status line), TP-HUD-07 (grid colour), TP-STD-10 (all eight keys, clean Console), TP-STD-08 with a mouse drag, TP-STD-09 with a gamepad if one is available. CC-028, CC-029, CC-030, CC-037, CC-038.
+3. **Editor, game over:** play a 4x4 game to the end; TP-OVER-04 (one restart), TP-OVER-05 (16 cells), TP-OVER-06. CC-028, CC-029, CC-025.
+4. **Editor, Advanced Color Merge:** TP-ACM-07 if two Large White blocks are reached (white clear particles). CC-032.
+5. **Editor, saves:** TP-SAVE-09, then TP-SAVE-08 (edit the version, then a cut-off file). CC-031.
+6. **Editor, tooling:** TP-TOOL-05 (`BlockMaterial.mat` unchanged after play, no CS0414). CC-032.
+7. **Device:** TP-DROID-01 (clean tree after the build, CC-040), TP-DROID-04, TP-STD-08 (real swipes), TP-SAVE-02 and TP-SAVE-06 (resume after a force close, CC-031 and CC-044).
+
+CC-044 (a resumed game continues the same random sequence) can't be seen by hand; the EditMode test `ResumedGame_ContinuesTheSavedRandomSequence` covers it.
 
 ## Status log
 - 2026-11-19: Planned and approved by Ronan
 - 2026-11-20: CC-044 added; branch cut after CC-002 merged
+- 2026-11-20: All eleven fixes committed and pushed, one commit each; EditMode, PlayMode and an Android development build run

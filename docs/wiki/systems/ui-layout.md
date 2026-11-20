@@ -145,5 +145,5 @@ The camera is only fitted when a layout event fires; `RestartGame` does not call
 - Aesthetic rework of gameplay and UI is planned. [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30)
 
 ## Related test cases
-- [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-04, TP-MENU-06. [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-01 to TP-HUD-05 (TP-HUD-03 status label, CC-028).
+- [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-04, TP-MENU-06 to TP-MENU-08 (TP-MENU-07 indicator toggle, CC-027). [HUD](../test-plan.md#gameplay-hud-hud): TP-HUD-01 to TP-HUD-05 (TP-HUD-03 status label, CC-028).
 - [Game over](../test-plan.md#game-over-over): TP-OVER-02, TP-OVER-04 (game-over panel, restart).
