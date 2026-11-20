@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#70](https://github.com/rtumelty/Cathartic-Colours/issues/70) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-042-rotating-saves` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#91](https://github.com/rtumelty/Cathartic-Colours/pull/91) |
 | Depends on | [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43) (atomic write and save checks, done in CC-041) |
 | Related | [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25) (cloud saves), [CC-015](https://github.com/rtumelty/Cathartic-Colours/issues/27) (analytics), [save-system](../systems/save-system.md) |
 
@@ -124,3 +124,4 @@ Folded into the comprehensive test plan (Save/Resume) in CC-042.3.
 ## Status log
 - 2026-11-20: Planned and approved by Ronan (no-stops workflow)
 - 2026-11-20: CC-042.1 and CC-042.2 implemented and pushed; feature test plan folded into test-plan.md (CC-042.3)
+- 2026-11-20: PR #91 opened; development APK built (version code 82, 17:59 in a fresh worktree, 0 errors). Version code 82 is below the CC-041 APK's 88, so installing over that build needs an uninstall or `adb install -r -d` (version codes are CC-039's work)
