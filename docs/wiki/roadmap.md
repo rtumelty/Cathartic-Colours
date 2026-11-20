@@ -12,7 +12,7 @@ This page lists only work still to do and the recommended order. An item drops o
 **Release goal:** Android launch of Cathartic Colours.
 
 ## Phases and suggested order
-1. **Quick fixes:** [CC-041](https://github.com/rtumelty/Cathartic-Colours/issues/75), one batch, one commit per fix in this order: [CC-040](https://github.com/rtumelty/Cathartic-Colours/issues/69), [CC-037](https://github.com/rtumelty/Cathartic-Colours/issues/64), [CC-038](https://github.com/rtumelty/Cathartic-Colours/issues/65), [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43), [CC-044](https://github.com/rtumelty/Cathartic-Colours/issues/77), [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37), [CC-028](https://github.com/rtumelty/Cathartic-Colours/issues/40), [CC-029](https://github.com/rtumelty/Cathartic-Colours/issues/41), [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39), [CC-032](https://github.com/rtumelty/Cathartic-Colours/issues/44), [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42). Separately: [CC-043](https://github.com/rtumelty/Cathartic-Colours/issues/76) (slow Android builds, an investigation) and [CC-045](https://github.com/rtumelty/Cathartic-Colours/issues/79) (broken references in URP render settings). New small finds join this phase on the board until the next batch.
+1. **Quick fixes:** [CC-043](https://github.com/rtumelty/Cathartic-Colours/issues/76) (slow Android builds, an investigation) and [CC-045](https://github.com/rtumelty/Cathartic-Colours/issues/79) (broken references in URP render settings). New small finds join this phase on the board until the next batch.
 2. **Gameplay:** [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38) (rule gaps, design input for CC-008) and [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19) → [CC-008](https://github.com/rtumelty/Cathartic-Colours/issues/20) → [CC-035](https://github.com/rtumelty/Cathartic-Colours/issues/55) (spawn rubber-banding, a spawn rule per mode on the CC-008 framework) → [CC-009](https://github.com/rtumelty/Cathartic-Colours/issues/21) (with [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31), the level-complete panel) → [CC-010](https://github.com/rtumelty/Cathartic-Colours/issues/22) / [CC-011](https://github.com/rtumelty/Cathartic-Colours/issues/23) / [CC-012](https://github.com/rtumelty/Cathartic-Colours/issues/24)
 3. **Platform and monetisation:** [CC-039](https://github.com/rtumelty/Cathartic-Colours/issues/68) (version codes that never go backwards) in or before [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) (signing and Google Play), then CC-036 before [CC-015](https://github.com/rtumelty/Cathartic-Colours/issues/27) → [CC-016](https://github.com/rtumelty/Cathartic-Colours/issues/28), which need a store listing; [CC-042](https://github.com/rtumelty/Cathartic-Colours/issues/70) (rotating saves, after CC-031) before [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25) → [CC-014](https://github.com/rtumelty/Cathartic-Colours/issues/26)
 4. **Polish:** [CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29) (profile on device), [CC-018](https://github.com/rtumelty/Cathartic-Colours/issues/30) (can run in parallel any time; finalise after the new screens from 2–3 exist)
@@ -36,22 +36,10 @@ Every open roadmap id and its issue. Rows are removed when an item is merged or 
 | CC-017 | [#29](https://github.com/rtumelty/Cathartic-Colours/issues/29) | Performance: profiling baseline, Adaptive Performance / ADPF |
 | CC-018 | [#30](https://github.com/rtumelty/Cathartic-Colours/issues/30) | Aesthetic rework of gameplay and UI |
 | CC-019 | [#31](https://github.com/rtumelty/Cathartic-Colours/issues/31) | Level-complete panel is unreachable |
-| CC-025 | [#37](https://github.com/rtumelty/Cathartic-Colours/issues/37) | Missing guards on config, scene name and renderer teardown |
 | CC-026 | [#38](https://github.com/rtumelty/Cathartic-Colours/issues/38) | Review mode rule gaps (Advanced dead ends, Color Merge size) |
-| CC-027 | [#39](https://github.com/rtumelty/Cathartic-Colours/issues/39) | Runtime configuration leaks between menu, presets and resume |
-| CC-028 | [#40](https://github.com/rtumelty/Cathartic-Colours/issues/40) | In-game UI wiring faults (status label, double restart) |
-| CC-029 | [#41](https://github.com/rtumelty/Cathartic-Colours/issues/41) | Restart stacks duplicate grid cells; grid colour not applied |
-| CC-030 | [#42](https://github.com/rtumelty/Cathartic-Colours/issues/42) | Input uses a hard-coded keyboard action instead of `GameControls` |
-| CC-031 | [#43](https://github.com/rtumelty/Cathartic-Colours/issues/43) | Save file robustness (versioning, atomic write) |
-| CC-032 | [#44](https://github.com/rtumelty/Cathartic-Colours/issues/44) | Presentation-layer cleanup (jelly material, unused scripts) |
 | CC-035 | [#55](https://github.com/rtumelty/Cathartic-Colours/issues/55) | Rubber-band spawn colours against board imbalance |
 | CC-036 | [#57](https://github.com/rtumelty/Cathartic-Colours/issues/57) | Store release: signing, keystore and Google Play publishing |
-| CC-037 | [#64](https://github.com/rtumelty/Cathartic-Colours/issues/64) | Up arrow throws an Input System exception on every press |
-| CC-038 | [#65](https://github.com/rtumelty/Cathartic-Colours/issues/65) | Save and load write a log line on every move |
 | CC-039 | [#68](https://github.com/rtumelty/Cathartic-Colours/issues/68) | Android version codes go backwards between feature-branch and develop builds |
-| CC-040 | [#69](https://github.com/rtumelty/Cathartic-Colours/issues/69) | Commit the settings files that Unity 6.6 re-saves on every build |
-| CC-041 | [#75](https://github.com/rtumelty/Cathartic-Colours/issues/75) | Quick-fix batch (eleven small bugs and chores in one branch) |
 | CC-042 | [#70](https://github.com/rtumelty/Cathartic-Colours/issues/70) | Rotating save files and reporting bad saves |
 | CC-043 | [#76](https://github.com/rtumelty/Cathartic-Colours/issues/76) | Investigate slow Android build times |
-| CC-044 | [#77](https://github.com/rtumelty/Cathartic-Colours/issues/77) | Resumed games don't continue the saved random sequence |
 | CC-045 | [#79](https://github.com/rtumelty/Cathartic-Colours/issues/79) | Broken references in URP render settings |

@@ -140,3 +140,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-20] implement | CC-041 | Eleven quick fixes committed one per issue (CC-040, CC-037, CC-038, CC-031, CC-044, CC-025, CC-028, CC-029, CC-027, CC-032, CC-030); system pages updated with each
 ## [2026-11-20] diverge | CC-041 | Implementation specifics recorded on the feature page (save checks, menu configuration slot, jelly runtime material, input direction rule); no scope change
 ## [2026-11-20] implement | CC-041 | Feature test plan written; new and flipped cases folded into test-plan.md (TP-MENU-07/08, TP-STD-10, TP-HUD-07, TP-SAVE-08/09, TP-TOOL-05)
+## [2026-11-20] approve | CC-041 | PR #80 squash-merged into develop as 04f6116, identical to the branch tip; #75 and its eleven sub-issues closed; the batch removed from roadmap.md (CC-043 and CC-045 remain in Quick fixes)
