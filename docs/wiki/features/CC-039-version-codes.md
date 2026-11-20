@@ -102,5 +102,8 @@ After this branch merges, `develop` has 80 commits and its code is **8000**, abo
 1. `tools\build-android.ps1 -PrintVersionCode` on `develop` and on a feature branch: the branch's code is between `develop`'s current code and `develop`'s code after one more commit.
 2. Install a `develop` APK over a feature-branch APK on the phone: no downgrade error, and Resume still offers the saved game.
 
+Folded into [test-plan](../test-plan.md) as TP-DROID-07 and TP-DROID-08.
+
 ## Status log
 - 2026-11-20: Planned and approved by Ronan (no-stops workflow)
+- 2026-11-20: CC-039.1 committed (b15e3e4); CC-039.2 docs and test cases

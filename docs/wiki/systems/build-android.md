@@ -8,9 +8,9 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); rep
 ## Key files
 | File | Role |
 |---|---|
-| `tools/build-android.ps1` | Command-line wrapper: computes the version code, runs Unity in batch mode, prints the APK path |
+| `tools/build-android.ps1` | Command-line wrapper: fetches `develop`, works out the version code, passes `-versionBase <n> -versionAhead <n>` to Unity, runs it in batch mode, prints the APK path. `-PrintVersionCode` prints the code without building |
 | `Cathartic Colours/Assets/Editor/Build/AndroidBuild.cs` | Editor entry point `CatharticColours.Build.AndroidBuild.Development` |
-| `Cathartic Colours/Assets/Editor/Build/AndroidBuildArgs.cs` | Pure helpers: `-versionCode` parsing and the output file name |
+| `Cathartic Colours/Assets/Editor/Build/AndroidBuildArgs.cs` | Pure helpers: `-versionCode` parsing, `-versionBase` and `-versionAhead` parsing, composition of the version code with its limits (`TryComposeVersionCode`), and the output file name |
 | `Cathartic Colours/Assets/Editor/Build/CatharticColours.Build.Editor.asmdef` | The editor-only assembly `CatharticColours.Build.Editor` |
 | `Cathartic Colours/Assets/Tests/EditMode/Build/` | EditMode tests for `AndroidBuildArgs` (assembly `CatharticColours.Build.Editor.Tests`) |
 | `Cathartic Colours/Assets/Settings/Build Profiles/Android™ Development.asset` | The development build profile used by the script by default |
@@ -24,13 +24,24 @@ Set in `Cathartic Colours/ProjectSettings/ProjectSettings.asset`:
 |---|---|---|
 | Application id | `com.catharticcolours.game` | Permanent once the app is on Google Play ([D1](../features/CC-004-android-dev-builds.md#decisions)) |
 | Version name | `bundleVersion` = `0.0.1` | Bumped by hand |
-| Version code | `git rev-list --count HEAD` | Set on each build and restored afterwards, so the working tree stays clean |
+| Version code | `base × 100 + ahead` (see below) | Set on each build and restored afterwards, so the working tree stays clean |
 | Minimum API level | 26 | |
 | Target API level | highest installed | `AndroidTargetSdkVersion` is 0 |
 | Scripting backend | IL2CPP | |
 | Target architecture | ARM64 only | |
 
-The version code grows with every commit on the branch, so a newer build always installs over an older one ([D2](../features/CC-004-android-dev-builds.md#decisions)). The version name does not change by itself.
+The version code is `base × 100 + ahead` ([CC-039](../features/CC-039-version-codes.md)):
+- `base` is the number of commits on `develop` where the build's branch left it, that is `git rev-list --count` at the merge base with `origin/develop`.
+- `ahead` is the number of commits the build is past `develop`: `0` on `develop`, at most `99`.
+
+Why: pull requests are squash-merged, so a merge adds one commit to `develop` while the branch may have many. The old code (the branch's own commit count) let a feature build outrank a later `develop` build, and Android refused to install over it without an uninstall, which deletes the saved game. A merge raises `base` by one, which is worth 100, so every `develop` build after a merge beats every build from the merged branch. Rebasing onto or merging `develop` also raises `base`. This supersedes [CC-004](../features/CC-004-android-dev-builds.md) decision D2. Develop's code was 7900 when this was built; the codes on the phone were about 90, so no uninstall was needed.
+
+Limits and trade-offs:
+- `ahead` over 99 fails the build and asks for a rebase onto or merge of `develop`.
+- The code must stay within Google Play's maximum of 2,100,000,000.
+- Two branches cut from the same `develop` commit can get the same code. That is fine for development builds, which are installed one at a time. Store builds come from `master` and are settled in [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57).
+
+The version name does not change by itself.
 
 ## Build profiles
 Profiles are in `Cathartic Colours/Assets/Settings/Build Profiles/`.
@@ -51,12 +62,12 @@ The development settings were chosen in [CC-043](https://github.com/rtumelty/Cat
 ## Build code
 - The build class lives in its own editor-only assembly, `CatharticColours.Build.Editor`, so its EditMode tests can reference it ([D4](../features/CC-004-android-dev-builds.md#decisions)). This follows the `CatharticColours.Simulation` pattern.
 - `AndroidBuild.CommandLine` (the script's entry point; `AndroidBuild.Development` is kept and does the same):
-  - reads `-versionCode <n>` and the optional `-buildProfile <name>` from the command line;
+  - reads `-versionCode <n>`, or `-versionBase <n>` and `-versionAhead <n>` to compose the code (`AndroidBuildArgs.TryComposeVersionCode`), and the optional `-buildProfile <name>` from the command line;
   - loads the profile from `AndroidBuildArgs.ProfileAssetPath`;
   - sets the version code and calls `BuildPipeline.BuildPlayer` with the profile;
   - restores the previous version code in a `finally` block and saves the assets.
 - The profile's own `m_Development` and `m_BuildAppBundle` flags are read through `SerializedObject`, without changing the asset. They name the output `Cathartic Colours/Builds/Android/CatharticColours-<versionName>-<versionCode>-<dev|release>.<apk|aab>` (`AndroidBuildArgs.OutputFileName`). The log line is `APK: <path>` or `AAB: <path>`.
-- Exit codes: `0` success, `1` build failed (the build report's errors are logged), `2` bad arguments (missing or non-numeric `-versionCode`, empty `-buildProfile`, a profile name with path characters), `3` build profile not found.
+- Exit codes: `0` success, `1` build failed (the build report's errors are logged), `2` bad arguments (missing or non-numeric `-versionCode`; `-versionBase` or `-versionAhead` missing or non-numeric; `ahead` over 99; a composed code over 2,100,000,000; empty `-buildProfile`; a profile name with path characters), `3` build profile not found.
 - Only the argument parsing, profile names and file name are unit-tested. The Unity build call is not.
 
 ## Running a build
@@ -68,10 +79,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1
 
 Options:
 - `-Profile <name>`: the build profile. `Development` (the default) is `Android™ Development`. `Release` is `Android™`, the release profile, which makes an App Bundle (`...-release.aab`, debug-signed when no keystore is set; for timing comparisons only, not for upload). Any other name is the asset name of a profile in `Assets/Settings/Build Profiles/` ([CC-043](https://github.com/rtumelty/Cathartic-Colours/issues/76)).
-- `-VersionCode <n>`: use this code instead of the commit count.
+- `-VersionCode <n>`: use this code instead of the composed code. Git is not used.
+- `-PrintVersionCode`: prints `Develop base`, `Commits ahead of develop` and `Version code`, then exits 0 without starting Unity. With `-VersionCode <n>` it prints that code only.
 - `-UnityExe <path>`: the Unity editor, default `C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe`.
 - `-LogDir <dir>`: where `unity-build.log` goes, default a new folder under `%TEMP%`.
-- `-SkipVersionCode`: leaves `-versionCode` off the Unity command line. Only for testing the failure path (TP-DROID-02).
+- `-SkipVersionCode`: leaves all version arguments (`-versionCode`, `-versionBase`, `-versionAhead`) off the Unity command line. Only for testing the failure path (TP-DROID-02).
+
+**Fetch behaviour:** before working out the code, the script runs `git fetch origin develop`, so `base` is current. If the fetch fails (for example offline), it prints a yellow warning and uses the local `origin/develop`, which may be out of date. If there is no `origin/develop` at all, the script fails and asks for a fetch or `-VersionCode <n>`.
 
 The script exits with Unity's exit code. It refuses to start if the project looks open in the editor (`Temp/UnityLockfile` exists).
 
@@ -144,7 +158,7 @@ Android builds pack the Mobile banks, `Cathartic Colours - FMOD/Build/Mobile/`, 
 The five settings files that Unity 6.6 re-saved on every build (adding default fields from the upgrade) were committed with their new defaults in [CC-040](https://github.com/rtumelty/Cathartic-Colours/issues/69), so a build now leaves the working tree clean. The Android version code is still set and restored by the build itself.
 
 ## Later work
-- [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57): release signing (the keystore stays out of git, in local gitignored config), the release profile producing an App Bundle, and Google Play upload. CC-036 also confirms that the commit-count version code works for store uploads.
+- [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57): release signing (the keystore stays out of git, in local gitignored config), the release profile producing an App Bundle, and Google Play upload. CC-036 also confirms that the composed version code (`base × 100 + ahead`, see [Player settings](#player-settings)) works for store uploads.
 - [CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29): profiling on device, which uses this build.
 
 ## Related test cases

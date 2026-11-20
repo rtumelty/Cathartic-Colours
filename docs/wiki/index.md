@@ -15,7 +15,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [CC-033 Upgrade project to Unity 6000.6.9f1](features/CC-033-unity-6-6-upgrade.md) — editor upgrade, unused packages stripped, FMOD for Unity 2.04, Android module, test-runner smoke run. Issue [#45](https://github.com/rtumelty/Cathartic-Colours/issues/45).
 - [CC-041 Quick-fix batch](features/CC-041-quick-fixes.md) — eleven small bugs and chores fixed in one branch, one commit each, no approval stops. Issue [#75](https://github.com/rtumelty/Cathartic-Colours/issues/75). The page is on `feature/CC-041-quick-fixes`.
 - [CC-043 Faster Android development builds](features/CC-043-android-build-times.md) — where Android build time goes (Unity traces), Defender exclusions, development and release baselines, experiments, and the chosen development settings (Symbol Table symbols, script debugging off, a Debuggable profile). Issue [#76](https://github.com/rtumelty/Cathartic-Colours/issues/76).
-- [CC-039 Android version codes that never go backwards](features/CC-039-version-codes.md) — version code = develop's commit count × 100 + commits ahead, so develop builds always install over feature-branch builds; -PrintVersionCode. Issue [#68](https://github.com/rtumelty/Cathartic-Colours/issues/68). The page is on `feature/CC-039-version-codes`.
+- [CC-039 Android version codes that never go backwards](features/CC-039-version-codes.md) — version code = develop's commit count × 100 + commits ahead, so develop builds always install over feature-branch builds; -PrintVersionCode. Issue [#68](https://github.com/rtumelty/Cathartic-Colours/issues/68).
 - [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Issue [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46).
 
 ## Decisions
@@ -29,7 +29,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 ## Systems
 - [System page format](systems/README.md) — how system pages describe current behaviour, cite sources and link known issues.
 - [Assemblies](systems/assemblies.md): the Simulation, Core, Presentation, editor and test assemblies, which folders feed each, reference rules, where new code goes, the save path override and how to run the tests.
-- [Android build](systems/build-android.md): player settings, the development build profile, the command-line build script (`-Profile`) and its exit codes, reading a slow build from Unity's own traces, checking and installing an APK, and what CC-036 adds later.
+- [Android build](systems/build-android.md): player settings, the composed version code (develop's commit count × 100 + commits ahead), the development build profile, the command-line build script (`-Profile`, `-PrintVersionCode`) and its exit codes, reading a slow build from Unity's own traces, checking and installing an APK, and what CC-036 adds later.
 - [ECS frame order](systems/ecs-frame-order.md): every system, its group and ordering constraints, tags, event entities, singletons, and one move frame by frame.
 - [Merge rules](systems/merge-rules.md): merge rules per mode with worked examples, sliding, scoring, spawning and end conditions.
 - [Configuration and game start](systems/configuration.md): `GameConfiguration`, `ColorProfile`, their assets, static `GameManager`, and the path from menu to running game.
