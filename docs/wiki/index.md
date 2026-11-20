@@ -15,6 +15,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [CC-033 Upgrade project to Unity 6000.6.9f1](features/CC-033-unity-6-6-upgrade.md) — editor upgrade, unused packages stripped, FMOD for Unity 2.04, Android module, test-runner smoke run. Issue [#45](https://github.com/rtumelty/Cathartic-Colours/issues/45).
 - [CC-041 Quick-fix batch](features/CC-041-quick-fixes.md) — eleven small bugs and chores fixed in one branch, one commit each, no approval stops. Issue [#75](https://github.com/rtumelty/Cathartic-Colours/issues/75). The page is on `feature/CC-041-quick-fixes`.
 - [CC-043 Faster Android development builds](features/CC-043-android-build-times.md) — where Android build time goes (Unity traces), Defender exclusions, development and release baselines, experiments, and the chosen development settings (Symbol Table symbols, script debugging off, a Debuggable profile). Issue [#76](https://github.com/rtumelty/Cathartic-Colours/issues/76).
+- [CC-042 Rotating save files and reporting bad saves](features/CC-042-rotating-saves.md) — three rotating save files with fallback to the newest valid one, rejection reasons, a SaveRejected event and capped bad files. Issue [#70](https://github.com/rtumelty/Cathartic-Colours/issues/70). The page is on `feature/CC-042-rotating-saves`.
 - [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Issue [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46).
 
 ## Decisions
