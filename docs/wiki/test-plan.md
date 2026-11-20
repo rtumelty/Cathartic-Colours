@@ -671,7 +671,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 
 ## Android build (DROID)
 
-Pass setup: a clean checkout of the branch under test in the agent sandbox, the Unity editor closed, and Unity 6000.6.9f1 installed. TP-DROID-01 and TP-DROID-02 run the build script; TP-DROID-03 and TP-DROID-04 need a phone with USB debugging on (see [Android build](systems/build-android.md)). Run them in that order.
+Pass setup: a clean checkout of the branch under test in the agent sandbox, the Unity editor closed, and Unity 6000.6.9f1 installed. TP-DROID-01 and TP-DROID-02 run the build script; TP-DROID-03 and TP-DROID-04 need a phone with USB debugging on (see [Android build](systems/build-android.md)). TP-DROID-05 times rebuilds, and TP-DROID-06 builds the other profiles last, because each profile switch costs a full C++ rebuild. Run them in that order.
 
 ### TP-DROID-01 — Script build on a clean checkout
 
@@ -711,7 +711,27 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | The newer build installed (TP-DROID-03), sound audible |
 | Steps | 1. Launch the app from the phone's launcher. 2. Start a Standard game, play a few swipe moves, then go back to the menu. 3. Repeat in Color Merge and Advanced Color Merge. 4. Resume a game. |
 | Expected | The app starts without waiting for a debugger. Swipes move blocks, merge sounds play, each mode plays, and Resume restores the saved game. Report any difference from the editor. |
-| Roadmap id | CC-004, CC-002 |
+| Roadmap id | CC-004, CC-002, CC-043 |
+
+### TP-DROID-05 — Rebuild times
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-05` |
+| Preconditions | TP-DROID-01 just built the development profile on this commit (warm `Library/`), editor closed |
+| Steps | 1. Run `tools\build-android.ps1` again with no changes and note `Elapsed`. 2. Change one string literal in a C# script (for example a log message), run it again, note `Elapsed`, then revert the change. 3. Open `Cathartic Colours/Library/Bee/buildreport.json` in `ui.perfetto.dev` and find `Building Gradle project`. |
+| Expected | The unchanged rebuild takes about 1 minute, and the one-line change about 2 minutes (well under 5). The trace opens and shows the build steps. If a run is much slower, check the log's `PostProcess task ... took` lines ([Reading a slow build](systems/build-android.md#reading-a-slow-build)). |
+| Roadmap id | CC-043 |
+
+### TP-DROID-06 — Build the other profiles
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-06` |
+| Preconditions | Editor closed. Allow about 30 minutes per step: each profile switch recompiles all C++. |
+| Steps | 1. Run `tools\build-android.ps1 -Profile Debuggable`. 2. Install the APK and attach Rider or Visual Studio to the app on the phone (Unity debugger, Android player). 3. Optionally run `tools\build-android.ps1 -Profile Release`. 4. Run `tools\build-android.ps1` (the default profile) to switch back. 5. Check `git status`. |
+| Expected | Step 1 writes `...-dev.apk` and the debugger can attach. Step 3 writes `...-release.aab`. Step 4 writes `...-dev.apk` again. No step changes tracked files. |
+| Roadmap id | CC-043 |
 
 ## Editor and tooling (TOOL)
 

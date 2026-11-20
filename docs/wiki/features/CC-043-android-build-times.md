@@ -231,6 +231,20 @@ Development profile, version code fixed at 79, Defender exclusions on. The exper
 3. **Keep the profiler connection on (E3b off).** It costs nothing measurable and is needed for on-device profiling ([CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29)).
 4. **Leave Engine Diagnostics on for now (E2).** It saves 9 s per build, but it's project-wide: it also changes release builds and what the shipped game reports to Unity. Toggling it recompiles all C++. It's a privacy and release decision, so it fits [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) better.
 
+### CC-043.3 — final runs (2026-11-20)
+The settings Ronan chose: debug symbols Symbol Table, script debugging off, profiler on, plus a `Debuggable` profile with script debugging on. Default version code (commit count).
+
+| Run | Total | Gradle | Objects | APK | `libil2cpp.so` |
+|---|---|---|---|---|---|
+| Development, clean | **13:17** (was 31:14) | 28 s | 869 | 64 MB | 96 MB |
+| Development, unchanged | **1:11** (target about 2 min) | 10 s | 0 | 64 MB | 96 MB |
+| Debuggable (profile switch) | 28:15 | 26 s | 1,000 | 163 MB | 352 MB |
+| Development after Debuggable (switch back) | 12:19 | 18 s | 869 | 91 MB (dead space, see CC-043.2) | 96 MB |
+
+The one-line-change time for these settings is the E3a figure from CC-043.2, **1:49** (target under 5). The Debuggable run's 352 MB library matches script debugging being on. Its wrapper exited 1 after Unity exited 0, because the script's last `Write-Host` failed with output redirected; the APK was written ([build-android](../systems/build-android.md#running-a-build) notes it). Release profile: no diff against `develop`. EditMode (330) and PlayMode (2) pass. No phone was attached, so the device check is TP-DROID-04 for Ronan.
+
+**Where the remaining minute goes in an unchanged rebuild:** editor start-up and the asset refresh (about 15 s), Bee checking about 2,500 nodes (about 10 s), the Android SDK check (3–6 s), the symbol upload step (7 s, see E2), Gradle (10 s), moving the APK (2 s), and editor shutdown.
+
 ## Divergences
 - **CC-043.1, `-Profile` values:**
   - `-Profile` takes the aliases `Development` (default) and `Release`, or any profile asset name, instead of the asset name only. This keeps the ™ character out of the PowerShell 5.1 command line.
@@ -240,9 +254,10 @@ Development profile, version code fixed at 79, Defender exclusions on. The exper
 - **CC-043.1, release runs:** the release unchanged and one-line runs have totals only. A logging mistake in the chained run lost their per-step logs, and rerunning them would mean another clean release build plus a 30-minute development re-warm. Their totals already show the point (Gradle is much shorter for release).
 
 ## Feature test plan
-1. `tools/build-android.ps1` twice with no changes: the second run meets the target. Open `Library/Bee/fullprofile.json` in Perfetto to see the steps.
-2. `tools/build-android.ps1 -Profile "Android™"` builds a release-settings APK.
-3. Install the development APK, start a game in each mode, play a few moves with sound.
+Shortest path, in this order (folded into [test-plan.md](../test-plan.md#android-build-droid) as TP-DROID-05 and TP-DROID-06; TP-DROID-04 covers playing on the phone):
+1. **TP-DROID-04:** install the development APK (`adb install -r`), start a game in each mode and play a few moves with sound. This checks the new settings on a device.
+2. **TP-DROID-05:** run `tools\build-android.ps1` twice with no changes, then once after a one-line C# change. The rebuilds take about 1 and 2 minutes. Open `Library/Bee/buildreport.json` in Perfetto to see the steps.
+3. **TP-DROID-06:** `-Profile Debuggable` builds an APK a debugger can attach to, and `-Profile Release` builds `...-release.aab`. Build the default profile again afterwards. Each switch is a full C++ rebuild.
 
 ## Status log
 - 2026-11-20: Planned; revised after Ronan's review (official tools, release baseline, Defender first, background software accepted)

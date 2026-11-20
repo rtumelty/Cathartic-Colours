@@ -13,7 +13,8 @@ Unity paths are relative to the Unity project folder (`Cathartic Colours/`); rep
 | `Cathartic Colours/Assets/Editor/Build/AndroidBuildArgs.cs` | Pure helpers: `-versionCode` parsing and the output file name |
 | `Cathartic Colours/Assets/Editor/Build/CatharticColours.Build.Editor.asmdef` | The editor-only assembly `CatharticColours.Build.Editor` |
 | `Cathartic Colours/Assets/Tests/EditMode/Build/` | EditMode tests for `AndroidBuildArgs` (assembly `CatharticColours.Build.Editor.Tests`) |
-| `Cathartic Colours/Assets/Settings/Build Profiles/Android™ Development.asset` | The development build profile used by the script |
+| `Cathartic Colours/Assets/Settings/Build Profiles/Android™ Development.asset` | The development build profile used by the script by default |
+| `Cathartic Colours/Assets/Settings/Build Profiles/Android™ Development (Debuggable).asset` | The same with script debugging on, built with `-Profile Debuggable` (CC-043) |
 | `Cathartic Colours/Builds/Android/` | Output folder for APKs (git-ignored by `/[Bb]uilds/`) |
 
 ## Player settings
@@ -34,12 +35,18 @@ The version code grows with every commit on the branch, so a newer build always 
 ## Build profiles
 Profiles are in `Cathartic Colours/Assets/Settings/Build Profiles/`.
 
-| Profile | Settings | Use |
-|---|---|---|
-| Android™ Development | Development build on, script debugging on, wait for managed debugger off, build App Bundle off (APK) | Device testing; used by the script |
-| Android™ | Unchanged; builds an App Bundle | Store release, to be set up in [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) |
+| Profile | `-Profile` | Settings | Use |
+|---|---|---|---|
+| Android™ Development | `Development` (default) | Development build on, profiler connection on, **script debugging off**, debug symbols **Symbol Table**, APK | Everyday device testing |
+| Android™ Development (Debuggable) | `Debuggable` | The same, but script debugging on (wait for managed debugger off) | Only when a C# debugger has to attach on the phone |
+| Android™ | `Release` | Unchanged: release settings, symbols Symbol Table, builds an App Bundle | Store release, set up in [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57). Here only for timing comparisons |
 
-The app starts without waiting for a debugger, but a debugger can still attach later ([D3](../features/CC-004-android-dev-builds.md#decisions)).
+The development settings were chosen in [CC-043](https://github.com/rtumelty/Cathartic-Colours/issues/76) ([feature page](../features/CC-043-android-build-times.md#cc-0432--experiments-2026-11-20)):
+- **Debug symbols Symbol Table (was Full):** Gradle no longer extracts full native debug data from the IL2CPP library on every changed build. Native crash stacks keep function names but lose file and line numbers.
+- **Script debugging off (was on):** IL2CPP no longer adds debugger code to every method. The library drops from 352 MB to 96 MB, and a clean build from about 31 to 14 minutes. The cost is that no C# debugger can attach; use the Debuggable profile for that.
+- **Profiler connection on:** it costs nothing measurable, and on-device profiling needs it ([CC-017](https://github.com/rtumelty/Cathartic-Colours/issues/29)).
+
+**Getting a debuggable build:** `tools\build-android.ps1 -Profile Debuggable`, then install it as usual. The app starts without waiting for a debugger, and a debugger can attach later ([D3](../features/CC-004-android-dev-builds.md#decisions)). Both development profiles write the same `...-dev.apk` file name. **Switching profiles costs one full C++ rebuild:** the first build after a switch recompiles all IL2CPP C++, about 14 to 30 minutes, and so does switching back.
 
 ## Build code
 - The build class lives in its own editor-only assembly, `CatharticColours.Build.Editor`, so its EditMode tests can reference it ([D4](../features/CC-004-android-dev-builds.md#decisions)). This follows the `CatharticColours.Simulation` pattern.
@@ -70,9 +77,27 @@ The script exits with Unity's exit code. It refuses to start if the project look
 
 Notes:
 - Run it in the agent sandbox only (`CLAUDE.local.md`), never in the manual copy that Ronan has open in Unity.
-- The first build took about 36 minutes (IL2CPP and Gradle from cold). A rebuild with a warm `Library/` took about 3 minutes.
+- **Build times** (CC-043, development profile, warm `Library/` unless noted; see [the feature page](../features/CC-043-android-build-times.md#results)):
+
+  | Build | Before CC-043 | After |
+  |---|---|---|
+  | Clean (`Library/Bee` deleted) | 31:14 | 13:17 |
+  | Unchanged rebuild | 1:05 | 1:11 |
+  | One-line C# change | 4:33 | about 1:50 |
+  | First build after switching profile | about 30 min | 12:19 back to Development; 28:15 to Debuggable |
+
+  The 17 to 21 minute builds seen before CC-043 followed C# changes on other branches, which made IL2CPP recompile hundreds of C++ files.
+- **Windows Defender exclusions** (Ronan's machine, set in CC-043; they save about 25 s per build). Windows Security → Virus & threat protection → Manage settings → Exclusions → Folder:
+  - `E:\Projects\Cathartic-Colours\Cathartic Colours\Library`
+  - `E:\Projects\Cathartic-Colours\Cathartic Colours\Temp`
+  - `%USERPROFILE%\.gradle`
+  - `C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Data\PlaybackEngines\AndroidPlayer`
+
+  Exclusions lower protection for those folders. They are a security setting, so only Ronan changes them.
+- **After a code change the APK file can carry dead space** (for example 235 MB for 136 MB of contents). Gradle's incremental packaging leaves the old copy of the replaced library in the file. It installs normally.
+- **Unity Services Symbol Upload** (about 7 s per build) runs because Unity's Engine Diagnostics is on. With no Unity Cloud token it uploads nothing. Turning Diagnostics off is project-wide, also affects release, and recompiles all C++, so it's left to [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57). Build profiles also carry their own `m_BuildProfileEngineDiagnosticsState`, which may allow a development-only switch.
 - Output: the APK, plus a `_BackUpThisFolder_ButDontShipItWithYourGame` folder holding the IL2CPP symbols. Keep the symbols for crash reports; do not ship them.
-- Run the script from Git Bash or a normal terminal. A background PowerShell runner once killed the wrapper (exit 255) while Unity carried on building.
+- Run the script from Git Bash or a normal terminal. A background PowerShell runner once killed the wrapper (exit 255) while Unity carried on building. Once (CC-043), with output redirected to a file, the script's last `Write-Host` failed with an empty error and the script exited 1 after Unity had exited 0 and written the APK. If that happens, check `Exit code:` in the output and the `APK:` line in the log.
 
 ## Reading a slow build
 Added by [CC-043](https://github.com/rtumelty/Cathartic-Colours/issues/76) ([feature page](../features/CC-043-android-build-times.md)). Unity's own records are enough to see where the time went. No custom tooling is needed.
