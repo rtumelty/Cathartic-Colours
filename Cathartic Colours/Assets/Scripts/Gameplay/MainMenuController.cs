@@ -16,7 +16,7 @@ namespace CatharticColours.UI
         [SerializeField] private GameConfiguration defaultConfiguration;
         [SerializeField] private ColorProfile defaultColorProfile;
         [SerializeField] private GameConfiguration[] presetConfigurations;
-        [SerializeField] private string gameSceneName = "GameScene";
+        [SerializeField] private string gameSceneName = "Gameplay scene";
         
         [Header("UI")]
         [SerializeField] private UIDocument uiDocument;

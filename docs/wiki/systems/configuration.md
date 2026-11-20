@@ -62,7 +62,7 @@ Found by matching the `.cs.meta` guids of the two scripts against `m_Script` in 
 None of the four configuration assets serializes the `tier*Points` fields, so they take the field defaults (10 / 50 / 100 / 200).
 
 Wiring:
-- `MainMenu.unity`: `MainMenuController.defaultConfiguration` = `Default.asset`, `defaultColorProfile` = `DefaultColorProfile.asset`, `presetConfigurations` = AdvancedColorMerge_6x6, ColorMerge_4x4, Standard_6x6 (in that order), `gameSceneName` = "Gameplay Scene".
+- `MainMenu.unity`: `MainMenuController.defaultConfiguration` = `Default.asset`, `defaultColorProfile` = `DefaultColorProfile.asset`, `presetConfigurations` = AdvancedColorMerge_6x6, ColorMerge_4x4, Standard_6x6 (in that order), `gameSceneName` = "Gameplay scene" (matches `Assets/Scenes/Gameplay scene.unity`; the field's code default is the same since CC-025).
 - `Assets/Prefabs/GameManager.prefab` (carries `GameRenderer`): `fallbackConfiguration` = `Default.asset`, `fallbackColorProfile` = `DefaultColorProfile.asset`.
 - Build settings list `Assets/Scenes/MainMenu.unity` then `Assets/Scenes/Gameplay scene.unity` (`ProjectSettings/EditorBuildSettings.asset`).
 
@@ -78,7 +78,7 @@ Wiring:
 | `PresentationRegistry.ActivePointsParticleSpawner` | `PointsParticleSpawner` | that component (nulled on teardown) |
 | `PresentationRegistry.JellyManager` | `JellyManager` | that component (nulled on teardown) |
 
-- `Initialize(defaultConfig, defaultColorProfile)` logs an error and returns if the config is null; otherwise it stores `Object.Instantiate` copies so edits never touch the asset files.
+- `Initialize(defaultConfig, defaultColorProfile)` logs an error and returns, leaving the current state unchanged, if the config or the colour profile is null (both are checked before either is replaced, CC-025); otherwise it stores `Object.Instantiate` copies so edits never touch the asset files.
 - The two `Active*` getters log a warning when not initialized and return null. `IsInitialized` is `_activeConfiguration != null`.
 - `ResetStatics` (`[RuntimeInitializeOnLoadMethod(SubsystemRegistration)]`) clears every field on play-mode entry (each of the two classes has its own), to support Fast Enter Play Mode.
 - Because it is static, the runtime configuration survives scene loads: returning to the main menu keeps the last mode, size and so on.
@@ -106,10 +106,8 @@ Wiring:
 - `GameUIManager` uses the profile's UI tree ([ui-layout.md](ui-layout.md)); `PointsParticleSpawner` and `GameRenderer` use the profile's colours ([presentation.md](presentation.md)); resume restores configuration ([save-system.md](save-system.md)).
 
 ## Known issues
-- `MainMenuController.gameSceneName` is "Gameplay Scene" in the scene, but the scene file is `Gameplay scene.unity` (different capitalisation; the field's code default is "GameScene"). Not verified whether `SceneManager.LoadScene` tolerates the case difference (`Assets/Scenes/MainMenu.unity`, `Assets/Scripts/Gameplay/MainMenuController.cs`). [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
 - `LoadPreset` copies mode, size and spawn flag but not tier points, so presets cannot change scoring; the menu never exposes tier points or `spawnNextColourSystem` (`Assets/Scripts/Gameplay/MainMenuController.cs`, `LoadPreset`). [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
 - Menu edits mutate the shared static runtime copy immediately, and `InitializeFromSave` replaces it; a resumed game's configuration therefore becomes the menu's current configuration after returning to the menu (`Assets/Scripts/Core/GameManager.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
-- `GameManager.Initialize` does not guard a null colour profile (`Object.Instantiate(null)` throws) (`Assets/Scripts/Core/GameManager.cs`). [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
 
 ## Related test cases
 - [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-06 (defaults, presets, sliders, start).

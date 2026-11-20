@@ -47,6 +47,7 @@ namespace Gameplay
         private int gridWidth;
         private GameObject[,] gridCells;
         private EntityManager entityManager;
+        private bool entitiesCreated; // set once InitializeGame has made the entities; CleanUp skips ECS work until then (CC-025)
         
         private Entity gameStateEntity;
         private Entity scoreEntity;
@@ -221,6 +222,7 @@ namespace Gameplay
                     SpawnEnabled = config.spawnNextColourSystem
                 }
             });
+            entitiesCreated = true;
             lastSeenMoveCount = -1;
 
             // Update instruction text via UI manager
@@ -420,31 +422,40 @@ namespace Gameplay
 
         private void CleanUp()
         {
-            // Clean up existing entities
-            var query = entityManager.CreateEntityQuery(typeof(BlockComponent));
-            entityManager.DestroyEntity(query);
-
-            // Clean up cached entities if they exist
-            if (gameStateEntity != Entity.Null && entityManager.Exists(gameStateEntity))
+            // Entity work needs a live world: InitializeGame may never have run, and the world is already
+            // disposed when the scene is torn down (CC-025). An EntityManager from a disposed world must not be touched.
+            var world = World.DefaultGameObjectInjectionWorld;
+            if (entitiesCreated && world != null && world.IsCreated)
             {
-                entityManager.DestroyEntity(gameStateEntity);
-                gameStateEntity = Entity.Null;
+                entityManager = world.EntityManager;
+
+                // Clean up existing entities
+                var query = entityManager.CreateEntityQuery(typeof(BlockComponent));
+                entityManager.DestroyEntity(query);
+
+                // Clean up cached entities if they exist
+                if (gameStateEntity != Entity.Null && entityManager.Exists(gameStateEntity))
+                {
+                    entityManager.DestroyEntity(gameStateEntity);
+                    gameStateEntity = Entity.Null;
+                }
+
+                if (scoreEntity != Entity.Null && entityManager.Exists(scoreEntity))
+                {
+                    entityManager.DestroyEntity(scoreEntity);
+                    scoreEntity = Entity.Null;
+                }
+
+                query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
+                entityManager.DestroyEntity(query);
+
+                query = entityManager.CreateEntityQuery(typeof(GameModeComponent));
+                entityManager.DestroyEntity(query);
+
+                query = entityManager.CreateEntityQuery(typeof(ScoringConfigComponent));
+                entityManager.DestroyEntity(query);
             }
-
-            if (scoreEntity != Entity.Null && entityManager.Exists(scoreEntity))
-            {
-                entityManager.DestroyEntity(scoreEntity);
-                scoreEntity = Entity.Null;
-            }
-
-            query = entityManager.CreateEntityQuery(typeof(GridConfigComponent));
-            entityManager.DestroyEntity(query);
-
-            query = entityManager.CreateEntityQuery(typeof(GameModeComponent));
-            entityManager.DestroyEntity(query);
-
-            query = entityManager.CreateEntityQuery(typeof(ScoringConfigComponent));
-            entityManager.DestroyEntity(query);
+            entitiesCreated = false;
 
             // Clean up visuals
             foreach (var visual in blockVisuals.Values)

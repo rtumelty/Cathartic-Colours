@@ -405,7 +405,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2f3788a2278d2da4489744f5ea6e8007, type: 2}
   - {fileID: 11400000, guid: ad81839d1ff15734d9574bd32a6b7430, type: 2}
   - {fileID: 11400000, guid: baae6a145213e6242a6a3fd5eab5e4b4, type: 2}
-  gameSceneName: Gameplay Scene
+  gameSceneName: Gameplay scene
   uiDocument: {fileID: 1923052608}
 --- !u!4 &1923052610
 Transform:

@@ -46,6 +46,12 @@ public static class GameManager
             return;
         }
 
+        if (defaultColorProfile == null)
+        {
+            Debug.LogError("Cannot initialize GameConfigurationManager with null color profile!");
+            return;
+        }
+
         // Create a runtime copy that's not bound to an asset file
         _activeConfiguration = Object.Instantiate(defaultConfig);
         _activeColorProfile = Object.Instantiate(defaultColorProfile);
