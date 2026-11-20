@@ -52,8 +52,8 @@ Not saved: tier points and any other `GameConfiguration` fields beyond the four 
 | Method | Behaviour |
 |---|---|
 | `HasSaveGame()` | `File.Exists(SaveFilePath)`. No content check |
-| `LoadSaveGame()` | Returns `null` (with a warning) if the file is absent. Otherwise reads and deserialises it inside `try/catch`; any exception is logged with `Debug.LogError("Failed to load save game: ...")` and `null` is returned. In the editor it logs the path |
-| `DeleteSaveGame()` | Deletes the file if present and logs "Save game deleted". **Not called by any code**: `SaveGameSystem` has its own private `DeleteSaveGame` (see Known issues) |
+| `LoadSaveGame()` | Returns `null` (with a warning) if the file is absent. Otherwise reads and deserialises it inside `try/catch`; any exception is logged with `Debug.LogError("Failed to load save game: ...")` and `null` is returned. |
+| `DeleteSaveGame()` | Deletes the file if present. **Not called by any code**: `SaveGameSystem` has its own private `DeleteSaveGame` (see Known issues) |
 | `InitializeFromSave(saveData, configTemplate, colorProfileTemplate)` | Logs an error and returns if `saveData` is null. Otherwise instantiates `configTemplate`, overwrites `gameMode`, `gridWidth`, `gridHeight`, `spawnNextColourSystem` from the save, and calls `GameManager.Initialize(runtimeConfig, colorProfileTemplate)` (which instantiates both again) |
 | `RestoreWorldState(saveData)` | Returns if `saveData` is null. Using `World.DefaultGameObjectInjectionWorld`: if a `GameStateComponent` entity exists, sets `WaitingForInput = true` and overwrites `GameOver`, `LevelComplete`, `MoveCount`, `Random` from the save; if a `ScoreComponent` entity exists, replaces it with the saved totals; then calls `RestoreBlocks` |
 | `RestoreBlocks` (private) | Returns if the array is null or empty. Creates one entity per saved block with only a `BlockComponent` and sets the data, the same shape as blocks in a fresh game (since CC-006.3; before that, restored blocks got a `MovingBlockTag`, which let a restored indicator slide on the first move) |
@@ -87,7 +87,7 @@ There is none. `version` is written as `"1.0"` and never read; there is no forma
 - Load: exceptions caught, logged with `Debug.LogError`, `null` returned. The menu and `InitializeGame` both handle `null`.
 - Save and delete: wrapped in `try/catch`; failures are logged with `Debug.LogError` and the game continues.
 - If `GameManager.ActiveConfiguration` or `ActiveColorProfile` is null when saving, the corresponding fields are simply left at their defaults (mode `Standard`, size 0, empty name); the save is still written (`SaveGameSystem.CreateSaveData`). Unverified whether this can occur in practice.
-- Debug log lines for successful save, load and delete are compiled for the editor only (`#if UNITY_EDITOR`), except the `"Save game deleted"` log in `SaveGameManager.DeleteSaveGame`.
+- The save system logs only warnings and errors: a missing file on load (`Debug.LogWarning`) and failures (`Debug.LogError`). Successful save, load and delete log nothing.
 
 ## Interactions with other systems
 - Frame order and the one-save-per-move behaviour: [ecs-frame-order.md](ecs-frame-order.md).
@@ -105,7 +105,6 @@ There is none. `version` is written as `"1.0"` and never read; there is no forma
 - the save file is written in place with one `File.WriteAllText` (no temp-file-and-rename), so a crash or kill during the write can leave a truncated file; `HasSaveGame` would then show the resume button and `LoadSaveGame` would return null or default-filled data (`Assets/Scripts/ECS/Systems/SaveGameSystem.cs`, `SaveGame`). [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
 - `colorProfileName` is saved but ignored on restore (`Assets/Scripts/SaveSystem/SaveData.cs`); a save made with a different colour profile resumes with the current one. (`currentFrameScore` is restored, but nothing reads it.) [CC-031](https://github.com/rtumelty/Cathartic-Colours/issues/43)
 - `RestoreWorldState` rebuilds the random generator with `new Random(randomState)`, which treats the saved state as a seed and advances it, so a resumed game doesn't continue the saved random sequence (`Assets/Scripts/SaveSystem/SaveGameManager.cs`). Found by CC-002.3. [CC-044](https://github.com/rtumelty/Cathartic-Colours/issues/77)
-- every move logs "Game saved to: <path>" and every load logs "Save game loaded from: <path>" with `Debug.Log`, which floods the Console (250 lines in one session) (`Assets/Scripts/ECS/Systems/SaveGameSystem.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-038](https://github.com/rtumelty/Cathartic-Colours/issues/65)
 
 ## Related test cases
 - [Save/Resume](../test-plan.md#saveresume-save): TP-SAVE-01 to TP-SAVE-06.

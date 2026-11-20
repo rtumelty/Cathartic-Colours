@@ -59,10 +59,6 @@ namespace ECS.Systems
                 }
                 
                 File.WriteAllText(savePath, json);
-                
-                #if UNITY_EDITOR
-                Debug.Log($"Game saved to: {savePath}");
-                #endif
             }
             catch (System.Exception e)
             {
@@ -140,9 +136,6 @@ namespace ECS.Systems
                 if (File.Exists(savePath))
                 {
                     File.Delete(savePath);
-                    #if UNITY_EDITOR
-                    Debug.Log("Save game deleted");
-                    #endif
                 }
             }
             catch (System.Exception e)

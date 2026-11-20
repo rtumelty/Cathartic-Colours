@@ -33,11 +33,6 @@ namespace SaveSystem
             {
                 string json = File.ReadAllText(SaveFilePath);
                 var saveData = JsonUtility.FromJson<SaveGameData>(json);
-                
-                #if UNITY_EDITOR
-                Debug.Log($"Save game loaded from: {SaveFilePath}");
-                #endif
-                
                 return saveData;
             }
             catch (System.Exception e)
@@ -52,7 +47,6 @@ namespace SaveSystem
             if (File.Exists(SaveFilePath))
             {
                 File.Delete(SaveFilePath);
-                Debug.Log("Save game deleted");
             }
         }
 
