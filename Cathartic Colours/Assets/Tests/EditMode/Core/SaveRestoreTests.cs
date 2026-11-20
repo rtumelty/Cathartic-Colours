@@ -633,24 +633,42 @@ namespace ECS.Tests
             Assert.IsFalse(File.Exists(savePath + ".tmp"));
         }
 
-        // ---- Known gaps: current behaviour, named issues -----------------------------------------------------
-
         [Test]
-        public void KnownGap_ConfigurationOutsideTheFourSavedFieldsComesFromTheTemplate_CC027()
+        public void Resume_LeavesTheMenuConfigurationUnchanged()
         {
-            // CC-027 (#39): a resume replaces the shared runtime configuration (the menu then shows the resumed game's
-            // settings) and only gameMode, grid size and spawnNextColourSystem are saved: the tier points are
-            // whatever the template has.
+            // CC-027 (#39): a resume starts the game with its own configuration; the menu's copy is not replaced or edited.
             InitializeGameManager(GameMode.ColorMerge, 3, 5, false);
             var game = CreateWorld(GameMode.ColorMerge, "Rs . . .|. . . .|. . . .|. . . .");
             game.MoveAndSave(BoardStepTestWorld.Right);
             var saveData = SaveGameManager.LoadSaveGame();
-            var configBefore = GameManager.ActiveConfiguration;
+            var menuBefore = GameManager.MenuConfiguration;
 
             SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 6, 6, true, tier1Points: 4242), NewProfile("ProfileA"));
 
-            Assert.AreNotSame(configBefore, GameManager.ActiveConfiguration, "the shared runtime configuration was replaced");
+            Assert.AreSame(menuBefore, GameManager.MenuConfiguration, "the menu configuration instance is kept");
+            Assert.AreEqual(GameMode.ColorMerge, GameManager.MenuConfiguration.gameMode);
+            Assert.AreEqual(3, GameManager.MenuConfiguration.gridWidth);
+            Assert.AreEqual(5, GameManager.MenuConfiguration.gridHeight);
+            Assert.AreNotSame(menuBefore, GameManager.ActiveConfiguration, "the resumed game has its own configuration");
             Assert.AreEqual(GameMode.ColorMerge, GameManager.ActiveConfiguration.gameMode);
+            Assert.AreEqual(3, GameManager.ActiveConfiguration.gridWidth);
+            Assert.AreEqual(5, GameManager.ActiveConfiguration.gridHeight);
+        }
+
+        // ---- Known gaps: current behaviour, named issues -----------------------------------------------------
+
+        [Test]
+        public void Resume_TierPointsComeFromTheTemplateBecauseTheyAreNotSaved()
+        {
+            // Current behaviour (not part of CC-027): only gameMode, grid size and spawnNextColourSystem are saved, so
+            // the tier points are whatever the template has.
+            InitializeGameManager(GameMode.ColorMerge, 3, 5, false);
+            var game = CreateWorld(GameMode.ColorMerge, "Rs . . .|. . . .|. . . .|. . . .");
+            game.MoveAndSave(BoardStepTestWorld.Right);
+            var saveData = SaveGameManager.LoadSaveGame();
+
+            SaveGameManager.InitializeFromSave(saveData, NewConfig(GameMode.Standard, 6, 6, true, tier1Points: 4242), NewProfile("ProfileA"));
+
             Assert.AreEqual(4242, GameManager.ActiveConfiguration.tier1Points, "tier points are not saved: the template's value is used");
         }
 

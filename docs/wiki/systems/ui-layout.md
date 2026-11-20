@@ -77,10 +77,11 @@ Each button is hooked exactly once. `HookUpEvents` calls `UnhookEvents` first, a
 | `Q<SliderInt>("height-slider")` | SliderInt | `heightSlider` | yes | `SliderInt` (low 4, high 10) |
 | `Q<Label>("width-value")` | Label | `widthValue` | yes | `Label` |
 | `Q<Label>("height-value")` | Label | `heightValue` | yes | `Label` |
+| `Q<Toggle>("spawn-toggle")` | Toggle | `spawnToggle` | yes | `Toggle` labelled "Next colour indicator", in its own `menu-section` after the grid height section (CC-027) |
 | `Q<Button>("start-button")` | Button | `startButton` | yes | `Button` |
 | `Q<Button>("resume-game-button")` | Button | `resumeGameButton` | yes | `Button` |
 
-All nine menu names match. No other script queries the UI (search of `Assets/Scripts` for `Q<`, `.Q(`, `Query`, `rootVisualElement`).
+All ten menu names match. No other script queries the UI (search of `Assets/Scripts` for `Q<`, `.Q(`, `Query`, `rootVisualElement`).
 
 Elements in the UXML that no code queries: `root`, `header` (menu), `title`, `menu-content`, `controls-hint`, `instruction-text` (the container), `footer` (menu).
 

@@ -9,7 +9,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Frame
 | File | Role |
 |---|---|
 | `Assets/Scripts/SaveSystem/SaveData.cs` | `SaveGameData` and `SavedBlock` (the serialised schema) |
-| `Assets/Scripts/SaveSystem/SaveGameManager.cs` | Static helper: `HasSaveGame`, `LoadSaveGame`, `DeleteSaveGame`, `InitializeFromSave`, `RestoreWorldState`, `RestoreBlocks` |
+| `Assets/Scripts/SaveSystem/SaveGameManager.cs` | Static helper: `HasSaveGame`, `LoadSaveGame`, `DeleteSaveGame`, `InitializeFromSave` (starts a resumed game through `GameManager.StartResumedGame` without touching the menu's configuration), `RestoreWorldState`, `RestoreBlocks` |
 | `Assets/Scripts/ECS/Systems/SaveGameSystem.cs` | Writes and deletes the save file (Presentation group) |
 | `Assets/Scripts/Gameplay/MainMenuController.cs` | Shows the resume button, sets the `LoadFromSave` PlayerPrefs flag (`ResumeGame`) |
 | `Assets/Scripts/Gameplay/GameRenderer.cs` | Reads the flag and calls the restore code (`InitializeGame`) |
@@ -100,7 +100,6 @@ Since CC-031 `version` is checked: `SaveGameManager.CurrentVersion` (`"1.0"`) is
 
 ## Known issues
 - The `LevelComplete` delete branch is unreachable. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
-- The resumed configuration replaces the shared static runtime configuration. [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
 - Cloud saves and sync do not exist yet. [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25)
 - `currentFrameScore` is restored, but nothing reads it.
 

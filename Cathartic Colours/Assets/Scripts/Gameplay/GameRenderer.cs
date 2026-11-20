@@ -161,7 +161,7 @@ namespace Gameplay
                 {
                     // Initialize configuration from save data
                     // The saved colour profile is used if it is one this scene knows (CC-031); otherwise the current one.
-                    SaveGameManager.InitializeFromSave(saveData, config, GameManager.ActiveColorProfile,
+                    SaveGameManager.InitializeFromSave(saveData, GameManager.MenuConfiguration ?? config, GameManager.ActiveColorProfile,
                         new[] { GameManager.ActiveColorProfile, fallbackColorProfile });
                     config = GameManager.ActiveConfiguration; // Get updated config
                 }

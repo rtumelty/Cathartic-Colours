@@ -73,5 +73,77 @@ namespace ECS.Tests
             Assert.AreEqual(5, GameManager.ActiveConfiguration.gridWidth);
             Assert.AreNotSame(profile, GameManager.ActiveColorProfile);
         }
+
+        [Test]
+        public void Initialize_SetsTheMenuAndActiveConfigurationToTheSameInstance()
+        {
+            GameManager.Initialize(NewConfig(5), NewProfile("Profile"));
+
+            Assert.AreSame(GameManager.MenuConfiguration, GameManager.ActiveConfiguration);
+            Assert.IsTrue(GameManager.IsInitialized);
+        }
+
+        [Test]
+        public void StartResumedGame_ChangesTheActiveConfigurationAndProfileButNotTheMenuConfiguration()
+        {
+            GameManager.Initialize(NewConfig(4), NewProfile("Menu"));
+            var menu = GameManager.MenuConfiguration;
+            var profileBefore = GameManager.ActiveColorProfile;
+            var resumedProfile = NewProfile("Resumed");
+
+            GameManager.StartResumedGame(NewConfig(8), resumedProfile);
+
+            Assert.AreSame(menu, GameManager.MenuConfiguration);
+            Assert.AreEqual(4, GameManager.MenuConfiguration.gridWidth);
+            Assert.AreNotSame(menu, GameManager.ActiveConfiguration);
+            Assert.AreEqual(8, GameManager.ActiveConfiguration.gridWidth);
+            Assert.AreNotSame(profileBefore, GameManager.ActiveColorProfile);
+            Assert.AreNotSame(resumedProfile, GameManager.ActiveColorProfile, "a runtime copy");
+            StringAssert.StartsWith("Resumed", GameManager.ActiveColorProfile.name);
+        }
+
+        [Test]
+        public void UseMenuConfiguration_SwitchesTheActiveConfigurationBackToTheMenuConfiguration()
+        {
+            GameManager.Initialize(NewConfig(4), NewProfile("Menu"));
+            GameManager.StartResumedGame(NewConfig(8), NewProfile("Resumed"));
+
+            GameManager.UseMenuConfiguration();
+
+            Assert.AreSame(GameManager.MenuConfiguration, GameManager.ActiveConfiguration);
+            Assert.AreEqual(4, GameManager.ActiveConfiguration.gridWidth);
+        }
+
+        [Test]
+        public void StartResumedGame_WithANullConfiguration_LogsAnErrorAndChangesNothing()
+        {
+            GameManager.Initialize(NewConfig(4), NewProfile("Menu"));
+            var menu = GameManager.MenuConfiguration;
+            var active = GameManager.ActiveConfiguration;
+            var profileBefore = GameManager.ActiveColorProfile;
+
+            LogAssert.Expect(LogType.Error, new Regex("null config"));
+            GameManager.StartResumedGame(null, NewProfile("Resumed"));
+
+            Assert.AreSame(menu, GameManager.MenuConfiguration);
+            Assert.AreSame(active, GameManager.ActiveConfiguration);
+            Assert.AreSame(profileBefore, GameManager.ActiveColorProfile);
+        }
+
+        [Test]
+        public void StartResumedGame_WithANullColorProfile_LogsAnErrorAndChangesNothing()
+        {
+            GameManager.Initialize(NewConfig(4), NewProfile("Menu"));
+            var menu = GameManager.MenuConfiguration;
+            var active = GameManager.ActiveConfiguration;
+            var profileBefore = GameManager.ActiveColorProfile;
+
+            LogAssert.Expect(LogType.Error, new Regex("null color profile"));
+            GameManager.StartResumedGame(NewConfig(8), null);
+
+            Assert.AreSame(menu, GameManager.MenuConfiguration);
+            Assert.AreSame(active, GameManager.ActiveConfiguration);
+            Assert.AreSame(profileBefore, GameManager.ActiveColorProfile);
+        }
     }
 }

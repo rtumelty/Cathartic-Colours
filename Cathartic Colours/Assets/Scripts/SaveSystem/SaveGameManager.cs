@@ -169,8 +169,8 @@ namespace SaveSystem
             runtimeConfig.gridHeight = saveData.gridHeight;
             runtimeConfig.spawnNextColourSystem = saveData.spawnNextColourSystem;
 
-            // Initialize GameManager with loaded configuration
-            GameManager.Initialize(runtimeConfig, FindProfile(saveData.colorProfileName, knownColorProfiles) ?? colorProfileTemplate);
+            // Start the resumed game without touching the menu's configuration (CC-027)
+            GameManager.StartResumedGame(runtimeConfig, FindProfile(saveData.colorProfileName, knownColorProfiles) ?? colorProfileTemplate);
         }
 
         static ColorProfile FindProfile(string savedName, IReadOnlyList<ColorProfile> profiles)
