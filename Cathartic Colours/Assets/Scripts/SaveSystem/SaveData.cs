@@ -9,7 +9,7 @@ namespace SaveSystem
     public class SaveGameData
     {
         [Header("Metadata")]
-        public string version = "1.0";
+        public string version = SaveGameManager.CurrentVersion;
         public string saveTimestamp;
         
         [Header("Game Configuration")]
