@@ -13,6 +13,8 @@ namespace Gameplay
     public class GameRenderer : MonoBehaviour
     {
         private static readonly int MainColor = Shader.PropertyToID("_MainColor");
+        // The Cell prefab uses URP/Unlit (CellMaterial), whose colour property is _BaseColor.
+        private static readonly int CellBaseColor = Shader.PropertyToID("_BaseColor");
 
         // Structure to cache all visual components
         private struct BlockVisual
@@ -46,6 +48,8 @@ namespace Gameplay
         private int gridHeight;
         private int gridWidth;
         private GameObject[,] gridCells;
+        private readonly List<GameObject> cellObjects = new List<GameObject>(); // destroyed in CleanUp so a restart doesn't stack grids (CC-029)
+        private MaterialPropertyBlock cellPropertyBlock;
         private EntityManager entityManager;
         private bool entitiesCreated; // set once InitializeGame has made the entities; CleanUp skips ECS work until then (CC-025)
         
@@ -251,6 +255,9 @@ namespace Gameplay
 
         private void CreateVisualGrid()
         {
+            DestroyGridCells();
+            cellPropertyBlock ??= new MaterialPropertyBlock();
+            Color gridColor = GameManager.ActiveColorProfile.GridBackgroundColor;
             gridCells = new GameObject[gridWidth, gridHeight];
 
             for (int y = 0; y < gridHeight; y++)
@@ -266,15 +273,38 @@ namespace Gameplay
                     GameObject cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
                     cell.name = $"Cell_{x}_{y}";
                     
-                    var renderer = cell.GetComponent<SpriteRenderer>();
-                    if (renderer != null)
+                    var spriteRenderer = cell.GetComponent<SpriteRenderer>();
+                    if (spriteRenderer != null)
                     {
-                        renderer.color = GameManager.ActiveColorProfile.GridBackgroundColor;
+                        spriteRenderer.color = gridColor;
+                    }
+
+                    var meshRenderer = cell.GetComponent<MeshRenderer>();
+                    if (meshRenderer != null)
+                    {
+                        // Property block, not renderer.material: avoids a material instance per cell.
+                        meshRenderer.GetPropertyBlock(cellPropertyBlock);
+                        cellPropertyBlock.SetColor(CellBaseColor, gridColor);
+                        meshRenderer.SetPropertyBlock(cellPropertyBlock);
                     }
 
                     gridCells[x, y] = cell;
+                    cellObjects.Add(cell);
                 }
             }
+        }
+
+        private void DestroyGridCells()
+        {
+            foreach (var cell in cellObjects)
+            {
+                if (cell != null)
+                {
+                    Destroy(cell);
+                }
+            }
+            cellObjects.Clear();
+            gridCells = null;
         }
 
         private void SpawnInitialBlock()
@@ -466,6 +496,8 @@ namespace Gameplay
                 }
             }
             blockVisuals.Clear();
+
+            DestroyGridCells();
         }
         
         public void RestartGame()
