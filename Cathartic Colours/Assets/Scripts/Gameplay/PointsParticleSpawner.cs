@@ -26,12 +26,12 @@ public class PointsParticleSpawner : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.ActivePointsParticleSpawner = this;
+        PresentationRegistry.ActivePointsParticleSpawner = this;
     }
 
     private void OnDestroy()
     {
-        GameManager.ActivePointsParticleSpawner = null;
+        PresentationRegistry.ActivePointsParticleSpawner = null;
     }
 
     private void SpawnParticles(Vector3 worldPosition, BlockColor blockColor, int count)

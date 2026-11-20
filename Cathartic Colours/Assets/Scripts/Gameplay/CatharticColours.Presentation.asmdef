@@ -1,0 +1,21 @@
+{
+    "name": "CatharticColours.Presentation",
+    "rootNamespace": "",
+    "references": [
+        "CatharticColours.Core",
+        "CatharticColours.Simulation",
+        "Unity.Entities",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

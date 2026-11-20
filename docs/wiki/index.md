@@ -10,6 +10,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [CC-001 Wiki scaffold and system pages](features/CC-001-wiki-scaffold.md) — plan for the full wiki structure, system pages and seeded test plan. Issue [#3](https://github.com/rtumelty/Cathartic-Colours/issues/3).
 - [CC-003 FMOD project clean-up and Studio 2.04 migration](features/CC-003-fmod-cleanup.md) — untrack FMOD Studio's per-machine folders, command-line bank builds, audio docs for the saved 2.04 project. Issue [#9](https://github.com/rtumelty/Cathartic-Colours/issues/9). The page is on `feature/CC-003-fmod-cleanup`.
 - [CC-004 Android build pipeline (development builds)](features/CC-004-android-dev-builds.md) — app id, commit-count version code, APK development profile, command-line build script, device install. Issue [#10](https://github.com/rtumelty/Cathartic-Colours/issues/10). The page is on `feature/CC-004-android-dev-builds`.
+- [CC-002 Split game code into testable assemblies](features/CC-002-game-assemblies.md) — Core and Presentation assemblies, ECS board-step and save tests, PlayMode smoke tests. Issue [#8](https://github.com/rtumelty/Cathartic-Colours/issues/8). The page is on `feature/CC-002-game-assemblies`.
 - [CC-006 Extract pure board simulation from ECS](features/CC-006-pure-simulation.md) — pure, tested simulation assembly with ECS as a thin wrapper; absorbs CC-020–CC-024. Issue [#12](https://github.com/rtumelty/Cathartic-Colours/issues/12). The page is on `feature/CC-006-pure-simulation`.
 - [CC-033 Upgrade project to Unity 6000.6.9f1](features/CC-033-unity-6-6-upgrade.md) — editor upgrade, unused packages stripped, FMOD for Unity 2.04, Android module, test-runner smoke run. Issue [#45](https://github.com/rtumelty/Cathartic-Colours/issues/45).
 - [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Issue [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46).
@@ -20,9 +21,11 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [ADR-001 Pure board simulation core](decisions/ADR-001-pure-board-simulation.md) — rules move into a pure `Simulation` assembly with struct `*MergeRules` strategies behind `IMergeRules`; one `BoardStepSystem` wraps it. Status: Accepted.
 - [ADR-002 Track roadmap items in GitHub Issues and a Project board](decisions/ADR-002-issue-tracking.md) — hybrid tracking: issues, sub-issues and board for status and fields; the wiki keeps knowledge. Status: Accepted.
 - [ADR-003 FMOD for Unity as an embedded UPM package](decisions/ADR-003-fmod-embedded-package.md) — FMOD 2.04 lives in `Packages/com.fmod.fmod-for-unity.v204/` (committed vendor code), settings in `Assets/Resources/FMOD/`. Status: Accepted.
+- [ADR-004 Game code in Core and Presentation assemblies](decisions/ADR-004-core-presentation-assemblies.md) — data, ECS and saves in `CatharticColours.Core`; scene objects, UI and input in `CatharticColours.Presentation`, which references Core and never the reverse. Status: Accepted.
 
 ## Systems
 - [System page format](systems/README.md) — how system pages describe current behaviour, cite sources and link known issues.
+- [Assemblies](systems/assemblies.md): the Simulation, Core, Presentation, editor and test assemblies, which folders feed each, reference rules, where new code goes, the save path override and how to run the tests.
 - [Android build](systems/build-android.md): player settings, the development build profile, the command-line build script and its exit codes, checking and installing an APK, and what CC-036 adds later.
 - [ECS frame order](systems/ecs-frame-order.md): every system, its group and ordering constraints, tags, event entities, singletons, and one move frame by frame.
 - [Merge rules](systems/merge-rules.md): merge rules per mode with worked examples, sliding, scoring, spawning and end conditions.

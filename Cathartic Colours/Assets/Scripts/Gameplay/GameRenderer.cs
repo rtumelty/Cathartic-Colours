@@ -58,7 +58,7 @@ namespace Gameplay
 
         private void Awake()
         {
-            GameManager.ActiveGameRenderer = this;
+            PresentationRegistry.ActiveGameRenderer = this;
             mainCamera = Camera.main;
 
             LoadConfigs();
@@ -78,31 +78,31 @@ namespace Gameplay
         private System.Collections.IEnumerator SubscribeToUIEventsWhenReady()
         {
             // Wait until UI manager is available and set up
-            while (GameManager.ActiveGameUIManager == null)
+            while (PresentationRegistry.ActiveGameUIManager == null)
             {
                 yield return null;
             }
 
             // Subscribe to UI manager events
-            GameManager.ActiveGameUIManager.OnRestartRequested += RestartGame;
-            GameManager.ActiveGameUIManager.OnNextLevelRequested += OnNextLevel;
-            GameManager.ActiveGameUIManager.OnLayoutRecalculated += UpdateCamera;
+            PresentationRegistry.ActiveGameUIManager.OnRestartRequested += RestartGame;
+            PresentationRegistry.ActiveGameUIManager.OnNextLevelRequested += OnNextLevel;
+            PresentationRegistry.ActiveGameUIManager.OnLayoutRecalculated += UpdateCamera;
         }
 
         private void OnDisable()
         {
             // Unsubscribe from UI manager events
-            if (GameManager.ActiveGameUIManager != null)
+            if (PresentationRegistry.ActiveGameUIManager != null)
             {
-                GameManager.ActiveGameUIManager.OnRestartRequested -= RestartGame;
-                GameManager.ActiveGameUIManager.OnNextLevelRequested -= OnNextLevel;
-                GameManager.ActiveGameUIManager.OnLayoutRecalculated -= UpdateCamera;
+                PresentationRegistry.ActiveGameUIManager.OnRestartRequested -= RestartGame;
+                PresentationRegistry.ActiveGameUIManager.OnNextLevelRequested -= OnNextLevel;
+                PresentationRegistry.ActiveGameUIManager.OnLayoutRecalculated -= UpdateCamera;
             }
         }
 
         private void OnDestroy()
         {
-            GameManager.ActiveGameRenderer = null;
+            PresentationRegistry.ActiveGameRenderer = null;
             CleanUp();
         }
 
@@ -126,9 +126,9 @@ namespace Gameplay
             mainCamera.backgroundColor = GameManager.ActiveColorProfile.BackgroundColor;
             
             // Delegate UI setup to UI manager
-            if (GameManager.ActiveGameUIManager != null)
+            if (PresentationRegistry.ActiveGameUIManager != null)
             {
-                GameManager.ActiveGameUIManager.SetupUI();
+                PresentationRegistry.ActiveGameUIManager.SetupUI();
             }
             else
             {
@@ -222,9 +222,9 @@ namespace Gameplay
             lastSeenMoveCount = -1;
 
             // Update instruction text via UI manager
-            if (GameManager.ActiveGameUIManager != null)
+            if (PresentationRegistry.ActiveGameUIManager != null)
             {
-                GameManager.ActiveGameUIManager.UpdateInstructionText(config.gameMode);
+                PresentationRegistry.ActiveGameUIManager.UpdateInstructionText(config.gameMode);
             }
 
             // Create visual grid
@@ -400,18 +400,18 @@ namespace Gameplay
             WobbleOnNewMove(gameState);
 
             // Delegate UI updates to UI manager
-            if (GameManager.ActiveGameUIManager != null)
+            if (PresentationRegistry.ActiveGameUIManager != null)
             {
-                GameManager.ActiveGameUIManager.UpdateGameState(gameState, score);
+                PresentationRegistry.ActiveGameUIManager.UpdateGameState(gameState, score);
             }
         }
 
         // The jelly wobbles when the board reports a new accepted move; the simulation never calls presentation.
         private void WobbleOnNewMove(GameStateComponent gameState)
         {
-            if (lastSeenMoveCount >= 0 && gameState.MoveCount > lastSeenMoveCount && GameManager.JellyManager != null)
+            if (lastSeenMoveCount >= 0 && gameState.MoveCount > lastSeenMoveCount && PresentationRegistry.JellyManager != null)
             {
-                GameManager.JellyManager.StartWobble(new Vector2(gameState.LastMoveDirection.x, gameState.LastMoveDirection.y));
+                PresentationRegistry.JellyManager.StartWobble(new Vector2(gameState.LastMoveDirection.x, gameState.LastMoveDirection.y));
             }
             lastSeenMoveCount = gameState.MoveCount;
         }
@@ -469,9 +469,9 @@ namespace Gameplay
 
         private void UpdateCamera(float headerHeight, float footerHeight)
         {
-            if (GameManager.ActiveGameUIManager == null) return;
+            if (PresentationRegistry.ActiveGameUIManager == null) return;
             
-            var gridMarginInPixels = GameManager.ActiveGameUIManager.GridMarginInPixels;
+            var gridMarginInPixels = PresentationRegistry.ActiveGameUIManager.GridMarginInPixels;
             
             float actualGridWidth = (gridWidth - 1) * (cellSize + cellSpacing) + cellSize;
             float actualGridHeight = (gridHeight - 1) * (cellSize + cellSpacing) + cellSize;

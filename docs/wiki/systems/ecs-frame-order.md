@@ -13,7 +13,7 @@ All paths below are relative to the Unity project folder (`Cathartic Colours/`).
 | `Assets/Scripts/ECS/Systems/BoardStepSystem.cs` | Runs a move through `BoardSimulation.Step` and writes the result back |
 | `Assets/Scripts/ECS/Systems/ClearMoveDirectionSystem.cs` | Removes the move command |
 | `Assets/Scripts/ECS/Systems/AudioSystem.cs` | Plays and destroys audio event entities |
-| `Assets/Scripts/ECS/Systems/MergeEffectsSystem.cs` | Turns merge events into particles and destroys them |
+| `Assets/Scripts/Gameplay/MergeEffectsSystem.cs` | Turns merge events into particles and destroys them (Presentation assembly since CC-002; namespace still `ECS.Systems`) |
 | `Assets/Scripts/ECS/Systems/SaveGameSystem.cs` | Saves after a move; deletes the save once on game over |
 | `Assets/Scripts/ECS/Systems/EndFrameSystem.cs` | Sets `WaitingForInput` back to true |
 | `Assets/Scripts/ECS/Components/*.cs` | Component definitions (see tables below) |
@@ -31,11 +31,11 @@ All six systems are `partial struct ... : ISystem`, auto-created in the default 
 | `BoardStepSystem` | Simulation | none (first of the project's Simulation systems through the others' attributes) | `GameStateComponent`, `GameModeComponent`, `GridConfigComponent`, `ScoringConfigComponent`, `ScoreComponent` | yes |
 | `ClearMoveDirectionSystem` | Simulation | `[UpdateAfter(BoardStepSystem)]` | none | yes |
 | `AudioSystem` | Simulation | `[UpdateAfter(BoardStepSystem)]` | none | no: FMOD `RuntimeManager` |
-| `MergeEffectsSystem` | Presentation | none | `MergeEventComponent` | no: calls the `PointsParticleSpawner` MonoBehaviour |
-| `SaveGameSystem` | Presentation | `[UpdateAfter(MergeEffectsSystem)]` | `GameStateComponent` | no: file I/O and `JsonUtility` |
+| `MergeEffectsSystem` | Presentation | `[UpdateBefore(SaveGameSystem)]` | `MergeEventComponent` | no: calls the `PointsParticleSpawner` MonoBehaviour |
+| `SaveGameSystem` | Presentation | none (ordered by `MergeEffectsSystem`'s attribute) | `GameStateComponent` | no: file I/O and `JsonUtility` |
 | `EndFrameSystem` | Presentation | `[UpdateAfter(SaveGameSystem)]` | `GameStateComponent` | yes |
 
-Sources: the attribute lines and `OnCreate` of each file in `Assets/Scripts/ECS/Systems/`. Burst for `BoardStepSystem` was checked in a temporary ECS world with synchronous Burst compilation (no Burst errors; CC-006.3 feature page).
+Sources: the attribute lines and `OnCreate` of each file in `Assets/Scripts/ECS/Systems/` and `Assets/Scripts/Gameplay/MergeEffectsSystem.cs`. Since CC-002 the order between these two is declared on `MergeEffectsSystem`, because the Core assembly (which holds `SaveGameSystem`) can't reference the Presentation assembly; the resolved order is unchanged. Burst for `BoardStepSystem` was checked in a temporary ECS world with synchronous Burst compilation (no Burst errors; CC-006.3 feature page).
 
 ### Resolved order
 **SimulationSystemGroup:** `BoardStepSystem` → `ClearMoveDirectionSystem` and `AudioSystem` (in either order; they share no data). Audio events created by the step therefore play in the same frame.

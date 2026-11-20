@@ -1,7 +1,10 @@
 ﻿using Data;
-using Gameplay;
 using UnityEngine;
 
+/// <summary>
+/// The runtime copies of the active configuration and colour profile. The presentation objects
+/// live in PresentationRegistry (Presentation assembly) since CC-002.
+/// </summary>
 public static class GameManager
 {
     private static GameConfiguration _activeConfiguration;
@@ -31,10 +34,6 @@ public static class GameManager
         }
     }
     
-    public static GameRenderer ActiveGameRenderer { get; set; }
-    public static GameUIManager ActiveGameUIManager { get; set; }
-    public static PointsParticleSpawner ActivePointsParticleSpawner { get; set; }
-    public static JellyManager JellyManager { get; set; }
 
     /// <summary>
     /// Initialize with a runtime copy of the configurations
@@ -60,10 +59,6 @@ public static class GameManager
     {
         _activeConfiguration = null;
         _activeColorProfile = null;
-        ActiveGameRenderer = null;
-        ActiveGameUIManager = null;
-        ActivePointsParticleSpawner = null;
-        JellyManager = null;
     }
 
     /// <summary>

@@ -10,7 +10,8 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 |---|---|
 | `Assets/Scripts/Data/GameConfiguration.cs` | Game rules/size/scoring settings (ScriptableObject) |
 | `Assets/Scripts/Data/ColorProfile.cs` | Colours and the in-game UI tree (ScriptableObject) |
-| `Assets/Scripts/Gameplay/GameManager.cs` | Static holder of runtime copies and scene references |
+| `Assets/Scripts/Core/GameManager.cs` | Static holder of the runtime configuration copies (Core assembly) |
+| `Assets/Scripts/Gameplay/PresentationRegistry.cs` | Static holder of the scene's presentation objects (Presentation assembly, since CC-002) |
 | `Assets/Scripts/Gameplay/MainMenuController.cs` | Menu UI, edits the runtime configuration, starts or resumes |
 | `Assets/Scripts/Gameplay/GameRenderer.cs` | Reads the configuration and creates the ECS state (`InitializeGame`) |
 | `Assets/Scripts/SaveSystem/SaveGameManager.cs` | `InitializeFromSave`, `RestoreWorldState` (resume entry points) |
@@ -66,20 +67,20 @@ Wiring:
 - Build settings list `Assets/Scenes/MainMenu.unity` then `Assets/Scenes/Gameplay scene.unity` (`ProjectSettings/EditorBuildSettings.asset`).
 
 ### Static GameManager
-`Assets/Scripts/Gameplay/GameManager.cs` (global namespace, `static class`).
+`Assets/Scripts/Core/GameManager.cs` (global namespace, `static class`, `CatharticColours.Core` assembly). Since CC-002 the four scene references live in `PresentationRegistry` (`Assets/Scripts/Gameplay/PresentationRegistry.cs`, global namespace, `CatharticColours.Presentation` assembly), so Core never references presentation types ([ADR-004](../decisions/ADR-004-core-presentation-assemblies.md)).
 
 | Member | Holds | Set by |
 |---|---|---|
 | `ActiveConfiguration` | runtime **copy** of a `GameConfiguration` | `Initialize` |
 | `ActiveColorProfile` | runtime **copy** of a `ColorProfile` | `Initialize` |
-| `ActiveGameRenderer` | `GameRenderer` | `GameRenderer.Awake` (nulled in `OnDestroy`) |
-| `ActiveGameUIManager` | `GameUIManager` | `GameUIManager.Awake` (nulled in `OnDestroy`) |
-| `ActivePointsParticleSpawner` | `PointsParticleSpawner` | that component (nulled on teardown) |
-| `JellyManager` | `JellyManager` | that component (nulled on teardown) |
+| `PresentationRegistry.ActiveGameRenderer` | `GameRenderer` | `GameRenderer.Awake` (nulled in `OnDestroy`) |
+| `PresentationRegistry.ActiveGameUIManager` | `GameUIManager` | `GameUIManager.Awake` (nulled in `OnDestroy`) |
+| `PresentationRegistry.ActivePointsParticleSpawner` | `PointsParticleSpawner` | that component (nulled on teardown) |
+| `PresentationRegistry.JellyManager` | `JellyManager` | that component (nulled on teardown) |
 
 - `Initialize(defaultConfig, defaultColorProfile)` logs an error and returns if the config is null; otherwise it stores `Object.Instantiate` copies so edits never touch the asset files.
 - The two `Active*` getters log a warning when not initialized and return null. `IsInitialized` is `_activeConfiguration != null`.
-- `ResetStatics` (`[RuntimeInitializeOnLoadMethod(SubsystemRegistration)]`) clears every field on play-mode entry, to support Fast Enter Play Mode.
+- `ResetStatics` (`[RuntimeInitializeOnLoadMethod(SubsystemRegistration)]`) clears every field on play-mode entry (each of the two classes has its own), to support Fast Enter Play Mode.
 - Because it is static, the runtime configuration survives scene loads: returning to the main menu keeps the last mode, size and so on.
 
 ### Starting a game
@@ -107,8 +108,8 @@ Wiring:
 ## Known issues
 - `MainMenuController.gameSceneName` is "Gameplay Scene" in the scene, but the scene file is `Gameplay scene.unity` (different capitalisation; the field's code default is "GameScene"). Not verified whether `SceneManager.LoadScene` tolerates the case difference (`Assets/Scenes/MainMenu.unity`, `Assets/Scripts/Gameplay/MainMenuController.cs`). [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
 - `LoadPreset` copies mode, size and spawn flag but not tier points, so presets cannot change scoring; the menu never exposes tier points or `spawnNextColourSystem` (`Assets/Scripts/Gameplay/MainMenuController.cs`, `LoadPreset`). [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
-- Menu edits mutate the shared static runtime copy immediately, and `InitializeFromSave` replaces it; a resumed game's configuration therefore becomes the menu's current configuration after returning to the menu (`Assets/Scripts/Gameplay/GameManager.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
-- `GameManager.Initialize` does not guard a null colour profile (`Object.Instantiate(null)` throws) (`Assets/Scripts/Gameplay/GameManager.cs`). [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
+- Menu edits mutate the shared static runtime copy immediately, and `InitializeFromSave` replaces it; a resumed game's configuration therefore becomes the menu's current configuration after returning to the menu (`Assets/Scripts/Core/GameManager.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`). [CC-027](https://github.com/rtumelty/Cathartic-Colours/issues/39)
+- `GameManager.Initialize` does not guard a null colour profile (`Object.Instantiate(null)` throws) (`Assets/Scripts/Core/GameManager.cs`). [CC-025](https://github.com/rtumelty/Cathartic-Colours/issues/37)
 
 ## Related test cases
 - [Main menu](../test-plan.md#main-menu-menu): TP-MENU-01 to TP-MENU-06 (defaults, presets, sliders, start).
