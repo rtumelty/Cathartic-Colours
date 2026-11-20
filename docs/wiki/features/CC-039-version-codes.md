@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#68](https://github.com/rtumelty/Cathartic-Colours/issues/68) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-039-version-codes` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#90](https://github.com/rtumelty/Cathartic-Colours/pull/90) |
 | Related | [CC-004](https://github.com/rtumelty/Cathartic-Colours/issues/10) decision D2 (superseded here), [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) (store release confirms the scheme), [build-android](../systems/build-android.md) |
 
 ## Goal
