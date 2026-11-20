@@ -78,9 +78,108 @@ namespace CatharticColours.Build.Tests
         }
 
         [Test]
-        public void OutputFileNameHasExpectedFormat()
+        public void ProfileDefaultsWhenFlagMissing()
         {
-            Assert.AreEqual("CatharticColours-0.1.0-42-dev.apk", AndroidBuildArgs.OutputFileName("0.1.0", 42));
+            Assert.IsTrue(AndroidBuildArgs.TryParseProfile(new[] { "-batchmode" }, out string name, out string error));
+            Assert.AreEqual(AndroidBuildArgs.DefaultProfile, name);
+            Assert.IsNull(error);
+        }
+
+        [Test]
+        public void ProfileDefaultsOnNullArgs()
+        {
+            Assert.IsTrue(AndroidBuildArgs.TryParseProfile(null, out string name, out _));
+            Assert.AreEqual(AndroidBuildArgs.DefaultProfile, name);
+        }
+
+        [Test]
+        public void ParsesProfileValue()
+        {
+            Assert.IsTrue(AndroidBuildArgs.TryParseProfile(new[] { "-buildProfile", "Release" }, out string name, out string error));
+            Assert.AreEqual("Release", name);
+            Assert.IsNull(error);
+        }
+
+        [Test]
+        public void TrimsProfileValue()
+        {
+            Assert.IsTrue(AndroidBuildArgs.TryParseProfile(new[] { "-buildProfile", "  Release " }, out string name, out _));
+            Assert.AreEqual("Release", name);
+        }
+
+        [Test]
+        public void ParsesProfileAmongOtherArgs()
+        {
+            var args = new[] { "Unity.exe", "-batchmode", "-versionCode", "7", "-buildProfile", "Release", "-quit" };
+            Assert.IsTrue(AndroidBuildArgs.TryParseProfile(args, out string name, out _));
+            Assert.AreEqual("Release", name);
+        }
+
+        [Test]
+        public void ProfileFailsWhenFlagHasNoValue()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseProfile(new[] { "-batchmode", "-buildProfile" }, out _, out string error));
+            StringAssert.Contains("needs a value", error);
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void ProfileFailsWhenValueEmpty(string value)
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseProfile(new[] { "-buildProfile", value }, out _, out string error));
+            StringAssert.Contains("non-empty", error);
+        }
+
+        [Test]
+        public void ProfileAssetPathMapsDevelopmentAlias()
+        {
+            Assert.AreEqual("Assets/Settings/Build Profiles/Android\u2122 Development.asset", AndroidBuildArgs.ProfileAssetPath("Development"));
+        }
+
+        [TestCase("Debuggable")]
+        [TestCase("DEBUGGABLE")]
+        public void ProfileAssetPathMapsDebuggableAlias(string alias)
+        {
+            Assert.AreEqual("Assets/Settings/Build Profiles/Android\u2122 Development (Debuggable).asset", AndroidBuildArgs.ProfileAssetPath(alias));
+        }
+
+        [Test]
+        public void ProfileAssetPathMapsReleaseAlias()
+        {
+            Assert.AreEqual("Assets/Settings/Build Profiles/Android\u2122.asset", AndroidBuildArgs.ProfileAssetPath("Release"));
+        }
+
+        [TestCase("release")]
+        [TestCase("RELEASE")]
+        public void ProfileAssetPathAliasIsCaseInsensitive(string alias)
+        {
+            Assert.AreEqual("Assets/Settings/Build Profiles/Android\u2122.asset", AndroidBuildArgs.ProfileAssetPath(alias));
+            Assert.AreEqual("Assets/Settings/Build Profiles/Android\u2122 Development.asset", AndroidBuildArgs.ProfileAssetPath(alias == "release" ? "development" : "DEVELOPMENT"));
+        }
+
+        [Test]
+        public void ProfileAssetPathPassesCustomNameThrough()
+        {
+            Assert.AreEqual("Assets/Settings/Build Profiles/My Profile.asset", AndroidBuildArgs.ProfileAssetPath("My Profile"));
+        }
+
+        [TestCase("a/b")]
+        [TestCase("..\\x")]
+        public void ProfileAssetPathRejectsPathSeparators(string name)
+        {
+            Assert.Throws<ArgumentException>(() => AndroidBuildArgs.ProfileAssetPath(name));
+        }
+
+        [Test]
+        public void OutputFileNameHasExpectedFormatForDevelopmentApk()
+        {
+            Assert.AreEqual("CatharticColours-0.1.0-42-dev.apk", AndroidBuildArgs.OutputFileName("0.1.0", 42, true, false));
+        }
+
+        [Test]
+        public void OutputFileNameHasExpectedFormatForReleaseBundle()
+        {
+            Assert.AreEqual("CatharticColours-0.1.0-42-release.aab", AndroidBuildArgs.OutputFileName("0.1.0", 42, false, true));
         }
 
         [TestCase(null)]
@@ -90,7 +189,7 @@ namespace CatharticColours.Build.Tests
         [TestCase("a:b")]
         public void OutputFileNameRejectsBadVersionName(string versionName)
         {
-            Assert.Throws<ArgumentException>(() => AndroidBuildArgs.OutputFileName(versionName, 1));
+            Assert.Throws<ArgumentException>(() => AndroidBuildArgs.OutputFileName(versionName, 1, true, false));
         }
     }
 }

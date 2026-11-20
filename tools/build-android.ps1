@@ -1,20 +1,23 @@
 # build-android.ps1
-# Builds a development APK of Cathartic Colours from the command line.
+# Builds Cathartic Colours for Android from the command line (a development APK unless -Profile says otherwise).
 # Targets Windows PowerShell 5.1.
 #
-#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 [-VersionCode <n>] [-UnityExe <path>] [-LogDir <dir>]
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 [-Profile <name>] [-VersionCode <n>] [-UnityExe <path>] [-LogDir <dir>]
 #
-# Runs Unity in batch mode and calls CatharticColours.Build.AndroidBuild.Development, which builds with the
-# "Android Development" build profile. The Android version code defaults to the number of commits on the
-# current branch (git rev-list --count HEAD), so every build from a new commit has a higher code. The APK is
-# written to "Cathartic Colours/Builds/Android/". Exits with Unity's exit code (0 ok, 1 build failed,
-# 2 bad arguments, 3 build profile missing). Close the Unity editor first: a project open in the editor
-# can't be built in batch mode.
+# Runs Unity in batch mode and calls CatharticColours.Build.AndroidBuild.CommandLine, which builds with the
+# named build profile: 'Development' (the default, the "Android Development" profile), 'Debuggable' (the "Android
+# Development (Debuggable)" profile: development build with script debugging on, for attaching a debugger), 'Release'
+# (the "Android" profile), or the asset name of any profile in Assets/Settings/Build Profiles. The Android version code
+# defaults to the number of commits on the current branch (git rev-list --count HEAD), so every build from a new
+# commit has a higher code. The APK or AAB is written to "Cathartic Colours/Builds/Android/". Exits with Unity's
+# exit code (0 ok, 1 build failed, 2 bad arguments, 3 build profile missing). Close the Unity editor first: a
+# project open in the editor can't be built in batch mode.
 # -SkipVersionCode is for testing the failure path only: it leaves -versionCode off the Unity command line.
 
 param(
     [string]$UnityExe = 'C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe',
     [string]$LogDir = (Join-Path ([IO.Path]::GetTempPath()) ('android-build-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))),
+    [Alias('Profile')][string]$BuildProfile = 'Development',
     [int]$VersionCode,
     [switch]$SkipVersionCode
 )
@@ -63,8 +66,10 @@ $unityArgs = @(
     '-batchmode', '-quit',
     '-projectPath', ('"{0}"' -f $ProjectDir),
     '-buildTarget', 'Android',
-    '-executeMethod', 'CatharticColours.Build.AndroidBuild.Development'
+    '-executeMethod', 'CatharticColours.Build.AndroidBuild.CommandLine',
+    '-buildProfile', ('"{0}"' -f $BuildProfile)
 )
+Write-Host "Build profile: $BuildProfile"
 if (-not $SkipVersionCode) {
     $unityArgs += @('-versionCode', [string]$VersionCode)
     Write-Host "Version code: $VersionCode"
@@ -85,17 +90,18 @@ Write-Host "Log: $LogFile"
 if ($exitCode -eq 0) {
     $apks = @()
     if (Test-Path -LiteralPath $LogFile) {
-        $apks = @(Select-String -LiteralPath $LogFile -Pattern '^APK: (.+)$' | ForEach-Object { $_.Matches[0].Groups[1].Value.Trim() })
+        $apks = @(Select-String -LiteralPath $LogFile -Pattern '^(APK|AAB): (.+)$' | ForEach-Object { $_.Matches[0].Groups[2].Value.Trim() })
     }
     if ($apks.Count -eq 0 -and (Test-Path -LiteralPath $ApkDir)) {
-        $newest = Get-ChildItem -LiteralPath $ApkDir -Filter '*.apk' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        $newest = Get-ChildItem -LiteralPath $ApkDir | Where-Object { $_.Extension -in '.apk', '.aab' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
         if ($newest) { $apks = @($newest.FullName) }
     }
     foreach ($apk in $apks) {
-        Write-Host "APK: $apk" -ForegroundColor Green
+        $kind = if ($apk -like '*.aab') { 'AAB' } else { 'APK' }
+        Write-Host "${kind}: $apk" -ForegroundColor Green
     }
     if ($apks.Count -eq 0) {
-        Write-Host 'Unity reported success but no APK was found.' -ForegroundColor Red
+        Write-Host 'Unity reported success but no APK or AAB was found.' -ForegroundColor Red
         exit 1
     }
 } else {
