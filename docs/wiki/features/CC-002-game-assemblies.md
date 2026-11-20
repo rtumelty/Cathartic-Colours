@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#8](https://github.com/rtumelty/Cathartic-Colours/issues/8) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-002-game-assemblies` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#78](https://github.com/rtumelty/Cathartic-Colours/pull/78) |
 | Depends on | [CC-006](https://github.com/rtumelty/Cathartic-Colours/issues/12) (Simulation assembly, done) |
 | Blocks | [CC-041](https://github.com/rtumelty/Cathartic-Colours/issues/75) (quick-fix batch; its branch is cut after this merges) |
 | Decision | [ADR-004](../decisions/ADR-004-core-presentation-assemblies.md) |
