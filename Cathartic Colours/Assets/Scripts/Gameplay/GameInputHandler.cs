@@ -37,7 +37,7 @@ namespace Gameplay
             moveAction = gameplayMap.FindAction("Move");
             if (moveAction == null)
             {
-                moveAction = gameplayMap.AddAction("Move", InputActionType.Value, "<Keyboard>/upArrow");
+                moveAction = gameplayMap.AddAction("Move", InputActionType.Value);
                 moveAction.AddCompositeBinding("2DVector")
                     .With("Up", "<Keyboard>/upArrow")
                     .With("Down", "<Keyboard>/downArrow")
@@ -92,8 +92,13 @@ namespace Gameplay
             var entityManager = world.EntityManager;
             
             // Check if a MoveDirectionComponent entity already exists
-            var query = entityManager.CreateEntityQuery(typeof(MoveDirectionComponent));
-            if (!query.IsEmpty)
+            bool movePending;
+            using (var query = entityManager.CreateEntityQuery(typeof(MoveDirectionComponent)))
+            {
+                movePending = !query.IsEmpty;
+            }
+
+            if (movePending)
             {
                 return; // Do not create a new entity if a move is already pending
             }

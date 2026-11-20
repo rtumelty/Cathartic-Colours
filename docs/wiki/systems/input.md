@@ -30,7 +30,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
   Control schemes: Keyboard&Mouse, Gamepad, Touch, Joystick. No script, scene or prefab references this asset by name or guid (search of `Assets/Scripts`, `Assets/Scenes`, `Assets/Prefabs`).
 - **The game does not use that asset.** `GameInputHandler` builds its own actions in code (`Assets/Scripts/Gameplay/GameInputHandler.cs`):
   - `Awake`: `GetComponent<PlayerInput>()`, adding a `PlayerInput` component at runtime if there is none. The prefab has none (`Assets/Prefabs/GameManager.prefab` carries `GameInputHandler`, `GameRenderer` and `SwipeDetector` on the root object), so a `PlayerInput` is always added at runtime.
-  - `OnEnable`: if `playerInput.actions` is null, creates an empty `InputActionAsset` with `ScriptableObject.CreateInstance`; finds or adds the action map `Gameplay` and the action `Move` (Value type); if `Move` is not found, adds it with a default binding of `<Keyboard>/upArrow` plus a `2DVector` composite: Up = up arrow and W, Down = down arrow and S, Left = left arrow and A, Right = right arrow and D. It enables the action and subscribes `OnMove` to `performed`. `OnDisable` unsubscribes and disables it.
+  - `OnEnable`: if `playerInput.actions` is null, creates an empty `InputActionAsset` with `ScriptableObject.CreateInstance`; finds or adds the action map `Gameplay` and the action `Move` (Value type); if `Move` is not found, adds it with only a `2DVector` composite: Up = up arrow and W, Down = down arrow and S, Left = left arrow and A, Right = right arrow and D. It enables the action and subscribes `OnMove` to `performed`. `OnDisable` unsubscribes and disables it.
   - Because the new asset is empty, the `Move` action is always created by this code and the gamepad bindings in `GameControls.inputactions` are not available in the game. Whether `PlayerInput` behaves as expected when its `actions` are assigned after it is already enabled was not run; unverified.
   - `PlayerInput` is not used for messages or events; only the action's own `performed` callback is used.
 
@@ -56,7 +56,7 @@ Directions are grid directions: `(1, 0)` right, `(-1, 0)` left, `(0, 1)` up, `(0
 ### `SendMoveCommand` and the `MoveDirectionComponent` lifecycle
 `GameInputHandler.SendMoveCommand(int2)`:
 1. Returns if `World.DefaultGameObjectInjectionWorld` is null.
-2. Creates an `EntityQuery` for `MoveDirectionComponent`; if any such entity exists it returns (a command already pending is never replaced or queued).
+2. Creates an `EntityQuery` for `MoveDirectionComponent`, checks whether it is empty and disposes the query; if any such entity exists it returns (a command already pending is never replaced or queued).
 3. Otherwise creates a new entity with `MoveDirectionComponent { Direction = direction }`.
 
 Lifecycle:
@@ -83,7 +83,6 @@ There is none in the input code. `GameInputHandler` and `SwipeDetector` do not c
 - `SwipeDetector` handles touchscreens only; a mouse drag does nothing, so swipe cannot be tested in the editor without a touch simulator (`Assets/Scripts/Gameplay/SwipeDetector.cs`, `Update`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
 - `SwipeDetector` sits in the nested namespace `Gameplay.CatharticColours`, unlike every other gameplay class (`Assets/Scripts/Gameplay/SwipeDetector.cs`); renaming it would break the prefab's serialised type reference. [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
 - keyboard and swipe paths use different dead-zone rules (`|y| > 0.1` for keyboard, none for swipe) and both resolve diagonal ties to vertical (`Assets/Scripts/Gameplay/GameInputHandler.cs`, `OnMove` and `OnSwipe`). [CC-030](https://github.com/rtumelty/Cathartic-Colours/issues/42)
-- `OnEnable` adds `Move` with a plain `<Keyboard>/upArrow` binding next to the `2DVector` composite. That binding yields a `float`, so `OnMove`'s `ReadValue<Vector2>()` throws `InvalidOperationException` on every up-arrow press; `SendMoveCommand` also creates an undisposed entity query per move (`Assets/Scripts/Gameplay/GameInputHandler.cs`). [CC-037](https://github.com/rtumelty/Cathartic-Colours/issues/64)
 
 ## Related test cases
 - [Standard](../test-plan.md#standard-mode-std): TP-STD-02 (keyboard), TP-STD-08 (swipe), TP-STD-09 (gamepad, CC-030).
