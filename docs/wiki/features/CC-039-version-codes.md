@@ -84,7 +84,19 @@ None during the work. On your return, during PR review: install the PR's APK ove
 - **D2 — Scheme `base × 100 + ahead`** (proposed by planning; approved with the plan).
 
 ## Divergences
-_None yet._
+No scope or design changes. Implementation specifics (CC-039.1):
+- **Codes start near 7,900, not 11,000.** `develop` had 79 commits when this was built, so its code is 7,900. That's still far above the codes already on the phone (about 90), so no uninstall is needed.
+- **The script mirrors the formula.** `-PrintVersionCode` must not start Unity, so `build-android.ps1` also works out `base × 100 + ahead` and rejects `ahead` over 99. The code it prints is for display and the early failure only; Unity gets `-versionBase`/`-versionAhead` and `AndroidBuildArgs.TryComposeVersionCode` is the authoritative check.
+- `-PrintVersionCode -VersionCode <n>` prints the override without running git. `-PrintVersionCode -SkipVersionCode` prints that there's nothing to print.
+- The three flag readers in `AndroidBuildArgs` share private helpers (`FindFlag`, `TryReadValue`, `TryReadWholeNumber`); `-buildProfile` parsing behaves as before.
+
+## Check results (CC-039.1, 2026-11-20)
+| Where | `-PrintVersionCode` output |
+|---|---|
+| `develop` (`0cc1745`, temp worktree) | base 79, ahead 0, code **7900** |
+| `feature/CC-039-version-codes` (1 commit ahead) | base 79, ahead 1, code **7901** |
+
+After this branch merges, `develop` has 80 commits and its code is **8000**, above every build from this branch (7901 up to 7999).
 
 ## Feature test plan
 1. `tools\build-android.ps1 -PrintVersionCode` on `develop` and on a feature branch: the branch's code is between `develop`'s current code and `develop`'s code after one more commit.

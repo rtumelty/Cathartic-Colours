@@ -10,6 +10,8 @@ namespace CatharticColours.Build
     /// <summary>
     /// Command-line entry point for Android builds. Run it through tools/build-android.ps1, or with
     /// <c>-executeMethod CatharticColours.Build.AndroidBuild.CommandLine -versionCode &lt;n&gt; [-buildProfile &lt;name&gt;]</c>.
+    /// Instead of <c>-versionCode &lt;n&gt;</c> it accepts <c>-versionBase &lt;n&gt; -versionAhead &lt;n&gt;</c>, which are
+    /// combined as base * 100 + ahead (see <see cref="AndroidBuildArgs.TryComposeVersionCode"/>).
     /// The profile defaults to Development; "Release" selects the release profile, and any other name is the asset
     /// name of a build profile in Assets/Settings/Build Profiles. Whether the output is an APK or an AAB, and whether
     /// it is named "dev" or "release", comes from the profile's own settings.
