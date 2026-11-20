@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#75](https://github.com/rtumelty/Cathartic-Colours/issues/75) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-041-quick-fixes` (from `develop` after CC-002 merged, created by the planning session) |
-| PR | — (opened at the end of the batch) |
+| PR | [#80](https://github.com/rtumelty/Cathartic-Colours/pull/80) |
 | Depends on | [CC-002](https://github.com/rtumelty/Cathartic-Colours/issues/8) (Core and Presentation assemblies, done) |
 
 ## Goal
