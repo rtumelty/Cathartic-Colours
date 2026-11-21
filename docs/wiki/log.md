@@ -169,3 +169,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-21] implement | CC-008.4 | Feature test plan folded into test-plan.md (TP-STD-11, TP-CM-07, TP-ACM-08, TP-SAVE-12, TP-MENU-07 re-run); index updated
 ## [2026-11-21] approve | CC-008 | PR #96 squash-merged into develop as 85a97ef, identical to the branch tip; #20 and sub-issues #92-#95 Done; removed from roadmap.md
 ## [2026-11-21] plan | CC-047 | Device playthroughs created as #102 (Ronan: device testing is the primary use case); planned in parallel with CC-046; roadmap gains a Foundations step
+## [2026-11-21] approve | CC-047 | Approved by Ronan with the development-only state probe (D4 option A) and no approval stops; #102 Approved; sub-issues #103-#107; starts when CC-046 merges
