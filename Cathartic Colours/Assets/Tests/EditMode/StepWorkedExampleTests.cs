@@ -2,7 +2,7 @@
 // without reading the simulation implementation.
 //
 // Each example is one row of width 4, no indicator on the board and spawning disabled, so the row after
-// the step is exactly what the wiki shows. Every example runs twice: through MergeRulesFactory.Step and
+// the step is exactly what the wiki shows. Every example runs twice: through BoardSimulation.Step with GameRules (CC-008; MergeRulesFactory before) and
 // through the generic BoardSimulation.Step<TRules> with the matching rule struct.
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -75,7 +75,7 @@ namespace Simulation.Tests
         }
 
         [TestCaseSource(nameof(Examples))]
-        public void WorkedExample_ViaFactory(GameMode mode, string before, int dx, int dy, string after, ScoreTier tier, int points)
+        public void WorkedExample_ViaGameRules(GameMode mode, string before, int dx, int dy, string after, ScoreTier tier, int points)
         {
             using (var run = StepRun.Execute(mode, before, new int2(dx, dy), TestBoards.NoSpawn))
                 AssertExample(run, after, tier, points);

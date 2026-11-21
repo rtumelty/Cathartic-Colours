@@ -25,16 +25,16 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 
 | Field | Type | Default | Meaning |
 |---|---|---|---|
-| `gameMode` | `GameMode` (`Standard`, `ColorMerge`, `AdvancedColorMerge`) | `Standard` | Selects the merge rule struct through `MergeRulesFactory` ([merge-rules.md](merge-rules.md)), via the `GameModeComponent` |
+| `gameMode` | `GameMode` (`Standard`, `ColorMerge`, `AdvancedColorMerge`) | `Standard` | Selects the merge rule through `GameRules.For` ([merge-rules.md](merge-rules.md)); `GameRulesComponent.From` builds the rules (CC-008.3). `GameModeComponent` still carries the mode for the UI and saves |
 | `gridWidth` | int | 6 | Grid columns |
 | `gridHeight` | int | 6 | Grid rows |
-| `spawnNextColourSystem` | bool | true | Copied into `ScoringConfigComponent.Settings.SpawnEnabled` by `GameRenderer.InitializeGame`; when true, each move spawns the next indicator |
+| `spawnNextColourSystem` | bool | true | Becomes `StepSettings.SpawnEnabled` (spawn rule `UniformPrimary`, or `None` when off) in `GameRulesComponent.From`, called by `GameRenderer.InitializeGame`; when true, each move spawns the next indicator |
 | `tier1Points` | int | 10 | Points for Tier1 merges |
 | `tier2Points` | int | 50 | Tier2 |
 | `tier3Points` | int | 100 | Tier3 |
 | `tier4Points` | int | 200 | Tier4 |
 
-`GetPointsForTier(ScoreTier)` maps a tier to those values (0 for `None`). Since CC-006.3 the game scores through `ScoringConfigComponent` (copied from these fields at game start) instead, and `GetPointsForTier` has no callers.
+`GetPointsForTier(ScoreTier)` maps a tier to those values (0 for `None`). Since CC-006.3 the game scores through `GameRulesComponent` (since CC-008.3, built from these fields at game start or resume by `GameRulesComponent.From`; before that, `ScoringConfigComponent`) instead, and `GetPointsForTier` has no callers.
 
 ### ColorProfile
 `[CreateAssetMenu(fileName = "ColorProfile", menuName = "CatharticColors/ColorProfile")]` (`Assets/Scripts/Data/ColorProfile.cs`).
@@ -98,7 +98,7 @@ Wiring:
    The menu does not expose the tier points or the colour profile.
 3. **New game.** `StartGame` calls `GameManager.UseMenuConfiguration()` (so a new game after a resume uses the menu's settings), then `SceneManager.LoadScene(gameSceneName)`.
 4. **Gameplay scene.** `GameRenderer.Awake` registers itself in `GameManager` and calls `LoadConfigs`, which initializes `GameManager` from the prefab's fallback assets if the menu was skipped (for example when running the gameplay scene directly in the editor). `GameRenderer.Start` calls `SetupUI` (camera background from the profile, then `GameUIManager.SetupUI`, which assigns `ActiveColorProfile.UITreeAsset` to its `UIDocument`) and `InitializeGame`.
-5. **`GameRenderer.InitializeGame`** reads `gridWidth`/`gridHeight`, then creates the ECS state: `GridConfigComponent`, `GameStateComponent` (`WaitingForInput = true`, random seed from `DateTime.Now.Ticks`), `ScoreComponent`, `GameModeComponent` (from `gameMode`) and `ScoringConfigComponent` (tier points and `spawnNextColourSystem`, as unmanaged data for `BoardStepSystem`, since CC-006.3); then the visual grid cells, then either the initial indicator block or the restored save. Details of the entities are in [ecs-frame-order.md](ecs-frame-order.md).
+5. **`GameRenderer.InitializeGame`** reads `gridWidth`/`gridHeight`, then creates the ECS state: `GridConfigComponent`, `GameStateComponent` (`WaitingForInput = true`, random seed from `DateTime.Now.Ticks`), `ScoreComponent`, `GameModeComponent` (from `gameMode`) and `GameRulesComponent` (built by `GameRulesComponent.From(config)` from `gameMode`, `spawnNextColourSystem` and the tier points, as unmanaged data for `BoardStepSystem`; CC-008.3, replacing `ScoringConfigComponent`). New and resumed games both use this builder, because a resume copies the saved mode and toggle into the runtime configuration first; then the visual grid cells, then either the initial indicator block or the restored save. Details of the entities are in [ecs-frame-order.md](ecs-frame-order.md).
 6. **Restart.** The game-over Restart button raises `GameUIManager.OnRestartRequested` (once per click; the game-over and level-complete panels each have a uniquely named restart button); there is no restart button in the header; `GameRenderer.RestartGame` runs `CleanUp` then `InitializeGame` with the same runtime configuration. "Next level" also calls `RestartGame` (its handler is a TODO).
 
 ### Resume from save (entry point only)

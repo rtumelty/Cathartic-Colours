@@ -109,7 +109,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | Main menu open (after TP-MENU-06) |
 | Steps | 1. Choose the Standard 6x6 preset and look at the "Next colour indicator" toggle. 2. Untick it and tap Start. 3. Make three moves. 4. Return to the menu with the footer Main Menu button and tick the toggle again. |
 | Expected | Step 1: the toggle is ticked (the preset enables it). Step 3: the first move turns the starting white block into a colour and no new white block ever appears. Step 4: the toggle is unticked when you return, then ticked after you tick it. |
-| Roadmap id | CC-027 |
+| Roadmap id | CC-027, CC-008 (re-run for CC-008: with the toggle off, the starting indicator resolves on the first move and no new block spawns) |
 
 ### TP-MENU-08 — Resuming a game does not change the menu settings
 
@@ -225,6 +225,16 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Expected | Each key moves blocks one cell in its direction. The Console shows no `InvalidOperationException` (the up arrow used to throw one on every press) and no "Game saved to" or "Save game loaded from" lines. |
 | Roadmap id | CC-037, CC-038 |
 
+### TP-STD-11 — Regression after the rules framework
+
+| Field | Content |
+|---|---|
+| Id | `TP-STD-11` |
+| Preconditions | Extended play. Start a new Standard 6x6 game from the menu (preset Standard 6x6, Start) and make no move yet |
+| Steps | 1. Make a move and check the board, repeating until a few merges of different tiers have happened (a Small pair to Medium, then a Medium pair to Large; see TP-STD-04 and TP-STD-07). 2. After every move, check the white indicator. 3. Play to game over if it is reached (see TP-OVER-02). |
+| Expected | Merges, results and points match the Standard rules on [merge rules](systems/merge-rules.md): a Small pair gives Medium (+10), a Medium pair gives Large (+50) and a Large pair clears (+100). After every move a new white indicator appears in an empty cell, and on the next move it resolves to a Small Red, Green or Blue block. Game over shows only when the board is full with no merge possible. Mark a tier "not reached" if it does not arise. |
+| Roadmap id | CC-008 |
+
 ## Color Merge mode (CM)
 
 Pass setup: return to the main menu with the footer Main Menu button, choose the Color Merge 4x4 preset and tap Start. Blocks are always Small and only Red, Green or Blue spawn.
@@ -288,6 +298,16 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Steps | 1. Press towards the white block. |
 | Expected | The coloured block does not move into or merge with the white block, and Score does not change. The white block then becomes a coloured block on that same move (resolved by the move), and a new white block appears elsewhere. |
 | Roadmap id | — |
+
+### TP-CM-07 — Regression after the rules framework
+
+| Field | Content |
+|---|---|
+| Id | `TP-CM-07` |
+| Preconditions | Extended play. Start a new Color Merge 4x4 game from the menu (preset Color Merge 4x4, Start) and make no move yet |
+| Steps | 1. Make moves until two different primaries have made a secondary and a secondary has cleared with its missing primary (see TP-CM-02 and TP-CM-04). 2. After every move, check the white indicator. 3. Play to game over if it is reached (see TP-OVER-02). |
+| Expected | Merges, results and points match the Color Merge rules on [merge rules](systems/merge-rules.md): two different primaries make a secondary (+10), a secondary with its missing primary clears both (+100), and equal colours or other pairs do not merge. After every move a new white indicator appears in an empty cell, and on the next move it resolves to a Small Red, Green or Blue block. Game over shows only when the board is full with no merge possible. |
+| Roadmap id | CC-008 |
 
 ## Advanced Color Merge mode (ACM)
 
@@ -362,6 +382,16 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Steps | 1. Note the Score. 2. Press towards the front block (`[. . Wl Wl]` pressing right). |
 | Expected | Both blocks disappear and Score +200. White particles are visible at the merge cell. |
 | Roadmap id | CC-032 |
+
+### TP-ACM-08 — Regression after the rules framework
+
+| Field | Content |
+|---|---|
+| Id | `TP-ACM-08` |
+| Preconditions | Extended play. Start a new Advanced Color Merge 6x6 game from the menu (preset Advanced Color Merge 6x6, Start) and make no move yet |
+| Steps | 1. Make moves until several merges of different tiers have happened (Small pair to Medium, two Medium primaries to Large, a Large secondary with its missing Medium primary to Large White; see TP-ACM-02, TP-ACM-04 and TP-ACM-06). 2. After every move, check the white indicator. 3. Play to game over if it is reached (see TP-OVER-02). |
+| Expected | Merges, results and points match the Advanced Color Merge rules on [merge rules](systems/merge-rules.md): a Small pair gives Medium (+10), two Medium primaries give Large (+50), a Large secondary with its missing Medium primary gives Large White (+100), and two Large White blocks clear (+200). After every move a new white indicator appears in an empty cell, and on the next move it resolves to a Small Red, Green or Blue block. Game over shows only when the board is full with no merge possible. Mark a tier "not reached" if it does not arise. |
+| Roadmap id | CC-008 |
 
 ## Gameplay HUD (HUD)
 
@@ -604,6 +634,16 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Steps | 1. Make several moves. 2. Look in the save folder (editor: as in TP-SAVE-08). |
 | Expected | `savegame.json`, `savegame.1.json` and `savegame.2.json` are there (the last three moves; only `savegame.json` after a new game's first move), and no `savegame.json.tmp`. Resume restores the last move as in TP-SAVE-02. |
 | Roadmap id | CC-031, CC-042 |
+
+### TP-SAVE-12 — Resume a game saved by the previous build
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-12` |
+| Preconditions | Device with the develop build from before CC-008 (any develop build from before the CC-008 PR) and a game in progress with at least 3 moves. Note Moves, Score, the board, the mode and the next-colour indicator toggle, then tap Main Menu. Have the CC-008 APK ready |
+| Steps | 1. Run `adb devices` and check the phone is listed as `device`. 2. Run `adb install -r <CC-008 apk>` over the old build (keeps the save data). 3. Launch the app and tap Resume. 4. Compare with the noted values. 5. Make one move. 6. Make two more moves, tap Main Menu, then tap Resume. |
+| Expected | `adb` prints `Success`. Step 3: the game loads in the noted mode with the noted toggle, and Moves, Score and every block (colour, size and cell) and the white indicator match the noted values. Step 5: the white indicator resolves to a Small Red, Green or Blue block and, with the toggle on, a new white indicator appears in an empty cell; Moves rises by exactly 1. Step 6: play continues, Moves rises by 1 per move, and the second Resume shows the state after those moves. |
+| Roadmap id | CC-008 |
 
 ### TP-SAVE-10 — A broken newest save resumes one move earlier
 

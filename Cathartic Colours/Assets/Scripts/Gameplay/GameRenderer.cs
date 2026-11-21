@@ -210,22 +210,10 @@ namespace Gameplay
                 Mode = config.gameMode
             });
 
-            // Tier points and the spawn toggle, as unmanaged data for BoardStepSystem
-            var scoringConfigEntity = entityManager.CreateEntity();
-            entityManager.AddComponentData(scoringConfigEntity, new ScoringConfigComponent
-            {
-                Settings = new StepSettings
-                {
-                    Points = new TierPoints
-                    {
-                        Tier1 = config.tier1Points,
-                        Tier2 = config.tier2Points,
-                        Tier3 = config.tier3Points,
-                        Tier4 = config.tier4Points
-                    },
-                    SpawnEnabled = config.spawnNextColourSystem
-                }
-            });
+            // The game's rules (mode, spawn toggle, tier points) as unmanaged data for BoardStepSystem.
+            // New and resumed games both come through here, with the runtime configuration (CC-008.3).
+            var rulesEntity = entityManager.CreateEntity();
+            entityManager.AddComponentData(rulesEntity, GameRulesComponent.From(config));
             entitiesCreated = true;
             lastSeenMoveCount = -1;
 
@@ -489,7 +477,7 @@ namespace Gameplay
                 query = entityManager.CreateEntityQuery(typeof(GameModeComponent));
                 entityManager.DestroyEntity(query);
 
-                query = entityManager.CreateEntityQuery(typeof(ScoringConfigComponent));
+                query = entityManager.CreateEntityQuery(typeof(GameRulesComponent));
                 entityManager.DestroyEntity(query);
             }
             entitiesCreated = false;

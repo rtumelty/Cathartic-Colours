@@ -46,11 +46,11 @@ namespace Simulation.Tests
         }
 
         [TestCaseSource(nameof(Scenarios))]
-        public void FactoryStepAndGenericStep_AgreeExactly(GameMode mode, string board, int dx, int dy, uint seed)
+        public void GameRulesStepAndGenericStep_AgreeExactly(GameMode mode, string board, int dx, int dy, uint seed)
         {
-            using (var viaFactory = StepRun.Execute(mode, board, new int2(dx, dy), TestBoards.WithSpawn, seed))
+            using (var viaGameRules = StepRun.Execute(mode, board, new int2(dx, dy), TestBoards.WithSpawn, seed))
             using (var viaGeneric = StepRun.ExecuteGeneric(mode, board, new int2(dx, dy), TestBoards.WithSpawn, seed))
-                AssertSameRuns(viaFactory, viaGeneric);
+                AssertSameRuns(viaGameRules, viaGeneric);
         }
 
         [Test]
@@ -79,7 +79,7 @@ namespace Simulation.Tests
                     var sb = new System.Text.StringBuilder();
                     foreach (var dir in new[] { TestBoards.Right, TestBoards.Down, TestBoards.Left, TestBoards.Up, TestBoards.Right })
                     {
-                        MergeRulesFactory.Step(GameMode.Standard, ref board, dir, in settings, ref random, events);
+                        BoardSimulation.Step(ref board, dir, GameRules.For(GameMode.Standard, settings), ref random, events);
                         sb.Append(TestBoards.Format(board)).Append(" #").Append(random.state).Append('\n');
                     }
                     for (int i = 0; i < events.Length; i++) sb.AppendLine(TestBoards.DescribeEvent(events[i]));

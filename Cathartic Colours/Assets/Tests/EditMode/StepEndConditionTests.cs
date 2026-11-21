@@ -92,7 +92,7 @@ namespace Simulation.Tests
                 Assert.AreEqual(hasEmpty, BoardSimulation.HasEmptyCell(in b), "HasEmptyCell");
                 Assert.AreEqual(hasPair, HasPair(mode, in b), "HasMergeablePair (generic)");
                 Assert.AreEqual(isOver, IsOverGeneric(mode, in b), "IsGameOver (generic)");
-                Assert.AreEqual(isOver, MergeRulesFactory.IsGameOver(mode, in b), "IsGameOver (factory)");
+                Assert.AreEqual(isOver, BoardSimulation.IsGameOver(in b, GameRules.For(mode, StepSettings.Default)), "IsGameOver (GameRules)");
             }
         }
 
@@ -177,7 +177,7 @@ namespace Simulation.Tests
                 {
                     using (var run = StepRun.Execute(mode, "Rs Gs . .|Bs Rs Gs .|. Bs Rs .", TestBoards.Right, TestBoards.WithSpawn, seed))
                     {
-                        Assert.AreEqual(MergeRulesFactory.IsGameOver(mode, run.Board), run.Result.GameOver, mode + " seed " + seed);
+                        Assert.AreEqual(BoardSimulation.IsGameOver(run.Board, GameRules.For(mode, StepSettings.Default)), run.Result.GameOver, mode + " seed " + seed);
                     }
                 }
             }
