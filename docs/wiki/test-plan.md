@@ -691,7 +691,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 
 ## Android build (DROID)
 
-Pass setup: a clean checkout of the branch under test in the agent sandbox, the Unity editor closed, and Unity 6000.6.9f1 installed. TP-DROID-01 and TP-DROID-02 run the build script; TP-DROID-03 and TP-DROID-04 need a phone with USB debugging on (see [Android build](systems/build-android.md)). TP-DROID-05 times rebuilds, and TP-DROID-06 builds the other profiles last, because each profile switch costs a full C++ rebuild. Run them in that order.
+Pass setup: a clean checkout of the branch under test in the agent sandbox, the Unity editor closed, and Unity 6000.6.9f1 installed. TP-DROID-01 and TP-DROID-02 run the build script; TP-DROID-03 and TP-DROID-04 need a phone with USB debugging on (see [Android build](systems/build-android.md)). TP-DROID-05 times rebuilds, and TP-DROID-06 builds the other profiles last, because each profile switch costs a full C++ rebuild. Run them in that order. TP-DROID-07 needs no build and can run any time, since `-PrintVersionCode` doesn't start Unity. TP-DROID-08 needs a phone and a develop build made after a feature branch merged.
 
 ### TP-DROID-01 — Script build on a clean checkout
 
@@ -700,7 +700,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Id | `TP-DROID-01` |
 | Preconditions | Sandbox on the branch under test, editor closed |
 | Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1`. 2. Note the `APK:` path printed at the end. 3. Run `aapt dump badging <apk>` from the Android SDK's `build-tools` folder. |
-| Expected | Exit code 0 and the APK path is printed. The file is in `Cathartic Colours/Builds/Android/`. `aapt` shows package `com.catharticcolours.game` and `versionCode` equal to `git rev-list --count HEAD`. `git status` shows no modified files after the build. |
+| Expected | Exit code 0 and the APK path is printed. The file is in `Cathartic Colours/Builds/Android/`. `aapt` shows package `com.catharticcolours.game` and `versionCode` equal to the code that `-PrintVersionCode` shows (`base × 100 + ahead`, see TP-DROID-07). `git status` shows no modified files after the build. |
 | Roadmap id | CC-004, CC-002, CC-040 |
 
 ### TP-DROID-02 — Failed build exits non-zero
@@ -752,6 +752,26 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Steps | 1. Run `tools\build-android.ps1 -Profile Debuggable`. 2. Install the APK and attach Rider or Visual Studio to the app on the phone (Unity debugger, Android player). 3. Optionally run `tools\build-android.ps1 -Profile Release`. 4. Run `tools\build-android.ps1` (the default profile) to switch back. 5. Check `git status`. |
 | Expected | Step 1 writes `...-dev.apk` and the debugger can attach. Step 3 writes `...-release.aab`. Step 4 writes `...-dev.apk` again. No step changes tracked files. |
 | Roadmap id | CC-043 |
+
+### TP-DROID-07 — Print the version code
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-07` |
+| Preconditions | A feature branch with at least one commit ahead of `develop`, and a clean checkout of `develop` (e.g. a temporary worktree). No build needed |
+| Steps | 1. On the feature branch, run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 -PrintVersionCode`. 2. Run the same command in the `develop` checkout. 3. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 -PrintVersionCode -VersionCode 5` on the branch. |
+| Expected | Steps 1 and 2 exit 0 and print three lines: `Develop base`, `Commits ahead of develop` and `Version code`. No Unity starts. `develop` shows ahead 0 and a code equal to its base × 100. The branch's code is between `develop`'s code and `develop`'s code + 100. Step 3 prints `Version code: 5` as the override, and git is not used. |
+| Roadmap id | CC-039 |
+
+### TP-DROID-08 — Develop build installs over a feature-branch build
+
+| Field | Content |
+|---|---|
+| Id | `TP-DROID-08` |
+| Preconditions | A feature-branch APK installed on the phone with a saved game in progress (built before the branch merged). A `develop` APK built after that branch merged, with a higher code. The phone is connected (see TP-DROID-03) |
+| Steps | 1. Run `adb devices` and check the phone is listed as `device`. 2. Run `adb install -r <develop apk>`. 3. Launch the app and tap Resume. |
+| Expected | `adb` prints `Success`, with no `INSTALL_FAILED_VERSION_DOWNGRADE` and no uninstall. Resume loads the saved game with the same Moves and Score. |
+| Roadmap id | CC-039 |
 
 ## Editor and tooling (TOOL)
 
