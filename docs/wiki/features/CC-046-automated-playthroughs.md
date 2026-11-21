@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#97](https://github.com/rtumelty/Cathartic-Colours/issues/97) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-046-automated-playthroughs` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#108](https://github.com/rtumelty/Cathartic-Colours/pull/108) |
 | Decision | [ADR-006](../decisions/ADR-006-official-test-tools.md), playthrough tests through Unity's official test packages |
 | Follow-up | [CC-047](https://github.com/rtumelty/Cathartic-Colours/issues/102), the same playthroughs on an Android device (the primary use case) |
 | Related | [CC-002](https://github.com/rtumelty/Cathartic-Colours/issues/8) (PlayMode smoke tests), [test-plan](../test-plan.md), [input](../systems/input.md), [ui-layout](../systems/ui-layout.md), [save-system](../systems/save-system.md) |
