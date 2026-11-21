@@ -13,7 +13,7 @@ An agent can produce an installable Android development build (APK) from the com
 
 ## Scope
 **In**
-- Player settings: Android application id `com.catharticcolours.game` (D1); version name from `bundleVersion` (now `0.0.1`); version code from the commit count (D2).
+- Player settings: Android application id `com.catharticcolours.game` (D1); version name from `bundleVersion` (now `0.0.1`); version code from the commit count (D2, superseded by CC-039).
 - The "Android™ Development" build profile builds an APK and doesn't wait for a managed debugger at launch (D3).
 - A command-line build: an editor build class in its own assembly with an `-executeMethod` entry point, a `tools/build-android.ps1` wrapper, and EditMode tests for its pure logic (D4).
 - One development build, installed on a connected phone with Ronan's yes; a build wiki page, the command in project `CLAUDE.md` §4, and test-plan cases.
@@ -89,7 +89,7 @@ An agent can produce an installable Android development build (APK) from the com
 
 ## Decisions
 - **D1 — Application id `com.catharticcolours.game`** (Ronan, 2026-11-19). It's permanent once the app is on Google Play.
-- **D2 — Version code = commit count of HEAD.** It always grows along `develop` and `master`, needs no stored counter, and is reproducible for a given commit. The version name stays a manual `bundleVersion` bump. CC-036 confirms it works for store uploads.
+- **D2 — Version code = commit count of HEAD.** It always grows along `develop` and `master`, needs no stored counter, and is reproducible for a given commit. The version name stays a manual `bundleVersion` bump. CC-036 confirms it works for store uploads. **Superseded by [CC-039](CC-039-version-codes.md)** (2026-11-20): squash merges made feature-branch codes overtake develop's; the code is now develop's commit count × 100 + commits ahead.
 - **D3 — Development profile builds an APK with no debugger wait** (Ronan, 2026-11-19). An APK installs with `adb`, and the app starts normally; a debugger can still attach later.
 - **D4 — Build code in its own Editor assembly.** It follows the `CatharticColours.Simulation` assembly pattern, so it can be unit-tested; code in the default editor assembly can't be referenced by test assemblies.
 

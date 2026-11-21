@@ -77,6 +77,140 @@ namespace CatharticColours.Build.Tests
             StringAssert.Contains("between 1 and", error);
         }
 
+        [TestCase(110L, 0L, 11000)]
+        [TestCase(110L, 7L, 11007)]
+        [TestCase(110L, 99L, 11099)]
+        [TestCase(0L, 1L, 1)]
+        [TestCase(21000000L, 0L, 2100000000)]
+        public void ComposesVersionCode(long versionBase, long ahead, int expected)
+        {
+            Assert.IsTrue(AndroidBuildArgs.TryComposeVersionCode(versionBase, ahead, out int code, out string error));
+            Assert.AreEqual(expected, code);
+            Assert.IsNull(error);
+        }
+
+        [Test]
+        public void ComposeFailsWhenTooFarAheadOfDevelop()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryComposeVersionCode(110, 100, out _, out string error));
+            StringAssert.Contains("too far ahead of develop", error);
+            StringAssert.Contains("Rebase", error);
+        }
+
+        [TestCase(-1L, 0L)]
+        [TestCase(110L, -1L)]
+        public void ComposeFailsOnNegativeValues(long versionBase, long ahead)
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryComposeVersionCode(versionBase, ahead, out _, out string error));
+            StringAssert.Contains("negative", error);
+        }
+
+        [Test]
+        public void ComposeFailsWhenCodeWouldBeZero()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryComposeVersionCode(0, 0, out _, out string error));
+            StringAssert.Contains("between 1 and", error);
+        }
+
+        [Test]
+        public void ComposeFailsAboveMax()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryComposeVersionCode(21000000, 1, out _, out string error));
+            StringAssert.Contains("2100000000", error);
+        }
+
+        [Test]
+        public void ComposeFailsOnHugeBaseWithoutOverflow()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryComposeVersionCode(100000000000L, 0, out int code, out string error));
+            Assert.AreEqual(0, code);
+            Assert.IsNotNull(error);
+            Assert.IsFalse(AndroidBuildArgs.TryComposeVersionCode(long.MaxValue, 0, out _, out _));
+        }
+
+        [Test]
+        public void ParsesBaseAndAheadAmongOtherArgs()
+        {
+            var args = new[] { "Unity.exe", "-batchmode", "-versionBase", "110", "-buildProfile", "Release", "-versionAhead", "7", "-quit" };
+            Assert.IsTrue(AndroidBuildArgs.TryParseVersionCode(args, out int code, out string error));
+            Assert.AreEqual(11007, code);
+            Assert.IsNull(error);
+        }
+
+        [Test]
+        public void VersionCodeOverridesBaseAndAhead()
+        {
+            var args = new[] { "-versionBase", "110", "-versionAhead", "7", "-versionCode", "42" };
+            Assert.IsTrue(AndroidBuildArgs.TryParseVersionCode(args, out int code, out _));
+            Assert.AreEqual(42, code);
+        }
+
+        [Test]
+        public void VersionCodeOverridesGarbageBaseAndAhead()
+        {
+            var args = new[] { "-versionBase", "abc", "-versionAhead", "-versionCode", "42" };
+            Assert.IsTrue(AndroidBuildArgs.TryParseVersionCode(args, out int code, out _));
+            Assert.AreEqual(42, code);
+        }
+
+        [Test]
+        public void FailsWhenOnlyBaseGiven()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseVersionCode(new[] { "-versionBase", "110" }, out _, out string error));
+            StringAssert.Contains("Missing", error);
+            StringAssert.Contains("-versionAhead", error);
+        }
+
+        [Test]
+        public void FailsWhenOnlyAheadGiven()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseVersionCode(new[] { "-versionAhead", "3" }, out _, out string error));
+            StringAssert.Contains("Missing", error);
+            StringAssert.Contains("-versionBase", error);
+        }
+
+        [Test]
+        public void FailsWhenBaseFlagHasNoValue()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseVersionCode(new[] { "-versionAhead", "3", "-versionBase" }, out _, out string error));
+            StringAssert.Contains("needs a value", error);
+            StringAssert.Contains("-versionBase", error);
+        }
+
+        [Test]
+        public void FailsWhenAheadFlagHasNoValue()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseVersionCode(new[] { "-versionBase", "110", "-versionAhead" }, out _, out string error));
+            StringAssert.Contains("needs a value", error);
+            StringAssert.Contains("-versionAhead", error);
+        }
+
+        [TestCase("abc")]
+        [TestCase("1.5")]
+        [TestCase("")]
+        [TestCase("99999999999999999999")]
+        public void FailsWhenBaseNotAnInteger(string value)
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseVersionCode(new[] { "-versionBase", value, "-versionAhead", "0" }, out _, out string error));
+            StringAssert.Contains("whole number", error);
+        }
+
+        [TestCase("abc")]
+        [TestCase("2.5")]
+        [TestCase("")]
+        public void FailsWhenAheadNotAnInteger(string value)
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseVersionCode(new[] { "-versionBase", "110", "-versionAhead", value }, out _, out string error));
+            StringAssert.Contains("whole number", error);
+        }
+
+        [Test]
+        public void ParsingFailsWhenAheadAbove99()
+        {
+            Assert.IsFalse(AndroidBuildArgs.TryParseVersionCode(new[] { "-versionBase", "110", "-versionAhead", "100" }, out _, out string error));
+            StringAssert.Contains("too far ahead", error);
+        }
+
         [Test]
         public void ProfileDefaultsWhenFlagMissing()
         {
