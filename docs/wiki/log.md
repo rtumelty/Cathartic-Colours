@@ -168,3 +168,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-21] implement | CC-008.3 | GameRulesComponent singleton replaces ScoringConfigComponent; one builder (GameRulesComponent.From) for new and resumed games; BoardStepSystem steps with it; EditMode 442 passed, PlayMode 2 passed
 ## [2026-11-21] implement | CC-008.4 | Feature test plan folded into test-plan.md (TP-STD-11, TP-CM-07, TP-ACM-08, TP-SAVE-12, TP-MENU-07 re-run); index updated
 ## [2026-11-21] approve | CC-008 | PR #96 squash-merged into develop as 85a97ef, identical to the branch tip; #20 and sub-issues #92-#95 Done; removed from roadmap.md
+## [2026-11-21] approve | CC-046 | Planned and approved by Ronan with no approval stops; #97 Approved; sub-issues #98-#101 created; feature page committed on feature/CC-046-automated-playthroughs; device follow-up CC-047 (#102) created
