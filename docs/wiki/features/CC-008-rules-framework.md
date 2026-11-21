@@ -4,7 +4,7 @@
 |---|---|
 | Issue | [#20](https://github.com/rtumelty/Cathartic-Colours/issues/20) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-008-rules-framework` (from `develop`, created by the planning session on approval) |
-| PR | — |
+| PR | [#96](https://github.com/rtumelty/Cathartic-Colours/pull/96) |
 | Decision | [ADR-005](../decisions/ADR-005-composable-rule-families.md) (accepted with this plan, 2026-11-21) |
 | Unblocks | [CC-035](https://github.com/rtumelty/Cathartic-Colours/issues/55) (spawn weighting), [CC-009](https://github.com/rtumelty/Cathartic-Colours/issues/21) (puzzle), [CC-010](https://github.com/rtumelty/Cathartic-Colours/issues/22) (time attack), [CC-011](https://github.com/rtumelty/Cathartic-Colours/issues/23) (shifting size), [CC-012](https://github.com/rtumelty/Cathartic-Colours/issues/24) (hazards), and makes [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19) a spawn-rule change |
 | Related | [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38) (rule gaps, design input; not changed here), [merge-rules](../systems/merge-rules.md), [ADR-001](../decisions/ADR-001-pure-board-simulation.md) |
