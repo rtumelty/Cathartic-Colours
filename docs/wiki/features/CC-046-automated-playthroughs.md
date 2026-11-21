@@ -171,12 +171,17 @@ Both are behind `Application.isEditor`. A device uses its real screen and the en
   - After game over the modal covers the footer, so SAVE-11 returns to the menu with the panel's own Main Menu button.
   - The OVER-07 "different cells over many moves" part is left to the extended-play regression tests (STD-11, CM-07, ACM-08).
   - The full PlayMode suite is 96 tests in about 95 s.
+- **CC-046.4 notes:**
+  - The runner refuses to start only when another process holds `Temp\UnityLockfile`, so a stale lock file left by a crash doesn't block it.
+  - An unknown case id makes it exit 2.
+  - The driver takes its report folder from `CC_PLAYTHROUGH_REPORT_DIR` when the script sets it.
 - **Gap fillers in the test-support assembly:** `PanelClock`, `PngWriter` and `AudioEventRecorderSystem`. Each is named in ADR-006 with its reason.
 
 ## Feature test plan
-1. `tools\run-playthrough.ps1 -Case TP-STD-04` passes, and the report has before and after screenshots.
-2. `tools\run-playthrough.ps1 -All` runs every automated case; the report lists every case in the D6 areas.
-3. Your real save is untouched after a run.
+Folded into [test-plan](../test-plan.md) as TP-TOOL-06 to TP-TOOL-08:
+1. `toolsun-playthrough.ps1 -Case TP-STD-04` passes, and the report has before and after screenshots (TP-TOOL-06).
+2. `toolsun-playthrough.ps1 -All` runs every automated case; the report lists every case in the D6 areas (TP-TOOL-07).
+3. Your real save is untouched after a run (TP-TOOL-08).
 
 ## Status log
 - 2026-11-21: Planned and approved by Ronan; sub-issues #98-#101; device follow-up CC-047 (#102) created

@@ -19,7 +19,7 @@ Each case has an id and these fields:
 | Preconditions | State the tester must start from |
 | Steps | Numbered actions |
 | Expected | The observable result that means pass |
-| Automated | The PlayMode test that runs the case (class and test name), or `manual — <reason>`. `tools/run-playthrough.ps1` will run the automated cases (CC-046.4). A case marked "(skipped: bug, see test)" has a test that is skipped until its bug is fixed |
+| Automated | The PlayMode test that runs the case (class and test name), or `manual — <reason>`. `tools/run-playthrough.ps1` runs the automated cases (CC-046.4). A case marked "(skipped: bug, see test)" has a test that is skipped until its bug is fixed |
 | Roadmap id | The roadmap item the case covers, or `—` for existing behaviour |
 
 **Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio · `DROID` Android build · `TOOL` Editor and tooling · `TRACK` Project tracking (GitHub)
@@ -947,6 +947,39 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Expected | `Assets/Materials/BlockMaterial.mat` is not modified (the jelly wobble writes to a runtime copy since CC-032). The Console shows no CS0414 warning after a recompile. |
 | Automated | manual — needs the editor open and git status after a play session |
 | Roadmap id | CC-032 |
+
+### TP-TOOL-06 — Playthrough script runs one case with evidence
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-06` |
+| Preconditions | Editor closed (this project), clean checkout of the branch under test |
+| Steps | 1. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\run-playthrough.ps1 -Case TP-STD-04`. 2. Open the `report.md` path it prints. 3. Open the two screenshots linked on the TP-STD-04 line. |
+| Expected | The script exits 0. The report shows TP-STD-04 as PASS with links to `TP-STD-04-before.png` and `TP-STD-04-after.png`. Before shows two Small red blocks side by side; after shows one Medium red block at the right wall and the score 10 higher. |
+| Automated | manual — runs the playthrough script itself |
+| Roadmap id | CC-046 |
+
+### TP-TOOL-07 — Playthrough script runs every automated case
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-07` |
+| Preconditions | Editor closed (this project) |
+| Steps | 1. Run `tools\run-playthrough.ps1 -All` as in TP-TOOL-06. 2. Read the report. |
+| Expected | The script exits 0 within a few minutes. The report has one line for every case in the Main menu, Standard, Color Merge, Advanced Color Merge, HUD, Game over, Save/Resume and Audio areas: PASS for each automated case, and NOT AUTOMATED with its reason for the rest (TP-HUD-02, TP-HUD-06, TP-SAVE-06, TP-SAVE-12, TP-AUDIO-05). |
+| Automated | manual — runs the playthrough script itself |
+| Roadmap id | CC-046 |
+
+### TP-TOOL-08 — A playthrough run leaves the real save untouched
+
+| Field | Content |
+|---|---|
+| Id | `TP-TOOL-08` |
+| Preconditions | A game in progress saved in the editor (play a move in Play mode, then stop), so `savegame.json` exists in the save folder (`Application.persistentDataPath`; on Windows `%USERPROFILE%\AppData\LocalLow\<company>\<product>`). Note its modified time. Editor closed |
+| Steps | 1. Run `tools\run-playthrough.ps1 -Area SAVE`. 2. Look at `savegame.json` in the save folder. 3. Open the editor, play from the main menu and tap Resume. |
+| Expected | `savegame.json` has the same modified time and no new `savegame.bad.*` files appeared. Resume loads the game you saved. |
+| Automated | manual — checks the real save outside the test run |
+| Roadmap id | CC-046 |
 
 ## Project tracking (TRACK)
 

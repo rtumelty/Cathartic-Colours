@@ -165,7 +165,79 @@ Device test builds must be development builds, because `InputTestFixture` saves 
 - Only one Unity process can open the project at a time, so run test batches one after another.
 
 ## Agent guide
-Added in CC-046.4.
+Run the automated test-plan cases with `tools/run-playthrough.ps1`, and read the report it writes.
+
+### Running cases
+Run from the repo root, in the agent sandbox (`E:\Projects\Cathartic-Colours`), with the Unity editor closed:
+
+- One case or a few: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\run-playthrough.ps1 -Case TP-STD-04` (comma-separate several ids).
+- One area: `... -Area STD` (codes as in the test plan: MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO).
+- Everything automated: `... -All`.
+
+A whole run takes about 2 minutes once Unity has started. Unity start-up adds about a minute. Only one Unity process can open the project, so run batches one after another.
+
+The script writes `TestResults\playthrough\<yyyyMMdd-HHmmss>\`. It refuses to run (exit 2) if the editor has the project open.
+
+### Reading the report
+`report.md` starts with the date, branch and commit, the selection, Unity's exit code, the totals, the duration, and links to `results.xml`, `unity.log` and `screenshots\`. Then there is one row per case:
+
+| Result | Meaning |
+|---|---|
+| PASS | The test ran and its assertions held |
+| FAIL | An assertion failed or an error was logged. The details show the first line of the message |
+| SKIPPED | The test is marked `[Ignore]` for a known bug. The details give the issue |
+| NOT RUN | The test was selected but has no result in `results.xml` |
+| NOT AUTOMATED | The test plan says `manual`. The details give the reason |
+| UNKNOWN CASE | The id is not in the test plan |
+
+Each case row links to its screenshots (`screenshots\TP-STD-04-after.png`). Open the PNG files to look at the board yourself. Failed tests that are not test-plan cases are listed at the end.
+
+Exit codes: 0 nothing failed, 1 a test failed, 2 usage or setup error. For exit 2 from Unity itself (compile errors), search `unity.log` for `error CS`.
+
+### Running a manual case
+A manual case has no test. To check one, write a scratch test:
+
+1. Create a new file in `Cathartic Colours\Assets\Tests\PlayMode\Scratch\`, for example `ScratchCase.cs`. Derive from `PlaythroughTest`, and use category `TP_SCRATCH`:
+
+   ```csharp
+   using System.Collections;
+   using NUnit.Framework;
+   using Simulation;
+   using TestSupport;
+   using UnityEngine.TestTools;
+
+   namespace PlayModeTests
+   {
+       [Category("TP_SCRATCH")]
+       public class ScratchCase : PlaythroughTest
+       {
+           [UnityTest, Category("TP_SCRATCH")]
+           public IEnumerator Scratch()
+           {
+               yield return Driver.ResumeWith(". . . .|. . . .|. . Rs Rs|. . . .", GameMode.Standard);
+               yield return Driver.Move(Direction.Right);
+               Driver.AssertBoard(". . . .|. . . .|. . . Rm|. . . .");
+               yield return Driver.Screenshot("SCRATCH-after");
+           }
+       }
+   }
+   ```
+
+2. Run only that category (the editor closed):
+
+   ```
+   "C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe" -batchmode -projectPath "Cathartic Colours" -runTests -testPlatform PlayMode -testCategory TP_SCRATCH -testResults "TestResults\scratch\results.xml" -logFile "TestResults\scratch\unity.log"
+   ```
+
+   To keep the screenshot with the other run files, set `$env:CC_PLAYTHROUGH_REPORT_DIR` to a folder first. Without it the screenshot goes to a temp folder, and the log says where.
+
+3. Read the `result` attribute of the `test-case` in `results.xml`, and the failure message if there is one.
+4. Delete the scratch file afterwards. Do not commit it.
+
+### When a case fails
+1. Read the message in `report.md`, then look at the case's screenshots.
+2. If the game disagrees with the test plan's expected result, that is a bug. File a bug issue (project `CLAUDE.md` §6) and mark the test `[Ignore("<issue id>: <reason>")]`, as the plan describes. Do not change the test or the plan to match the game.
+3. If the test itself is wrong (a step or board that does not match the plan), fix the test and say why in the commit.
 
 ## Related
 - [ADR-006](../decisions/ADR-006-official-test-tools.md): why the official packages, and the gaps the support code fills.

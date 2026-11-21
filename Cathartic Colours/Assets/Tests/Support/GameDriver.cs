@@ -50,9 +50,19 @@ namespace TestSupport
         string saveFolder;
         UIDocument document;
 
-        /// <summary>A temp folder per run, used when no report folder is given.</summary>
-        public static readonly string DefaultReportFolder =
-            Path.Combine(Application.temporaryCachePath, "cc-playthrough", DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss"));
+        /// <summary>
+        /// Where a run writes screenshots when no report folder is given: the folder in the CC_PLAYTHROUGH_REPORT_DIR
+        /// environment variable if it is set (tools/run-playthrough.ps1 sets it), otherwise a temp folder per run.
+        /// </summary>
+        public static readonly string DefaultReportFolder = ResolveDefaultReportFolder();
+
+        static string ResolveDefaultReportFolder()
+        {
+            string fromEnvironment = System.Environment.GetEnvironmentVariable("CC_PLAYTHROUGH_REPORT_DIR");
+            if (!string.IsNullOrEmpty(fromEnvironment))
+                return fromEnvironment;
+            return Path.Combine(Application.temporaryCachePath, "cc-playthrough", DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss"));
+        }
 
         /// <summary>Where screenshots and logs go. Given to <see cref="Begin"/>, or a temp folder.</summary>
         public string ReportFolder { get; }

@@ -47,7 +47,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [Presentation](systems/presentation.md): `GameRenderer`, `Block`, jelly wobble, score particles, and the ECS state each reads and writes.
 
 ## Testing
-- [Manual test plan](test-plan.md) — how to run the test plan, case format, 66 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), 8 Android build cases (DROID), 4 project-tracking cases (TRACK, CC-034) and 5 editor and tooling cases (TOOL, CC-033, CC-003).
+- [Manual test plan](test-plan.md) — how to run the test plan, case format, 66 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), 8 Android build cases (DROID), 4 project-tracking cases (TRACK, CC-034) and 8 editor and tooling cases (TOOL, CC-033, CC-003, CC-046). Every case has an Automated field naming its PlayMode test (61 cases, run with `tools/run-playthrough.ps1`) or why it stays manual.
 
 ## Raw sources
 - [Raw sources](../raw/README.md) — immutable source material and its register (PuzzleScript prototype, planning discussion when supplied).
