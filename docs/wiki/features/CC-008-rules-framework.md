@@ -125,7 +125,15 @@ None during the work. During PR review: play a few moves in each mode, and resum
 - **D2 to D6** as in Approach (proposed by planning; approved with the plan, 2026-11-21).
 
 ## Divergences
-_None yet._
+Implementation specifics only; no change to scope, decisions, deliverable order or model routing.
+- **CC-008.1:** the recorder test that rewrites the hash file is `[Explicit]` **and** needs `CC_RECORD_GAMES=1`, because a class-wide `-testFilter` also runs Explicit tests and would quietly re-record. Spawn-off games always run the full 300 moves (nothing spawns, so the board never fills); they still pin sliding, merging and scoring.
+- **CC-008.2:**
+  - `MergeRulesFactory` is removed (the plan allowed either). Its uses moved to `GameRules.For(mode, settings)` with `BoardSimulation.Step`, `BoardSimulation.IsGameOver(board, in GameRules)`, `GameRules.CanMerge` and `GameRules.MergeBlocks` (named so because `Merge` is the merge-rule field). Tests that said "factory" in their names were renamed to "GameRules"; no expected value changed.
+  - `GameRules` also names the merge rule (`MergeRuleKind`), so one value describes a whole mode. The generic `Step<TMerge>(…, in TMerge, in GameRules, …)` stays public, for the generic-agrees-with-dispatch tests and the Burst probe; it ignores `GameRules.Merge`.
+  - `NoSpawn` still resolves indicators already on the board (one colour draw each), because the spawn toggle did that before.
+  - The scoring dispatcher is called once per merge rather than once per move. Merges are few per move, and it keeps a scoring rule a per-merge function.
+  - `BoardStepSystem` was moved onto `GameRules.For(mode, settings)` in CC-008.2 only so it compiles; CC-008.3 replaces `ScoringConfigComponent` with `GameRulesComponent`.
+  - `StepSettings` stays as the per-game settings from configuration that `GameRules.For` reads.
 
 ## Feature test plan
 1. Each mode: play to a few merges; scores and merges as before.

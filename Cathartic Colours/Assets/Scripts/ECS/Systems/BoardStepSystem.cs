@@ -70,7 +70,7 @@ namespace ECS.Systems
 
             var events = new NativeList<SimEvent>(32, Allocator.Temp);
             var random = gameState.ValueRO.Random;
-            var result = MergeRulesFactory.Step(mode, ref board, move.Direction, settings, ref random, events);
+            var result = BoardSimulation.Step(ref board, move.Direction, GameRules.For(mode, settings), ref random, events);
 
             if (result.Accepted)
             {

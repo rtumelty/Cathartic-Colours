@@ -41,7 +41,7 @@ namespace Simulation.Tests
         {
             var settings = StepSettings.Default;
             settings.SpawnEnabled = spawnEnabled;
-            return MergeRulesFactory.Step(mode, ref board, dir, settings, ref random, events);
+            return BoardSimulation.Step(ref board, dir, GameRules.For(mode, settings), ref random, events);
         }
 
         public static RecordedGame PlayGame(GameMode mode, bool spawnEnabled, uint seed)

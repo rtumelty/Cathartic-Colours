@@ -291,17 +291,17 @@ namespace Simulation.Tests
             return run;
         }
 
-        /// <summary>Parses the board and runs one step through MergeRulesFactory.Step.</summary>
+        /// <summary>Parses the board and runs one step through BoardSimulation.Step with GameRules.For(mode, settings).</summary>
         public static StepRun Execute(GameMode mode, string board, int2 direction, StepSettings settings, uint seed = 1u)
         {
             return ExecuteOn(mode, TestBoards.Parse(board), direction, settings, seed);
         }
 
-        /// <summary>Takes ownership of <paramref name="board"/> and runs one step through MergeRulesFactory.Step.</summary>
+        /// <summary>Takes ownership of <paramref name="board"/> and runs one step through BoardSimulation.Step with GameRules.For(mode, settings).</summary>
         public static StepRun ExecuteOn(GameMode mode, BoardState board, int2 direction, StepSettings settings, uint seed = 1u)
         {
             var run = Create(board, seed);
-            run.Result = MergeRulesFactory.Step(mode, ref run.Board, direction, in settings, ref run.Random, run.Events);
+            run.Result = BoardSimulation.Step(ref run.Board, direction, GameRules.For(mode, settings), ref run.Random, run.Events);
             return run;
         }
 
@@ -314,19 +314,19 @@ namespace Simulation.Tests
                 case GameMode.ColorMerge:
                 {
                     var rules = new ColorMergeRules();
-                    run.Result = BoardSimulation.Step(ref run.Board, direction, in rules, in settings, ref run.Random, run.Events);
+                    run.Result = BoardSimulation.Step(ref run.Board, direction, in rules, GameRules.For(mode, settings), ref run.Random, run.Events);
                     break;
                 }
                 case GameMode.AdvancedColorMerge:
                 {
                     var rules = new AdvancedColorMergeRules();
-                    run.Result = BoardSimulation.Step(ref run.Board, direction, in rules, in settings, ref run.Random, run.Events);
+                    run.Result = BoardSimulation.Step(ref run.Board, direction, in rules, GameRules.For(mode, settings), ref run.Random, run.Events);
                     break;
                 }
                 default:
                 {
                     var rules = new StandardMergeRules();
-                    run.Result = BoardSimulation.Step(ref run.Board, direction, in rules, in settings, ref run.Random, run.Events);
+                    run.Result = BoardSimulation.Step(ref run.Board, direction, in rules, GameRules.For(mode, settings), ref run.Random, run.Events);
                     break;
                 }
             }

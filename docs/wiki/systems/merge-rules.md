@@ -9,11 +9,12 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 | File | Role |
 |---|---|
 | `Assets/Scripts/Simulation/IMergeRules.cs`, `MergeResult.cs` | `IMergeRules` (`CanMerge`, `Merge`) and `MergeResult` |
-| `Assets/Scripts/Simulation/MergeRulesFactory.cs` | `GameMode` to rule struct (switch, no boxing) |
+| `Assets/Scripts/Simulation/GameRules.cs` | `GameRules`: a mode as one rule per family plus settings; `GameRules.For(GameMode, StepSettings)` (since CC-008, replacing `MergeRulesFactory`) |
+| `Assets/Scripts/Simulation/SpawnRules.cs`, `ScoringRules.cs`, `EndConditions.cs`, `GridMutations.cs`, `TimerRules.cs` | The other rule families: interface, rule structs, kind enum and dispatcher each ([ADR-005](../decisions/ADR-005-composable-rule-families.md)) |
 | `Assets/Scripts/Simulation/StandardMergeRules.cs` | Standard rules |
 | `Assets/Scripts/Simulation/ColorMergeRules.cs` | Color Merge rules |
 | `Assets/Scripts/Simulation/AdvancedColorMergeRules.cs` | Advanced Color Merge rules |
-| `Assets/Scripts/Simulation/BoardSimulation.cs`, `BoardState.cs`, `Block.cs`, `SimEvent.cs`, `StepSettings.cs` | The move step: slide, merge, score, resolve, spawn, end check |
+| `Assets/Scripts/Simulation/BoardSimulation.cs`, `BoardState.cs`, `Block.cs`, `SimEvent.cs`, `StepSettings.cs` | The move step: runs the phases in order and calls each family's rule; `Advance` for time passing |
 | `Assets/Tests/EditMode/` | Unit tests for all of the above (`CatharticColours.Simulation.Tests`) |
 | `Assets/Scripts/Data/GameConfiguration.cs` | Tier point values (`tier1Points`..`tier4Points`) and the spawn toggle, copied into `ScoringConfigComponent` at game start |
 | `Assets/Scripts/ECS/Systems/BoardStepSystem.cs` | Runs `Step` for each move and turns its events into audio and merge events ([ecs-frame-order.md](ecs-frame-order.md)) |
@@ -28,9 +29,9 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 - A block (`Simulation.Block`) has `Color`, `Size` and `IsIndicator` (the white placeholder for the next spawn); an empty cell has `Size` `None`. Its cell is its index in `BoardState`. The ECS `BlockComponent` holds the same data plus `GridPosition`, with the flag named `IsNextColorIndicator`. All three rule structs refuse to merge any indicator block.
 
 ### The merge strategy
-Each mode's rules are a struct implementing `IMergeRules` in the `Simulation` assembly (since CC-006.2, replacing the `IMergeUtility` classes). `MergeRulesFactory` switches on `GameMode`: `AdvancedColorMergeRules` for `AdvancedColorMerge`, `ColorMergeRules` for `ColorMerge`, and `StandardMergeRules` for `Standard` and any other value. `BoardStepSystem` calls `MergeRulesFactory.Step(GameModeComponent.Mode, …)`, which runs the generic `BoardSimulation.Step<TRules>` with the matching struct. Everything below is the behaviour of `Step` (`Assets/Scripts/Simulation/BoardSimulation.cs`), pinned by the EditMode tests in `Assets/Tests/EditMode/`; it is the same as the five ECS systems it replaced in CC-006.3.
+Each mode's merge rules are a struct implementing `IMergeRules` in the `Simulation` assembly (since CC-006.2, replacing the `IMergeUtility` classes). `GameRules.For` maps `GameMode` to a `MergeRuleKind`: `AdvancedColorMergeRules` for `AdvancedColorMerge`, `ColorMergeRules` for `ColorMerge`, and `StandardMergeRules` for `Standard` and any other value. `BoardSimulation.Step(ref board, direction, in GameRules, …)` switches on that kind once and runs the generic `Step<TMerge>` with the matching struct, so the per-cell merge loop is never dispatched (see "Rule families" below). Everything below is the behaviour of `Step` (`Assets/Scripts/Simulation/BoardSimulation.cs`), pinned by the EditMode tests in `Assets/Tests/EditMode/`; it is the same as the five ECS systems it replaced in CC-006.3.
 
-`IMergeRules` has two methods: `CanMerge(mover, target)` and `Merge(mover, target)`. `Merge` returns a `MergeResult` with `Color`, `Size`, `Tier` and `DestroysBoth`. `mover` is the moving block and `target` is the block in the cell it moves into. If `DestroysBoth` is false the target block takes the result's colour and size and the moving block is destroyed; if true, both blocks are destroyed. The interface covers only merge rules; spawn, end and scoring rules are fixed in `BoardSimulation` (see Known issues).
+`IMergeRules` has two methods: `CanMerge(mover, target)` and `Merge(mover, target)`. `Merge` returns a `MergeResult` with `Color`, `Size`, `Tier` and `DestroysBoth`. `mover` is the moving block and `target` is the block in the cell it moves into. If `DestroysBoth` is false the target block takes the result's colour and size and the moving block is destroyed; if true, both blocks are destroyed. The interface covers only merge rules; spawning, scoring and the end condition are their own rule families (since CC-008).
 
 ### Rules per mode
 
@@ -104,7 +105,7 @@ Rows only; one row of a grid of width 4 (`x = 0..3`), `.` = empty, the move is r
 - `[. . Rm Rm]` right: no merge (same colour at Medium has no rule); Rm at x2 stays.
 
 ### Scoring
-Source: `Assets/Scripts/Simulation/BoardSimulation.cs` (`Slide`), `Assets/Scripts/Simulation/StepSettings.cs` (`TierPoints`), `Assets/Scripts/Data/GameConfiguration.cs`.
+Source: `Assets/Scripts/Simulation/ScoringRules.cs` (`TierPointsScoring`, called from `BoardSimulation.Slide`), `Assets/Scripts/Simulation/StepSettings.cs` (`TierPoints`), `Assets/Scripts/Data/GameConfiguration.cs`.
 
 - Only merges score; each merge earns `TierPoints.For(tier)`, and `StepResult.ScoreDelta` is the sum for the move. There is no multiplier, chain or per-move bonus. The points come from `GameConfiguration` through `ScoringConfigComponent`; score no longer depends on a particle spawner existing (it did before CC-006.3).
 - Defaults: Tier1 10, Tier2 50, Tier3 100, Tier4 200 (`None` gives 0). The configuration assets do not override these ([configuration.md](configuration.md)).
@@ -119,15 +120,15 @@ Source: `Assets/Scripts/Simulation/BoardSimulation.cs` (`Slide`), `Assets/Script
 
 ### Spawning
 - **Initial block.** `GameRenderer.SpawnInitialBlock` creates one white indicator at `(gridWidth / 2, gridHeight / 2)` (integer division) when a new game starts, not when resuming (`Assets/Scripts/Gameplay/GameRenderer.cs`).
-- **Each move**, after sliding (`BoardSimulation.ResolveIndicators` and `SpawnIndicator`):
+- **Each move**, after sliding (the spawn rule `UniformPrimarySpawn` in `Assets/Scripts/Simulation/SpawnRules.cs`, since CC-008):
   1. Every indicator block on the board becomes a Small block whose colour is Red, Green or Blue with equal probability (`random.NextInt(0, 3)`) and loses the indicator flag. Sliding is already done, so it does not move on the move that resolves it. The draw advances the stored random state, so the spawn below draws from the next state (since CC-006.4, [CC-020](https://github.com/rtumelty/Cathartic-Colours/issues/32)).
-  2. If spawning is enabled (`StepSettings.SpawnEnabled`, from `GameConfiguration.spawnNextColourSystem`), a new white Small indicator block is placed on a uniformly random empty cell: the empty cells are counted, one draw `random.NextInt(0, emptyCount)` picks among them in cell index order (`x + y * Width`), and the indicator goes there. Exactly one draw per spawn. Only a board with no empty cell fails: nothing is spawned, no draw is made and `StepResult.SpawnFailed` is true; the move is still saved (since CC-006.4, [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33)).
+  2. If spawning is enabled (`StepSettings.SpawnEnabled`, from `GameConfiguration.spawnNextColourSystem`; when it's off `GameRules.For` picks the `NoSpawn` rule instead), a new white Small indicator block is placed on a uniformly random empty cell: the empty cells are counted, one draw `random.NextInt(0, emptyCount)` picks among them in cell index order (`x + y * Width`), and the indicator goes there. Exactly one draw per spawn. Only a board with no empty cell fails: nothing is spawned, no draw is made and `StepResult.SpawnFailed` is true; the move is still saved (since CC-006.4, [CC-021](https://github.com/rtumelty/Cathartic-Colours/issues/33)).
 - The indicator is a real block on the board: it blocks movement, never merges, and counts as an occupied cell for game over. Its final colour is decided only when the next move resolves it.
 - **Randomness source:** `GameStateComponent.Random` (`Unity.Mathematics.Random`), seeded with `(uint)DateTime.Now.Ticks` at game start and on restart, or restored from the save's `randomState` on resume (`Assets/Scripts/Gameplay/GameRenderer.cs`, `Assets/Scripts/SaveSystem/SaveGameManager.cs`).
 - With `spawnNextColourSystem` false, nothing is spawned: the single initial indicator is resolved on the first move and nothing else is ever spawned.
 
 ### End conditions
-Source: `Assets/Scripts/Simulation/BoardSimulation.cs` (`IsGameOver`, `HasEmptyCell`, `HasMergeablePair`).
+Source: `Assets/Scripts/Simulation/EndConditions.cs` (`NoMovesLeftEnd`), `Assets/Scripts/Simulation/BoardSimulation.cs` (`IsGameOver`, `HasEmptyCell`, `HasMergeablePair`).
 
 - `GameStateComponent` has `WaitingForInput`, `GameOver`, `LevelComplete`, `MoveCount` and `Random`. Only `GameOver` is set by the end-condition logic; `LevelComplete` is never set ([CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)).
 - At the end of every accepted move, `Step` reports game over when **both** hold:
@@ -136,6 +137,35 @@ Source: `Assets/Scripts/Simulation/BoardSimulation.cs` (`IsGameOver`, `HasEmptyC
 - On game over `Step` appends a `GameOver` event; `BoardStepSystem` sets `GameOver` and `WaitingForInput` to true and creates a `GameOver` audio event. Moves are rejected while `GameOver` is true, with no sound ([CC-023](https://github.com/rtumelty/Cathartic-Colours/issues/35), fixed in CC-006.3).
 - The rule is identical for all three modes; only `CanMerge` differs. It does not look at the score or the move count, and clearing the board does not end the game. (The PuzzleScript prototype declares a win when the board is cleared, `CatharticColours.pz`, RULES; the Unity game has no equivalent, see [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31).)
 - UI: `GameUIManager.UpdateGameState` shows the status "Grid Full!" and the game-over panel when `GameOver` is true (`Assets/Scripts/Gameplay/GameUIManager.cs`).
+
+### Rule families (since CC-008)
+A game mode is a `GameRules` value: one rule from each family, plus the rules' settings ([ADR-005](../decisions/ADR-005-composable-rule-families.md)). Each family is an interface with struct implementations. Merge rules are passed as a generic type, because they run in the per-cell loop; every other family is picked by an enum in `GameRules` and a small static dispatcher that switches on it, once per move. Everything is unmanaged and Burst-compatible.
+
+| Family | Interface | Rules today | Enum, dispatcher | Phase |
+|---|---|---|---|---|
+| Merge | `IMergeRules` | `StandardMergeRules`, `ColorMergeRules`, `AdvancedColorMergeRules` | `MergeRuleKind`, `BoardSimulation.Step` | 1 |
+| Scoring | `IScoringRule` | `TierPointsScoring` (uses `GameRules.Points`) | `ScoringRuleKind`, `ScoringRules` | 1 (each merge) |
+| Spawn | `ISpawnRule` | `UniformPrimarySpawn`, `NoSpawn` | `SpawnRuleKind`, `SpawnRules` | 2 and 4 |
+| Grid change | `IGridMutation` | `NoGridMutation` | `GridMutationKind`, `GridMutations` | 3 |
+| End condition | `IEndCondition` | `NoMovesLeftEnd` | `EndConditionKind`, `EndConditions` | before the move, and 5 |
+| Timer | `ITimerRule` | `NoTimer` | `TimerRuleKind`, `TimerRules` | `BoardSimulation.Advance` |
+
+**Phases of a move**, fixed in `BoardSimulation.Step<TMerge>`: a move in a non-unit direction, or on a finished game (end condition), is rejected with nothing changed. Otherwise: 1. slide and merge (merge rule; each merge scored by the scoring rule); 2. resolve the indicators (spawn rule); 3. grid change; 4. spawn (spawn rule; `StepResult.SpawnFailed` when it had no room); 5. end check, adding a `GameOver` event.
+
+**Time.** `BoardSimulation.Advance(ref board, elapsedSeconds, in GameRules, ref random, events)` hands time passing to the timer rule. With `NoTimer` nothing changes, nothing is drawn and the result isn't accepted. Nothing calls it yet; time attack (CC-010) will.
+
+**The three original modes** share every rule except the merge rule: `UniformPrimarySpawn` (or `NoSpawn` when the spawn toggle is off), `TierPointsScoring`, `NoMovesLeftEnd`, `NoGridMutation`, `NoTimer`. `NoSpawn` still resolves indicators already on the board, exactly as before CC-008.
+
+**Random draws** belong to the rule that makes them, in its documented order (`UniformPrimarySpawn`: one colour draw per indicator in cell order, then one cell draw). A rule that changes the order changes replays and resumed games, so it needs new recorded-game hashes (below) and a deliberate decision.
+
+**Rules aren't saved.** They are rebuilt with `GameRules.For` from the saved `gameMode` and `spawnNextColourSystem`. A rule with state of its own (a timer) adds that state to the save in its own feature.
+
+### How to add a mode
+1. Add the `GameMode` value.
+2. For each family, reuse a rule or add one. A new rule is a struct implementing the family's interface, a value in the family's enum and a `case` in its dispatcher (for a merge rule: a `MergeRuleKind` value and a `case` in `BoardSimulation.Step`, `BoardSimulation.IsGameOver`, `GameRules.CanMerge` and `GameRules.MergeBlocks`). Put any random draws in a documented order.
+3. Map the mode to its rules in `GameRules.For`. Settings a rule needs go into `GameRules` and come from `StepSettings` (or a new configuration field).
+4. Add EditMode tests for each new rule, and, if the mode should be pinned, add it to the recorded games and record its hashes. Existing hashes must not change.
+5. Add the mode's UI text and test-plan area.
 
 ## Interactions with other systems
 - System ordering, events and singletons: [ecs-frame-order.md](ecs-frame-order.md).
@@ -151,7 +181,7 @@ Source: `Assets/Scripts/Simulation/BoardSimulation.cs` (`IsGameOver`, `HasEmptyC
   `$env:CC_RECORD_GAMES = '1'; & "C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe" -batchmode -projectPath "Cathartic Colours" -runTests -testPlatform EditMode -testFilter "Simulation.Tests.RecordedGamesTests.Record_WritesRecordedGamesFile" -testResults "TestResults\record.xml" -logFile -; Remove-Item Env:CC_RECORD_GAMES`
 
 ## Known issues
-- `IMergeRules` covers merge rules only; spawn policy, end conditions, scoring and move mechanics are fixed in `BoardSimulation`. [CC-008](https://github.com/rtumelty/Cathartic-Colours/issues/20)
+- Move mechanics (one cell per move, furthest block first) are fixed in `BoardSimulation.Slide`, not a rule family.
 - The spawn colour is chosen only on the next move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
 - `LevelComplete` is never set. [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31)
 - Advanced Color Merge has unmergeable dead ends: two Medium blocks of the same colour, a Small and a Medium, and Small blocks of different colours never merge (`Assets/Scripts/Simulation/AdvancedColorMergeRules.cs`, `CanMerge`). [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38)

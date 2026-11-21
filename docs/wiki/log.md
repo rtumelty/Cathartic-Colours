@@ -162,3 +162,6 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-21] approve | CC-042 | PR #91 squash-merged into develop as 7880b5e, identical to the branch tip; #70 and sub-issues #87-#89 Done; removed from roadmap.md
 ## [2026-11-21] approve | CC-008 | Planned and approved by Ronan with no approval stops; #20 Approved; sub-issues #92-#95 created; feature page and ADR-005 committed on feature/CC-008-rules-framework
 ## [2026-11-21] decision | ADR-005 | Game modes as composable rule families: generic merge rules, enum-picked spawn, scoring, end, grid-change and timer rules in GameRules
+## [2026-11-21] implement | CC-008.1 | Recorded seeded games: 300 games (3 modes x spawn on/off x 50 seeds) hashed per move and committed; replay test passes on unchanged code; recorder needs CC_RECORD_GAMES=1
+## [2026-11-21] implement | CC-008.2 | Rule families (spawn, scoring, end condition, grid change, timer) and GameRules in Simulation; Step runs fixed phases; Advance added; MergeRulesFactory removed; tests retargeted with unchanged expected values; recorded hashes identical
+## [2026-11-21] schema | CLAUDE.md | Section 3 rules-as-strategies now describes GameRules and rule families (ADR-005) instead of MergeRulesFactory

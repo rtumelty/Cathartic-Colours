@@ -2,7 +2,7 @@
 // without reading the simulation implementation.
 //
 // Every colour x size pair (plus indicator-flagged blocks) is checked against an expected-value function
-// that encodes the spec tables, for each mode, both through the rule struct and through MergeRulesFactory.
+// that encodes the spec tables, for each mode, both through the rule struct and through GameRules (CC-008; MergeRulesFactory before).
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
@@ -206,11 +206,11 @@ namespace Simulation.Tests
         }
 
         [Test]
-        public void Standard_AllPairs_MatchSpecTable_ViaFactory()
+        public void Standard_AllPairs_MatchSpecTable_ViaGameRules()
         {
-            CheckMode("Standard/factory", ExpectedStandard,
-                (m, t) => MergeRulesFactory.CanMerge(GameMode.Standard, m, t),
-                (m, t) => MergeRulesFactory.Merge(GameMode.Standard, m, t), true);
+            CheckMode("Standard/gameRules", ExpectedStandard,
+                (m, t) => GameRules.For(GameMode.Standard, StepSettings.Default).CanMerge(m, t),
+                (m, t) => GameRules.For(GameMode.Standard, StepSettings.Default).MergeBlocks(m, t), true);
         }
 
         [Test]
@@ -221,11 +221,11 @@ namespace Simulation.Tests
         }
 
         [Test]
-        public void ColorMerge_AllPairs_MatchSpecTable_ViaFactory()
+        public void ColorMerge_AllPairs_MatchSpecTable_ViaGameRules()
         {
-            CheckMode("ColorMerge/factory", ExpectedColorMerge,
-                (m, t) => MergeRulesFactory.CanMerge(GameMode.ColorMerge, m, t),
-                (m, t) => MergeRulesFactory.Merge(GameMode.ColorMerge, m, t), false);
+            CheckMode("ColorMerge/gameRules", ExpectedColorMerge,
+                (m, t) => GameRules.For(GameMode.ColorMerge, StepSettings.Default).CanMerge(m, t),
+                (m, t) => GameRules.For(GameMode.ColorMerge, StepSettings.Default).MergeBlocks(m, t), false);
         }
 
         [Test]
@@ -236,11 +236,11 @@ namespace Simulation.Tests
         }
 
         [Test]
-        public void AdvancedColorMerge_AllPairs_MatchSpecTable_ViaFactory()
+        public void AdvancedColorMerge_AllPairs_MatchSpecTable_ViaGameRules()
         {
-            CheckMode("Advanced/factory", ExpectedAdvanced,
-                (m, t) => MergeRulesFactory.CanMerge(GameMode.AdvancedColorMerge, m, t),
-                (m, t) => MergeRulesFactory.Merge(GameMode.AdvancedColorMerge, m, t), false);
+            CheckMode("Advanced/gameRules", ExpectedAdvanced,
+                (m, t) => GameRules.For(GameMode.AdvancedColorMerge, StepSettings.Default).CanMerge(m, t),
+                (m, t) => GameRules.For(GameMode.AdvancedColorMerge, StepSettings.Default).MergeBlocks(m, t), false);
         }
 
         // ---------------------------------------------------------------- readable named cases
@@ -318,8 +318,8 @@ namespace Simulation.Tests
                     B(BlockColor.Blue, BlockSize.Medium), B(BlockColor.White, BlockSize.Large)
                 })
                 {
-                    Assert.IsFalse(MergeRulesFactory.CanMerge(mode, indicator, other), mode + ": indicator as mover vs " + TestBoards.Describe(other));
-                    Assert.IsFalse(MergeRulesFactory.CanMerge(mode, other, indicator), mode + ": indicator as target vs " + TestBoards.Describe(other));
+                    Assert.IsFalse(GameRules.For(mode, StepSettings.Default).CanMerge(indicator, other), mode + ": indicator as mover vs " + TestBoards.Describe(other));
+                    Assert.IsFalse(GameRules.For(mode, StepSettings.Default).CanMerge(other, indicator), mode + ": indicator as target vs " + TestBoards.Describe(other));
                 }
             }
         }
@@ -419,14 +419,14 @@ namespace Simulation.Tests
         }
 
         [Test]
-        public void Factory_UnknownMode_BehavesAsStandard()
+        public void GameRules_UnknownMode_BehavesAsStandard()
         {
             var unknown = (GameMode)99;
             var a = B(BlockColor.Red, BlockSize.Small);
             var g = B(BlockColor.Green, BlockSize.Small);
-            Assert.IsTrue(MergeRulesFactory.CanMerge(unknown, a, a));
-            Assert.IsFalse(MergeRulesFactory.CanMerge(unknown, a, g), "Colour merging is not a Standard rule");
-            var r = MergeRulesFactory.Merge(unknown, a, a);
+            Assert.IsTrue(GameRules.For(unknown, StepSettings.Default).CanMerge(a, a));
+            Assert.IsFalse(GameRules.For(unknown, StepSettings.Default).CanMerge(a, g), "Colour merging is not a Standard rule");
+            var r = GameRules.For(unknown, StepSettings.Default).MergeBlocks(a, a);
             Assert.AreEqual(BlockColor.Red, r.Color);
             Assert.AreEqual(BlockSize.Medium, r.Size);
             Assert.AreEqual(ScoreTier.Tier1, r.Tier);

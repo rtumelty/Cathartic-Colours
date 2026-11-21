@@ -125,7 +125,7 @@ namespace Simulation.Tests
                     occupants[i] = board.Cells[i].IsEmpty ? OccupantTracking.None : next++;
 
                 var random = new Random(987654321u);
-                var result = MergeRulesFactory.Step(GameMode.Standard, ref board, new int2(1, 0), StepSettings.Default, ref random, events);
+                var result = BoardSimulation.Step(ref board, new int2(1, 0), GameRules.For(GameMode.Standard, StepSettings.Default), ref random, events);
                 Assert.IsTrue(result.Accepted);
 
                 OccupantTracking.Apply(occupants, 4, events, 0, removed, spawned);
@@ -168,11 +168,11 @@ namespace Simulation.Tests
                 board[1, 0] = Block.Of(BlockColor.Green, BlockSize.Small);
                 board[0, 1] = Block.Of(BlockColor.Blue, BlockSize.Small);
                 board[1, 1] = Block.Of(BlockColor.Red, BlockSize.Medium);
-                Assert.IsTrue(MergeRulesFactory.IsGameOver(GameMode.Standard, board), "test setup: board is game over");
+                Assert.IsTrue(BoardSimulation.IsGameOver(board, GameRules.For(GameMode.Standard, StepSettings.Default)), "test setup: board is game over");
 
                 var random = new Random(42u);
                 uint stateBefore = random.state;
-                var result = MergeRulesFactory.Step(GameMode.Standard, ref board, new int2(-1, 0), StepSettings.Default, ref random, events);
+                var result = BoardSimulation.Step(ref board, new int2(-1, 0), GameRules.For(GameMode.Standard, StepSettings.Default), ref random, events);
 
                 Assert.IsFalse(result.Accepted);
                 Assert.AreEqual(0, events.Length);

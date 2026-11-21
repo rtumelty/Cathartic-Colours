@@ -125,14 +125,14 @@ namespace Simulation.Tests
             try
             {
                 var random = new Unity.Mathematics.Random(13u);
-                var first = MergeRulesFactory.Step(GameMode.Standard, ref board, TestBoards.Right, in settings, ref random, events);
+                var first = BoardSimulation.Step(ref board, TestBoards.Right, GameRules.For(GameMode.Standard, settings), ref random, events);
                 Assert.IsTrue(first.Accepted);
                 Assert.IsTrue(TestBoards.IsResolvedPrimary(board[0, 0]), "resolved on the first move");
 
                 for (int i = 0; i < 3; i++)
                 {
                     events.Clear();
-                    var next = MergeRulesFactory.Step(GameMode.Standard, ref board, TestBoards.Right, in settings, ref random, events);
+                    var next = BoardSimulation.Step(ref board, TestBoards.Right, GameRules.For(GameMode.Standard, settings), ref random, events);
                     Assert.IsTrue(next.Accepted);
                     Assert.AreEqual(1, TestBoards.CountOccupied(board), "still exactly one block after move " + (i + 2));
                     Assert.AreEqual(0, TestBoards.CountIndicators(board));

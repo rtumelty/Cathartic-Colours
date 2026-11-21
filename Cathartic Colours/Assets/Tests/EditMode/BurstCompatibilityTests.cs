@@ -80,13 +80,17 @@ namespace Simulation.Tests
 
             for (int i = 0; i < 8; i++)
             {
-                var step = MergeRulesFactory.Step((GameMode)mode, ref board, directions[i % 4], settings, ref random, events);
+                var step = BoardSimulation.Step(ref board, directions[i % 4], GameRules.For((GameMode)mode, settings), ref random, events);
                 result.Score += step.ScoreDelta;
             }
 
             // Also exercise the generic entry point directly.
-            var direct = BoardSimulation.Step(ref board, new int2(-1, 0), new StandardMergeRules(), settings, ref random, events);
+            var direct = BoardSimulation.Step(ref board, new int2(-1, 0), new StandardMergeRules(), GameRules.For(GameMode.Standard, settings), ref random, events);
             result.Score += direct.ScoreDelta;
+
+            // And the time entry point (CC-008), which does nothing with the original modes' "no timer" rule.
+            var timed = BoardSimulation.Advance(ref board, 0.5f, GameRules.For((GameMode)mode, settings), ref random, events);
+            result.Score += timed.ScoreDelta;
 
             uint checksum = random.state;
             for (int i = 0; i < board.Cells.Length; i++)
