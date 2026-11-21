@@ -12,7 +12,7 @@ This page lists only work still to do and the recommended order. An item drops o
 **Release goal:** Android launch of Cathartic Colours.
 
 ## Phases and suggested order
-0. **Foundations:** [CC-046](https://github.com/rtumelty/Cathartic-Colours/issues/97) (automated playthroughs in the editor) → [CC-047](https://github.com/rtumelty/Cathartic-Colours/issues/102) (the same on an Android device, the primary use case). Agents can then run the test plan for every later feature.
+0. **Foundations:** [CC-047](https://github.com/rtumelty/Cathartic-Colours/issues/102) (automated playthroughs on an Android device, the primary use case; the editor playthroughs from CC-046 are done). Agents can then run the test plan for every later feature.
 1. **Quick fixes:** [CC-045](https://github.com/rtumelty/Cathartic-Colours/issues/79) (broken references in URP render settings). New small finds join this phase on the board until the next batch.
 2. **Gameplay:** [CC-026](https://github.com/rtumelty/Cathartic-Colours/issues/38) (rule gaps, now merge-rule changes on the rules framework), [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19) (a new spawn rule) → [CC-035](https://github.com/rtumelty/Cathartic-Colours/issues/55) (spawn rubber-banding, a spawn rule per mode; after CC-007, since both change spawning) → [CC-009](https://github.com/rtumelty/Cathartic-Colours/issues/21) (with [CC-019](https://github.com/rtumelty/Cathartic-Colours/issues/31), the level-complete panel) → [CC-010](https://github.com/rtumelty/Cathartic-Colours/issues/22) / [CC-011](https://github.com/rtumelty/Cathartic-Colours/issues/23) / [CC-012](https://github.com/rtumelty/Cathartic-Colours/issues/24)
 3. **Platform and monetisation:** [CC-036](https://github.com/rtumelty/Cathartic-Colours/issues/57) (signing and Google Play) before [CC-015](https://github.com/rtumelty/Cathartic-Colours/issues/27) → [CC-016](https://github.com/rtumelty/Cathartic-Colours/issues/28), which need a store listing; [CC-013](https://github.com/rtumelty/Cathartic-Colours/issues/25) → [CC-014](https://github.com/rtumelty/Cathartic-Colours/issues/26)
@@ -40,5 +40,4 @@ Every open roadmap id and its issue. Rows are removed when an item is merged or 
 | CC-035 | [#55](https://github.com/rtumelty/Cathartic-Colours/issues/55) | Rubber-band spawn colours against board imbalance |
 | CC-036 | [#57](https://github.com/rtumelty/Cathartic-Colours/issues/57) | Store release: signing, keystore and Google Play publishing |
 | CC-045 | [#79](https://github.com/rtumelty/Cathartic-Colours/issues/79) | Broken references in URP render settings |
-| CC-046 | [#97](https://github.com/rtumelty/Cathartic-Colours/issues/97) | Automated playthroughs from menu to gameplay for agents |
 | CC-047 | [#102](https://github.com/rtumelty/Cathartic-Colours/issues/102) | Automated playthroughs on an Android device |
