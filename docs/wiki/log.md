@@ -169,3 +169,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-21] implement | CC-008.4 | Feature test plan folded into test-plan.md (TP-STD-11, TP-CM-07, TP-ACM-08, TP-SAVE-12, TP-MENU-07 re-run); index updated
 ## [2026-11-21] approve | CC-008 | PR #96 squash-merged into develop as 85a97ef, identical to the branch tip; #20 and sub-issues #92-#95 Done; removed from roadmap.md
 ## [2026-11-21] approve | CC-046 | Planned and approved by Ronan with no approval stops; #97 Approved; sub-issues #98-#101 created; feature page committed on feature/CC-046-automated-playthroughs; device follow-up CC-047 (#102) created
+## [2026-11-21] decision | ADR-006 | Playthrough tests use the UI Test Framework (RuntimeUITestFixture on the scenes' UIDocuments) and InputTestFixture devices; gaps named with their fillers
+## [2026-11-21] implement | CC-046.1 | Spike answered all four questions; CatharticColours.TestSupport assembly with GameDriver, PlaythroughTest and PlayModeTestSupport; smoke tests moved onto the driver; EditMode 442 passed, PlayMode 7 passed

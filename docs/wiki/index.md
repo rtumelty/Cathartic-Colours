@@ -29,6 +29,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [ADR-003 FMOD for Unity as an embedded UPM package](decisions/ADR-003-fmod-embedded-package.md) — FMOD 2.04 lives in `Packages/com.fmod.fmod-for-unity.v204/` (committed vendor code), settings in `Assets/Resources/FMOD/`. Status: Accepted.
 - [ADR-004 Game code in Core and Presentation assemblies](decisions/ADR-004-core-presentation-assemblies.md) — data, ECS and saves in `CatharticColours.Core`; scene objects, UI and input in `CatharticColours.Presentation`, which references Core and never the reverse. Status: Accepted.
 - [ADR-005 Game modes as composable rule families](decisions/ADR-005-composable-rule-families.md) — merge rules stay generic structs; spawn, scoring, end, grid-change and timer rules are structs picked per family by enum and combined in an unmanaged `GameRules`. Status: Accepted.
+- [ADR-006 Playthrough tests through Unity's official test packages](decisions/ADR-006-official-test-tools.md) — UI Test Framework fixture on the scenes' own panels, Input System test devices, test-only gap fillers (panel clock, editor panel target, PNG writer, audio recorder). Status: Accepted.
 
 ## Systems
 - [System page format](systems/README.md) — how system pages describe current behaviour, cite sources and link known issues.

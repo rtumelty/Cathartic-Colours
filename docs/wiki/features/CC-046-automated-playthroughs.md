@@ -5,7 +5,7 @@
 | Issue | [#97](https://github.com/rtumelty/Cathartic-Colours/issues/97) (status and fields live on the [board](https://github.com/users/rtumelty/projects/1)) |
 | Branch | `feature/CC-046-automated-playthroughs` (from `develop`, created by the planning session on approval) |
 | PR | — |
-| Decision | ADR-006, test automation through official Unity test packages (written in CC-046.1) |
+| Decision | [ADR-006](../decisions/ADR-006-official-test-tools.md), playthrough tests through Unity's official test packages |
 | Follow-up | [CC-047](https://github.com/rtumelty/Cathartic-Colours/issues/102), the same playthroughs on an Android device (the primary use case) |
 | Related | [CC-002](https://github.com/rtumelty/Cathartic-Colours/issues/8) (PlayMode smoke tests), [test-plan](../test-plan.md), [input](../systems/input.md), [ui-layout](../systems/ui-layout.md), [save-system](../systems/save-system.md) |
 
@@ -75,8 +75,8 @@ Then:
 - Move the two smoke tests onto it, so the gameplay smoke test moves through real input.
 
 **Definition of Done** (template plus):
-- [ ] The four answers recorded on this page and in ADR-006; any fallback named (for example raw `ClickEvent`s through the panel, if the simulator can't attach)
-- [ ] Smoke tests pass through the driver; full EditMode and PlayMode pass from the command line
+- [x] The four answers recorded on this page and in ADR-006; any fallback named (for example raw `ClickEvent`s through the panel, if the simulator can't attach)
+- [x] Smoke tests pass through the driver; full EditMode and PlayMode pass from the command line
 
 **Stop rule:** if the official tools can't do question 1 or 2 at all, stop and tell Ronan before building custom input or UI code.
 
@@ -147,8 +147,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\run-playthrough.ps
 - **D2 to D6** as in Approach (proposed by planning; approved with the plan, 2026-11-21).
 - **D7 — Driver ready for a device** (Ronan, 2026-11-21), as in Approach.
 
+## CC-046.1 answers (spike, 2026-11-21)
+Recorded in full in [ADR-006](../decisions/ADR-006-official-test-tools.md). The spike tests are `Assets/Tests/PlayMode/ToolSpikeTests.cs`.
+1. **UI:** yes. `RuntimeUITestFixture.SetUIContent` attaches the UI Test Framework's simulator to each scene's own `UIDocument`. It clicks the dropdown entries, drags the sliders and presses Start. This needs the fixture as the test's base class (`PlaythroughTest`). In the editor it also needs the panel laid out at phone size.
+2. **Input:** yes. `InputTestFixture` keyboard presses go through `GameInputHandler`, and a queued touchscreen swipe goes through `SwipeDetector`.
+3. **Screenshots:** not from the screen in batchmode (no end of frame). They work by rendering the camera and the UI into textures and compositing them.
+4. **Audio:** yes. `AudioEventRecorderSystem` runs between `BoardStepSystem` and `AudioSystem`; FMOD still plays.
+
+**Editor-only parts (D7):**
+- the panel retarget to a 1080x1920 render texture;
+- the screenshot composite and its camera framing.
+
+Both are behind `Application.isEditor`. A device uses its real screen and the end-of-frame screen read. Device test builds must be development builds, because `InputTestFixture` only saves and restores input state there.
+
 ## Divergences
-_None yet._
+- **Case categories use underscores** (CC-046.1, implementation detail): NUnit rejects `-` in category names, so TP-STD-04's test has `[Category("TP_STD_04")]`. The runner script (CC-046.4) maps ids to categories.
+- **Tests derive from `PlaythroughTest`** (CC-046.1, implementation detail). The UI Test Framework's event helpers are internal and only set up by its fixture, so the driver takes the fixture rather than creating its own simulator.
+- **`Screenshot` and `AudioEvents` arrived in CC-046.1**, because the spike needed them for questions 3 and 4. CC-046.2 still adds known boards, `Swipe`, `Gamepad` and the self-tests.
+- **Core's `AssemblyInfo.cs` gains `InternalsVisibleTo("CatharticColours.TestSupport")`**, so the moved `PlayModeTestSupport` can still set `SaveGameManager.SaveFilePathOverride`. This grants access only and adds no game hook; the PlayMode test assembly already had the same grant.
+- **Gap fillers in the test-support assembly:** `PanelClock`, `PngWriter` and `AudioEventRecorderSystem`. Each is named in ADR-006 with its reason.
 
 ## Feature test plan
 1. `tools\run-playthrough.ps1 -Case TP-STD-04` passes, and the report has before and after screenshots.
