@@ -153,3 +153,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-20] approve | CC-039 | Planned and approved by Ronan with no approval stops; #68 Approved; sub-issues created; feature page committed
 ## [2026-11-20] implement | CC-039.1 | Version code = develop's commit count at the merge base × 100 + commits ahead (max 99); AndroidBuildArgs composes it from -versionBase/-versionAhead; build-android.ps1 fetches develop and adds -PrintVersionCode. Develop 7900, branch 7901
 ## [2026-11-20] implement | CC-039.2 | build-android page describes the composed version code; CC-004 D2 marked superseded; TP-DROID-07 and TP-DROID-08 added
+## [2026-11-21] approve | CC-039 | PR #90 squash-merged into develop as 3eb0bb7, identical to the branch tip; #68 and sub-issues #85-#86 Done; removed from roadmap.md
