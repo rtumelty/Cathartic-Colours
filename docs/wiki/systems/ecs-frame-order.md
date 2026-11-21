@@ -28,7 +28,7 @@ All six systems are `partial struct ... : ISystem`, auto-created in the default 
 
 | System | Group | Ordering attributes | `RequireForUpdate` | Burst |
 |---|---|---|---|---|
-| `BoardStepSystem` | Simulation | none (first of the project's Simulation systems through the others' attributes) | `GameStateComponent`, `GameModeComponent`, `GridConfigComponent`, `ScoringConfigComponent`, `ScoreComponent` | yes |
+| `BoardStepSystem` | Simulation | none (first of the project's Simulation systems through the others' attributes) | `GameStateComponent`, `GridConfigComponent`, `GameRulesComponent`, `ScoreComponent` | yes |
 | `ClearMoveDirectionSystem` | Simulation | `[UpdateAfter(BoardStepSystem)]` | none | yes |
 | `AudioSystem` | Simulation | `[UpdateAfter(BoardStepSystem)]` | none | no: FMOD `RuntimeManager` |
 | `MergeEffectsSystem` | Presentation | `[UpdateBefore(SaveGameSystem)]` | `MergeEventComponent` | no: calls the `PointsParticleSpawner` MonoBehaviour |
@@ -84,16 +84,16 @@ Because `EndFrameSystem` is last, the `WaitingForInput = false` set by `BoardSte
 | `GridConfigComponent` (`Width`, `Height`) | `GameRenderer.InitializeGame` | not changed after creation | `BoardStepSystem` |
 | `GameStateComponent` (`WaitingForInput`, `GameOver`, `LevelComplete`, `MoveCount`, `Random`, `LastMoveDirection`) | `GameRenderer.InitializeGame` (`WaitingForInput = true`, `Random` seeded from `DateTime.Now.Ticks`); fields overwritten on resume by `SaveGameManager.RestoreWorldState` (`LastMoveDirection` is not saved) | `BoardStepSystem` (all but `LevelComplete`); `EndFrameSystem` (`WaitingForInput`) | `BoardStepSystem`, `SaveGameSystem`, `GameRenderer.UpdateUI` (UI and wobble) |
 | `ScoreComponent` (`TotalScore`, `CurrentFrameScore`) | `GameRenderer.InitializeGame` (zeros); overwritten on resume | `BoardStepSystem`: adds the step's score delta; `CurrentFrameScore` is this frame's points and is reset to 0 on every other frame | `SaveGameSystem`, `GameUIManager` |
-| `GameModeComponent` (`Mode`) | `GameRenderer.InitializeGame` from `config.gameMode` | not changed | `BoardStepSystem` (passed to `MergeRulesFactory.Step`) |
-| `ScoringConfigComponent` (`Settings`: tier points and the spawn toggle) | `GameRenderer.InitializeGame` from `GameConfiguration` (`tier1Points`..`tier4Points`, `spawnNextColourSystem`), also on resume after the configuration is rebuilt from the save | not changed | `BoardStepSystem` |
+| `GameModeComponent` (`Mode`) | `GameRenderer.InitializeGame` from `config.gameMode` | not changed | UI and saves (`BoardStepSystem` no longer reads it since CC-008.3) |
+| `GameRulesComponent` (`Rules`: a `GameRules` naming one rule per family, plus tier points; CC-008.3, replacing `ScoringConfigComponent`) | `GameRenderer.InitializeGame` through `GameRulesComponent.From(config)` (mode, `spawnNextColourSystem`, `tier1Points`..`tier4Points`); a resume goes through the same call after the configuration is rebuilt from the save. Never saved | not changed | `BoardStepSystem` |
 
-`GameRenderer.CleanUp` destroys the block entities, `GridConfigComponent`, `GameModeComponent`, `ScoringConfigComponent` and the game-state and score entities. It does not destroy pending event entities or a pending `MoveDirectionComponent`.
+`GameRenderer.CleanUp` destroys the block entities, `GridConfigComponent`, `GameModeComponent`, `GameRulesComponent` and the game-state and score entities. It does not destroy pending event entities or a pending `MoveDirectionComponent`.
 
 ### One player move, frame by frame
 A move takes one ECS frame, starting from `WaitingForInput == true`, `GameOver == false`.
 
 1. **Outside ECS.** A keyboard action (`GameInputHandler.OnMove`) or a swipe (`GameInputHandler.OnSwipe`) calls `SendMoveCommand`, which creates a `MoveDirectionComponent` entity unless one already exists.
-2. **`BoardStepSystem`.** Resets `CurrentFrameScore` to 0. With no move command it stops. If `WaitingForInput` is false or `GameOver` is true, the move is **rejected**: nothing changes and no events are created. Otherwise it copies the block entities into a `BoardState`, calls `MergeRulesFactory.Step` (slide, merge, score, resolve the indicator, spawn the next, end check; see [merge-rules.md](merge-rules.md)) and, if the step was accepted:
+2. **`BoardStepSystem`.** Resets `CurrentFrameScore` to 0. With no move command it stops. If `WaitingForInput` is false or `GameOver` is true, the move is **rejected**: nothing changes and no events are created. Otherwise it copies the block entities into a `BoardState`, calls `BoardSimulation.Step` with the `GameRules` singleton (slide, merge, score, resolve the indicator, spawn the next, end check; see [merge-rules.md](merge-rules.md)) and, if the step was accepted:
    - stores the new random state, increments `MoveCount`, sets `LastMoveDirection` and sets `WaitingForInput = false` (the "a move happened" signal for `SaveGameSystem`);
    - if the board is now game over, sets `GameOver = true` and `WaitingForInput = true`;
    - adds the score delta to `ScoreComponent`;

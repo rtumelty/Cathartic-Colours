@@ -25,9 +25,8 @@ namespace ECS.Systems
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<GameStateComponent>();
-            state.RequireForUpdate<GameModeComponent>();
             state.RequireForUpdate<GridConfigComponent>();
-            state.RequireForUpdate<ScoringConfigComponent>();
+            state.RequireForUpdate<GameRulesComponent>();
             state.RequireForUpdate<ScoreComponent>();
 
             blockQuery = SystemAPI.QueryBuilder().WithAll<BlockComponent>().Build();
@@ -48,8 +47,7 @@ namespace ECS.Systems
                 return;
 
             var grid = SystemAPI.GetSingleton<GridConfigComponent>();
-            var mode = SystemAPI.GetSingleton<GameModeComponent>().Mode;
-            var settings = SystemAPI.GetSingleton<ScoringConfigComponent>().Settings;
+            var rules = SystemAPI.GetSingleton<GameRulesComponent>().Rules;
 
             var entities = blockQuery.ToEntityArray(Allocator.Temp);
             var blocks = blockQuery.ToComponentDataArray<BlockComponent>(Allocator.Temp);
@@ -70,7 +68,7 @@ namespace ECS.Systems
 
             var events = new NativeList<SimEvent>(32, Allocator.Temp);
             var random = gameState.ValueRO.Random;
-            var result = BoardSimulation.Step(ref board, move.Direction, GameRules.For(mode, settings), ref random, events);
+            var result = BoardSimulation.Step(ref board, move.Direction, rules, ref random, events);
 
             if (result.Accepted)
             {

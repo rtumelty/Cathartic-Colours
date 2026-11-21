@@ -134,6 +134,10 @@ Implementation specifics only; no change to scope, decisions, deliverable order 
   - The scoring dispatcher is called once per merge rather than once per move. Merges are few per move, and it keeps a scoring rule a per-merge function.
   - `BoardStepSystem` was moved onto `GameRules.For(mode, settings)` in CC-008.2 only so it compiles; CC-008.3 replaces `ScoringConfigComponent` with `GameRulesComponent`.
   - `StepSettings` stays as the per-game settings from configuration that `GameRules.For` reads.
+- **CC-008.3:**
+  - The one builder for new and resumed games is `GameRulesComponent.From(GameConfiguration)`, a static method on the component in Core (`ECS/Components`), so no new folder or assembly reference.
+  - `BoardStepSystem` no longer requires `GameModeComponent`, since it only needs the rules. The component stays for the UI and saves.
+  - `GameRenderer` itself isn't EditMode-testable. The new tests cover the builder and the configuration a resume produces (`SaveGameManager.InitializeFromSave`), and the PlayMode smoke tests cover `InitializeGame`. `BoardStepSystemTests` changed one test name (ScoringConfig to GameRules), no values.
 
 ## Feature test plan
 1. Each mode: play to a few merges; scores and merges as before.

@@ -78,8 +78,8 @@ namespace ECS.Tests
                 Points = points ?? TierPoints.Default,
                 SpawnEnabled = spawnEnabled
             };
-            var scoringEntity = EntityManager.CreateEntity();
-            EntityManager.AddComponentData(scoringEntity, new ScoringConfigComponent { Settings = settings });
+            var rulesEntity = EntityManager.CreateEntity();
+            EntityManager.AddComponentData(rulesEntity, new GameRulesComponent { Rules = GameRules.For(mode, settings) });
 
             // Block entities.
             initialEntities = new Entity[Width * Height];

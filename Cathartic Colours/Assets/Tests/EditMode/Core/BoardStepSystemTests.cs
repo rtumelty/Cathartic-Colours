@@ -202,7 +202,7 @@ namespace ECS.Tests
         }
 
         [Test]
-        public void ScoringMove_UsesThePointsFromTheScoringConfig()
+        public void ScoringMove_UsesThePointsFromTheGameRules()
         {
             var points = new TierPoints { Tier1 = 25, Tier2 = 60, Tier3 = 125, Tier4 = 250 };
             var w = Create(GameMode.Standard, ". . Rs Rs", points: points);

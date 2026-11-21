@@ -16,7 +16,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`). Coord
 | `Assets/Scripts/Simulation/AdvancedColorMergeRules.cs` | Advanced Color Merge rules |
 | `Assets/Scripts/Simulation/BoardSimulation.cs`, `BoardState.cs`, `Block.cs`, `SimEvent.cs`, `StepSettings.cs` | The move step: runs the phases in order and calls each family's rule; `Advance` for time passing |
 | `Assets/Tests/EditMode/` | Unit tests for all of the above (`CatharticColours.Simulation.Tests`) |
-| `Assets/Scripts/Data/GameConfiguration.cs` | Tier point values (`tier1Points`..`tier4Points`) and the spawn toggle, copied into `ScoringConfigComponent` at game start |
+| `Assets/Scripts/Data/GameConfiguration.cs` | Tier point values (`tier1Points`..`tier4Points`) and the spawn toggle, built into `GameRulesComponent` (by `GameRulesComponent.From`) at game start or resume (CC-008.3) |
 | `Assets/Scripts/ECS/Systems/BoardStepSystem.cs` | Runs `Step` for each move and turns its events into audio and merge events ([ecs-frame-order.md](ecs-frame-order.md)) |
 | `Assets/Scripts/Simulation/BlockColor.cs`, `BlockSize.cs`, `ScoreTier.cs`, `GameMode.cs` | Block and mode enums (namespace `Simulation`, assembly `CatharticColours.Simulation`, since CC-006) |
 | `Assets/Scripts/ECS/Components/BlockComponent.cs` | `BlockComponent` |
@@ -107,7 +107,7 @@ Rows only; one row of a grid of width 4 (`x = 0..3`), `.` = empty, the move is r
 ### Scoring
 Source: `Assets/Scripts/Simulation/ScoringRules.cs` (`TierPointsScoring`, called from `BoardSimulation.Slide`), `Assets/Scripts/Simulation/StepSettings.cs` (`TierPoints`), `Assets/Scripts/Data/GameConfiguration.cs`.
 
-- Only merges score; each merge earns `TierPoints.For(tier)`, and `StepResult.ScoreDelta` is the sum for the move. There is no multiplier, chain or per-move bonus. The points come from `GameConfiguration` through `ScoringConfigComponent`; score no longer depends on a particle spawner existing (it did before CC-006.3).
+- Only merges score; each merge earns `TierPoints.For(tier)`, and `StepResult.ScoreDelta` is the sum for the move. There is no multiplier, chain or per-move bonus. The points come from `GameConfiguration` through `GameRulesComponent` (CC-008.3); score no longer depends on a particle spawner existing (it did before CC-006.3).
 - Defaults: Tier1 10, Tier2 50, Tier3 100, Tier4 200 (`None` gives 0). The configuration assets do not override these ([configuration.md](configuration.md)).
 - `BoardStepSystem` adds the delta to `ScoreComponent.TotalScore`; `CurrentFrameScore` is this frame's sum (zero on frames with no merge).
 - Each merge also emits particles at the merge cell with the result colour (`MergeEffectsSystem` calls `PointsParticleSpawner.Emit(points, colour, position)`).
