@@ -17,6 +17,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [CC-043 Faster Android development builds](features/CC-043-android-build-times.md) — where Android build time goes (Unity traces), Defender exclusions, development and release baselines, experiments, and the chosen development settings (Symbol Table symbols, script debugging off, a Debuggable profile). Issue [#76](https://github.com/rtumelty/Cathartic-Colours/issues/76).
 - [CC-039 Android version codes that never go backwards](features/CC-039-version-codes.md) — version code = develop's commit count × 100 + commits ahead, so develop builds always install over feature-branch builds; -PrintVersionCode. Issue [#68](https://github.com/rtumelty/Cathartic-Colours/issues/68).
 - [CC-042 Rotating save files and reporting bad saves](features/CC-042-rotating-saves.md) — three rotating save files with fallback to the newest valid one, rejection reasons, a SaveRejected event and capped bad files. Issue [#70](https://github.com/rtumelty/Cathartic-Colours/issues/70). The page is on `feature/CC-042-rotating-saves`.
+- [CC-046 Automated playthroughs from menu to gameplay](features/CC-046-automated-playthroughs.md) — a test-only driver on Unity's UI Test Framework and Input System test devices plays the real game from the menu; test-plan cases become PlayMode tests run by a script with a report. Issue [#97](https://github.com/rtumelty/Cathartic-Colours/issues/97). The page is on `feature/CC-046-automated-playthroughs`.
 - [CC-008 Game mode rules framework](features/CC-008-rules-framework.md) — modes built from swappable rule families (merge, spawn, scoring, end, grid change, timer) with today's three modes unchanged, proven by recorded seeded games. Issue [#20](https://github.com/rtumelty/Cathartic-Colours/issues/20). The page is on `feature/CC-008-rules-framework`.
 - [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Issue [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46).
 
@@ -28,6 +29,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [ADR-003 FMOD for Unity as an embedded UPM package](decisions/ADR-003-fmod-embedded-package.md) — FMOD 2.04 lives in `Packages/com.fmod.fmod-for-unity.v204/` (committed vendor code), settings in `Assets/Resources/FMOD/`. Status: Accepted.
 - [ADR-004 Game code in Core and Presentation assemblies](decisions/ADR-004-core-presentation-assemblies.md) — data, ECS and saves in `CatharticColours.Core`; scene objects, UI and input in `CatharticColours.Presentation`, which references Core and never the reverse. Status: Accepted.
 - [ADR-005 Game modes as composable rule families](decisions/ADR-005-composable-rule-families.md) — merge rules stay generic structs; spawn, scoring, end, grid-change and timer rules are structs picked per family by enum and combined in an unmanaged `GameRules`. Status: Accepted.
+- [ADR-006 Playthrough tests through Unity's official test packages](decisions/ADR-006-official-test-tools.md) — UI Test Framework fixture on the scenes' own panels, Input System test devices, test-only gap fillers (panel clock, editor panel target, PNG writer, audio recorder). Status: Accepted.
 
 ## Systems
 - [System page format](systems/README.md) — how system pages describe current behaviour, cite sources and link known issues.
@@ -41,10 +43,11 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [Audio and FMOD](systems/audio-fmod.md): audio event entities, the five FMOD events, FMOD for Unity settings, the saved FMOD Studio 2.04 project layout, platforms and encodings, and rebuilding the banks with `tools/build-fmod-banks.ps1`.
 - [Input](systems/input.md): Input System setup, keyboard and swipe paths, `MoveDirectionComponent` lifecycle.
 - [UI layout](systems/ui-layout.md): UXML/USS assets, every queried element name checked against the UXML, panels, UI events, `LayoutObserver` and camera fit.
+- [Test automation](systems/test-automation.md): the `GameDriver` that plays the real menus and input for PlayMode tests (CC-046), how to write a case, every driver call, the board notation, what can't be automated and the editor-only parts.
 - [Presentation](systems/presentation.md): `GameRenderer`, `Block`, jelly wobble, score particles, and the ECS state each reads and writes.
 
 ## Testing
-- [Manual test plan](test-plan.md) — how to run the test plan, case format, 66 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), 8 Android build cases (DROID), 4 project-tracking cases (TRACK, CC-034) and 5 editor and tooling cases (TOOL, CC-033, CC-003).
+- [Manual test plan](test-plan.md) — how to run the test plan, case format, 66 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), 8 Android build cases (DROID), 4 project-tracking cases (TRACK, CC-034) and 8 editor and tooling cases (TOOL, CC-033, CC-003, CC-046). Every case has an Automated field naming its PlayMode test (61 cases, run with `tools/run-playthrough.ps1`) or why it stays manual.
 
 ## Raw sources
 - [Raw sources](../raw/README.md) — immutable source material and its register (PuzzleScript prototype, planning discussion when supplied).

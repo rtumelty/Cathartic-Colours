@@ -5,11 +5,15 @@
         "CatharticColours.Core",
         "CatharticColours.Presentation",
         "CatharticColours.Simulation",
+        "CatharticColours.TestSupport",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.Entities",
         "Unity.Mathematics",
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.InputSystem",
+        "Unity.InputSystem.TestFramework",
+        "Unity.UI.TestFramework.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

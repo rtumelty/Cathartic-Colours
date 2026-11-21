@@ -13,7 +13,7 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | `Assets/Scripts/{Data,ECS,SaveSystem}/CatharticColours.Core.asmref` | Assembly definition references that add those folders to Core |
 | `Assets/Scripts/Gameplay/CatharticColours.Presentation.asmdef` | Presentation assembly (MonoBehaviours, UI, input) |
 | `Assets/Editor/Build/CatharticColours.Build.Editor.asmdef` | Editor-only build tooling ([build-android](build-android.md)) |
-| `Assets/Tests/EditMode/**/*.asmdef`, `Assets/Tests/PlayMode/*.asmdef` | The four test assemblies |
+| `Assets/Tests/EditMode/**/*.asmdef`, `Assets/Tests/PlayMode/*.asmdef`, `Assets/Tests/Support/*.asmdef` | The four test assemblies and the test-support assembly (CC-046) |
 
 ## How it works
 
@@ -27,7 +27,8 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | `CatharticColours.Simulation.Tests` | `Tests/EditMode/` | Simulation, Unity.Mathematics/Collections/Burst, test runner | EditMode, editor only |
 | `CatharticColours.Core.Tests` | `Tests/EditMode/Core/` | Core, Simulation, Unity.Entities/Mathematics/Collections/Burst, test runner | EditMode, editor only: board-step system and save/restore tests |
 | `CatharticColours.Build.Editor.Tests` | `Tests/EditMode/Build/` | Build.Editor, test runner | EditMode, editor only |
-| `CatharticColours.PlayMode.Tests` | `Tests/PlayMode/` | Core, Presentation, Simulation, Unity.Entities/Mathematics/Collections, test runner | PlayMode smoke tests that run the real scenes |
+| `CatharticColours.PlayMode.Tests` | `Tests/PlayMode/` | Core, Presentation, Simulation, TestSupport, Unity.Entities/Mathematics/Collections, Input System and its test framework, UI Test Framework, test runner | PlayMode tests that play the real scenes through the `GameDriver` |
+| `CatharticColours.TestSupport` | `Tests/Support/` | Core, Presentation, Simulation, Unity.Entities/Mathematics/Collections, Input System and its test framework (`Unity.InputSystem.TestFramework`), UI Test Framework (`Unity.UI.TestFramework.Runtime`), test runner | Test-only (`UNITY_INCLUDE_TESTS`), all platforms: `GameDriver`, `PlaythroughTest`, `PlayModeTestSupport`, board notation and the gap fillers in [ADR-006](../decisions/ADR-006-official-test-tools.md). Runtime APIs only, so it can run in a player (CC-047) |
 
 Runtime assemblies have `autoReferenced` true; test assemblies have it false and a `UNITY_INCLUDE_TESTS` define constraint.
 
@@ -46,12 +47,12 @@ A new folder under `Assets/Scripts/` that should be Core needs a `CatharticColou
 `SaveGameSystem` (Core) must run after `MergeEffectsSystem` (Presentation) in `PresentationSystemGroup`. Core can't name a Presentation type, so the constraint is declared from the Presentation side: `[UpdateBefore(typeof(SaveGameSystem))]` on `MergeEffectsSystem` (`Assets/Scripts/Gameplay/MergeEffectsSystem.cs`). The resolved order is unchanged: `MergeEffectsSystem`, `SaveGameSystem`, `EndFrameSystem` ([ecs-frame-order](ecs-frame-order.md)). Entities finds systems in every assembly, so a Presentation system runs like any other.
 
 ### Test hooks: InternalsVisibleTo and the save path override
-`Assets/Scripts/Core/AssemblyInfo.cs` makes Core's internals visible to `CatharticColours.Core.Tests` and `CatharticColours.PlayMode.Tests`. Tests use that to set `SaveGameManager.SaveFilePathOverride` (`Assets/Scripts/SaveSystem/SaveGameManager.cs`), which redirects the single save path (`SaveGameManager.SaveFilePath`, also used by `SaveGameSystem`) to a temp folder. The default path (`Application.persistentDataPath/savegame.json`) is unchanged, and tests set the override back to `null` in their teardown. A new test assembly that needs it adds its own `InternalsVisibleTo` line.
+`Assets/Scripts/Core/AssemblyInfo.cs` makes Core's internals visible to `CatharticColours.Core.Tests`, `CatharticColours.PlayMode.Tests` and `CatharticColours.TestSupport`. Tests use that to set `SaveGameManager.SaveFilePathOverride` (`Assets/Scripts/SaveSystem/SaveGameManager.cs`), which redirects the single save path (`SaveGameManager.SaveFilePath`, also used by `SaveGameSystem`) to a temp folder. The default path (`Application.persistentDataPath/savegame.json`) is unchanged, and tests set the override back to `null` in their teardown. A new test assembly that needs it adds its own `InternalsVisibleTo` line.
 
 ### Running the tests
 Commands are in the project `CLAUDE.md` §4 (editor closed, no `-quit`):
 - **EditMode** runs `CatharticColours.Simulation.Tests`, `CatharticColours.Core.Tests` and `CatharticColours.Build.Editor.Tests`.
-- **PlayMode** runs `CatharticColours.PlayMode.Tests` (`Assets/Tests/PlayMode/`): a gameplay scene test (one move changes the move count and block positions, and is saved to the temp folder) and a main menu test (the Start button loads a new game with the chosen mode and size). Both set the save override, so the real save is never touched and no game resumes. A logged error fails a test.
+- **PlayMode** runs `CatharticColours.PlayMode.Tests` (`Assets/Tests/PlayMode/`): the smoke tests (a key-press move changes the move count and block positions and is saved to the temp folder; the menu's controls and Start begin a new game with the chosen mode and size), the CC-046.1 tool spike tests, and the playthrough cases (CC-046.3). All derive from `PlaythroughTest`, whose `GameDriver` sets the save override, so the real save is never touched. A logged error fails a test. See [test-automation](test-automation.md).
 
 ## Interactions with other systems
 - [ecs-frame-order](ecs-frame-order.md): which systems run in which group, and the `MergeEffectsSystem` to `SaveGameSystem` constraint above.

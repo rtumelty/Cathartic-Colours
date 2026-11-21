@@ -3,6 +3,7 @@
     "rootNamespace": "Simulation.Tests",
     "references": [
         "CatharticColours.Simulation",
+        "CatharticColours.TestSupport",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.Mathematics",
