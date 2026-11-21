@@ -1,0 +1,14 @@
+commit,date,milestone,game_cs_files,game_cs_lines,test_and_editor_cs_lines,test_attributes,tests_run_passing
+a898b66,2026-01-08,First ECS pass,17,937,0,0,0
+3fc0cdc,2026-01-15,Three modes + strategy refactor,32,1739,0,0,0
+a568c92,2026-02-16,End of AI Assistant era (save system),44,3289,0,0,0
+9685156,2026-11-19,CC-006.1 simulation assembly,,,,,4
+269a31d,2026-11-19,CC-006.2 pure board model,,,,,200
+2a4177d,2026-11-19,CC-006 merged,47,3433,2566,171,207
+d248868,2026-11-19,CC-004.2 build editor tests,,,,,226
+4e1a253,2026-11-19,CC-002.2 ECS step tests,,,,,258
+3157453,2026-11-20,CC-002 merged,49,3465,4603,254,288 (+2 PlayMode)
+04f6116,2026-11-20,CC-041 merged,49,3675,4917,278,312 (+2 PlayMode)
+3eb0bb7,2026-11-21,CC-039 merged,,,,,356
+7880b5e,2026-11-21,CC-042 merged,,,,,367 (+2 PlayMode)
+85a97ef,2026-11-21,CC-008 merged,54,4205,6694,404,442 (+1 skipped, +2 PlayMode)

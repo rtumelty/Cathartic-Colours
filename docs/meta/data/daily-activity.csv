@@ -1,0 +1,21 @@
+date,era,commits_all_branches,changed_lines_total,changed_lines_cs,changed_lines_md,note
+2021-04-12,PuzzleScript,1,235,0,0,Cathartic Colors v1.0 (252-line .pz)
+2021-04-27,PuzzleScript,1,30,0,0,Add colour foreshadowing
+2026-01-08,AI Assistant,6,18711,1224,0,First ECS pass; AI Assistant package added; mostly generated UI schema files
+2026-01-09,AI Assistant,3,53374,33190,0,FMOD for Unity plugin imported (vendored C# dominates)
+2026-01-12,AI Assistant,1,10,10,0,
+2026-01-13,AI Assistant,1,157,123,0,
+2026-01-14,AI Assistant,4,1476,145,0,
+2026-01-15,AI Assistant,13,3328,2423,0,Two new modes, strategy refactor, main menu in one day
+2026-01-16,AI Assistant,1,7,3,0,
+2026-01-17,AI Assistant,1,5025,95,0,Particle system (asset-heavy)
+2026-01-18,AI Assistant,1,411,392,0,Scoring system (unmerged branch points_system)
+2026-01-31,AI Assistant,4,10948,947,0,
+2026-02-01,AI Assistant,2,6016,81,0,Jelly / wobble shaders
+2026-02-07,AI Assistant,2,3963,102,0,Switch to forward-rendered 3D
+2026-02-15,AI Assistant,1,89,76,0,
+2026-02-16,AI Assistant,1,471,458,0,Save system (last commit before 9-month gap)
+2026-11-18,Claude Code,35,15098,3276,6924,Workflow + wiki + GitHub board + Unity 6.6 upgrade started
+2026-11-19,Claude Code,45,39662,14864,3203,Unity 6.6 merged; pure simulation; FMOD; Android builds; assemblies
+2026-11-20,Claude Code,39,10236,7045,2487,Quick-fix batch; build times; version codes; rotating saves
+2026-11-21,Claude Code,15,6365,4243,1276,Rules framework; playthroughs planned (partial day)

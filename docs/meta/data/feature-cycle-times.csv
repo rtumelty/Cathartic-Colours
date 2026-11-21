@@ -1,0 +1,13 @@
+id,pr,title,plan_committed,pr_opened,merged,plan_to_pr_h,plan_to_merge_h,additions,deletions,files,note
+CC-001,1,Wiki scaffold and system pages,2026-11-18 11:43,2026-11-18 14:56,2026-11-18 15:09,3.2,3.4,2039,6,19,Approval stop after every deliverable
+CC-034,50,Roadmap to GitHub Issues and Projects,2026-11-18 15:59,2026-11-18 17:05,2026-11-18 17:06,1.1,1.1,1225,327,20,
+CC-033,54,Unity 6000.6.9f1 + FMOD 2.04 upgrade,2026-11-18 17:33,2026-11-18 18:16,2026-11-19 12:29,0.7,19.0,6206,6773,567,Overnight; Hub GUI step by Ronan
+CC-006,56,Pure Burst board simulation,2026-11-18 15:59,2026-11-19 17:21,2026-11-19 17:23,25.4,25.4,4556,1294,132,Waited for CC-033; implementation 12:37-17:21 (4.7h)
+CC-003,66,FMOD project clean-up + CLI banks,2026-11-19 17:52,2026-11-19 18:20,2026-11-19 19:03,0.5,1.2,302,70,245,
+CC-004,67,Command-line Android dev APKs,2026-11-19 17:52,2026-11-19 22:47,2026-11-19 22:54,4.9,5.0,755,18,24,Started after CC-003 merge; first build 36 min
+CC-002,78,Core / Presentation assemblies + tests,2026-11-19 23:20,2026-11-20 00:28,2026-11-20 00:31,1.1,1.2,2328,73,55,
+CC-041,80,Eleven quick fixes,2026-11-20 00:36,2026-11-20 01:10,2026-11-20 02:10,0.6,1.6,1215,502,38,No approval stops
+CC-043,84,Android build times,2026-11-20 08:26,2026-11-20 13:57,2026-11-20 21:17,5.5,12.9,708,46,12,Many timed builds
+CC-039,90,Version codes never go backwards,2026-11-20 21:55,2026-11-20 22:04,2026-11-21 07:37,0.15,9.7,527,73,10,No approval stops; merged next morning
+CC-042,91,Rotating saves,2026-11-20 21:55,2026-11-20 22:10,2026-11-21 09:39,0.25,11.7,993,60,8,Ran in parallel with CC-039
+CC-008,96,Rules framework,2026-11-21 09:54,2026-11-21 10:10,2026-11-21 10:47,0.27,0.9,1981,262,51,No approval stops; 300 recorded games

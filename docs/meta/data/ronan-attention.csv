@@ -1,0 +1,6 @@
+date,typed_messages,short_messages,first_message,last_message,note
+2026-11-18,54,,11:14,21:14,Workflow set-up; approval after every deliverable
+2026-11-19,62,,10:02,23:59,Most features with approval stops; manual FMOD/Android steps
+2026-11-20,21,,00:04,23:23,Messages until 02:12; no-approval-stop plans begin (CC-041); away from evening
+2026-11-21,9,,07:28,11:11,Partial day; CC-008 planned and approved in 6 minutes
+total,146,59 of 146 are <=30 chars (mostly approvals),,,Source: deduplicated Claude Code transcripts; 10 context compactions excluded
