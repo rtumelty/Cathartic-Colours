@@ -144,5 +144,7 @@ Implementation specifics only; no change to scope, decisions, deliverable order 
 2. Resume a game saved on the previous build: board, score and next spawn as before.
 3. Spawn toggle off in the menu: no new blocks spawn.
 
+Cases: TP-STD-11, TP-CM-07, TP-ACM-08 (regression per mode), TP-SAVE-12 (resume a save from the previous build), TP-MENU-07 (spawn toggle off, re-run).
+
 ## Status log
 - 2026-11-21: Planned and approved by Ronan; sub-issues #92-#95

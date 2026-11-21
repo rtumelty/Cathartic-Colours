@@ -166,3 +166,4 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-21] implement | CC-008.2 | Rule families (spawn, scoring, end condition, grid change, timer) and GameRules in Simulation; Step runs fixed phases; Advance added; MergeRulesFactory removed; tests retargeted with unchanged expected values; recorded hashes identical
 ## [2026-11-21] schema | CLAUDE.md | Section 3 rules-as-strategies now describes GameRules and rule families (ADR-005) instead of MergeRulesFactory
 ## [2026-11-21] implement | CC-008.3 | GameRulesComponent singleton replaces ScoringConfigComponent; one builder (GameRulesComponent.From) for new and resumed games; BoardStepSystem steps with it; EditMode 442 passed, PlayMode 2 passed
+## [2026-11-21] implement | CC-008.4 | Feature test plan folded into test-plan.md (TP-STD-11, TP-CM-07, TP-ACM-08, TP-SAVE-12, TP-MENU-07 re-run); index updated

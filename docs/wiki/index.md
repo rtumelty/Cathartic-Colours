@@ -34,7 +34,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [Assemblies](systems/assemblies.md): the Simulation, Core, Presentation, editor and test assemblies, which folders feed each, reference rules, where new code goes, the save path override and how to run the tests.
 - [Android build](systems/build-android.md): player settings, the composed version code (develop's commit count × 100 + commits ahead), the development build profile, the command-line build script (`-Profile`, `-PrintVersionCode`) and its exit codes, reading a slow build from Unity's own traces, checking and installing an APK, and what CC-036 adds later.
 - [ECS frame order](systems/ecs-frame-order.md): every system, its group and ordering constraints, tags, event entities, singletons, and one move frame by frame.
-- [Merge rules](systems/merge-rules.md): merge rules per mode with worked examples, sliding, scoring, spawning and end conditions.
+- [Merge rules](systems/merge-rules.md): merge rules per mode with worked examples, sliding, scoring, spawning and end conditions; the rule families (since CC-008) and how to add a mode.
 - [Configuration and game start](systems/configuration.md): `GameConfiguration`, `ColorProfile`, their assets, static `GameManager`, and the path from menu to running game.
 
 - [Save system](systems/save-system.md): save schema field by field, when it saves and deletes, the resume hand-off, no versioning.
@@ -44,7 +44,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [Presentation](systems/presentation.md): `GameRenderer`, `Block`, jelly wobble, score particles, and the ECS state each reads and writes.
 
 ## Testing
-- [Manual test plan](test-plan.md) — how to run the test plan, case format, 52 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), 4 project-tracking cases (TRACK, CC-034) and 4 editor and tooling cases (TOOL, CC-033, CC-003).
+- [Manual test plan](test-plan.md) — how to run the test plan, case format, 66 current-behaviour cases across 8 game areas (MENU, STD, CM, ACM, HUD, OVER, SAVE, AUDIO), 8 Android build cases (DROID), 4 project-tracking cases (TRACK, CC-034) and 5 editor and tooling cases (TOOL, CC-033, CC-003).
 
 ## Raw sources
 - [Raw sources](../raw/README.md) — immutable source material and its register (PuzzleScript prototype, planning discussion when supplied).
