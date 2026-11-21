@@ -111,6 +111,9 @@ Each rejected file is reported once, in three ways: moved aside, logged and rais
 - If `GameManager.ActiveConfiguration` or `ActiveColorProfile` is null when saving, the corresponding fields are simply left at their defaults (mode `Standard`, size 0, empty name); the save is still written (`SaveGameSystem.CreateSaveData`). Unverified whether this can occur in practice.
 - The save system logs only warnings and errors: a missing file on load or an unusable save (`Debug.LogWarning`) and failures (`Debug.LogError`). Successful save, load and delete log nothing.
 
+## Cost
+Measured on a development build on a Galaxy S23, 2026-11-21 (CC-042): a save takes about 2.8 ms median and 3.6 ms p95 on the main thread, once per move, almost all of it the write and rotation. Development device builds log a `SaveTiming` line per save (`adb logcat -s Unity`). On Android, `persistentDataPath` is `/sdcard/Android/data/com.catharticcolours.game/files/`, readable with `adb pull`.
+
 ## Interactions with other systems
 - Frame order and the one-save-per-move behaviour: [ecs-frame-order.md](ecs-frame-order.md).
 - Configuration, `GameManager` and the start-up path that calls `InitializeFromSave`/`RestoreWorldState`: [configuration.md](configuration.md).

@@ -610,7 +610,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Field | Content |
 |---|---|
 | Id | `TP-SAVE-10` |
-| Preconditions | Editor or device. A game in progress with at least 3 moves; note Moves, Score and the board before the last move and after it. Know the save folder (editor: as in TP-SAVE-08; device: `adb shell run-as com.catharticcolours.game`, then `files/`) |
+| Preconditions | Editor or device. A game in progress with at least 3 moves; note Moves, Score and the board before the last move and after it. Know the save folder (editor: as in TP-SAVE-08; device: `/sdcard/Android/data/com.catharticcolours.game/files/`, read and written with `adb pull` and `adb push`) |
 | Steps | 1. Return to the main menu and quit (editor: stop Play mode). 2. Replace the contents of `savegame.json` with `broken`. 3. Launch again (editor: enter Play mode) and look at the menu. 4. Tap Resume. 5. Look in the save folder. |
 | Expected | Step 3: the Resume button shows. Step 4: the game resumes with the Moves, Score and board from before the last move. No message is shown. Step 5: a `savegame.bad.<timestamp>.json` file holds `broken`, and `savegame.json` holds the earlier move. The Console (editor) shows one warning, `Save rejected: reason=Unreadable file=savegame.json detail=<parser message> movedTo=savegame.bad.<timestamp>.json`. |
 | Roadmap id | CC-042 |

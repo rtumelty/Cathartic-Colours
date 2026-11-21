@@ -112,11 +112,12 @@ Implementation specifics only; no change to scope or to D2 to D5.
 - **CC-042.1, new game's first save:** the plan said it "clears `.1` and `.2` before rotating". Rotating would then move the old game's `savegame.json` into `.1`, which D5 rules out. So the first save deletes `.1` and `.2` and replaces `savegame.json` without keeping a backup (`File.Replace` with no backup name). The new game has backups from its second move on.
 - **CC-042.1, test seam:** `SaveGameManager.SimulateNoFileReplace` (internal, test-only, like `SaveFilePathOverride`) makes `WriteSave` take the path used where `File.Replace` isn't supported, so both paths are tested.
 - **CC-042.1, real-save check:** the editor's real save folder (`%USERPROFILE%\AppData\LocalLow\Ronan Tumelty\Cathartic Colours`) had no `savegame*.json` before the runs; checked again after each run instead of planting a sentinel file there, since the manual copy shares that folder.
+- **Timing log:** development device builds (`DEVELOPMENT_BUILD && !UNITY_EDITOR`) log one `SaveTiming move=… blocks=… gatherMs=… writeMs=… totalMs=…` line per save from `SaveGameSystem`, so D2's cost can be read with `adb logcat -s Unity`. Editor and release builds are unchanged.
 - **CC-042.2, reporting details:** each `SaveRejected` subscriber runs in its own `try/catch`, so one that throws doesn't stop the load or the others. Order per rejected file: move aside, one warning, then the event. A legacy `savegame.bad.json` from CC-031 builds is left alone and doesn't count towards the three kept bad files. Worker: Sonnet, accepted on first review.
 
 ## Feature test plan
 1. Play three moves, quit to the menu, resume: the board is as left. Covered by [TP-SAVE-02](../test-plan.md#tp-save-02--resume-restores-the-saved-game) and [TP-SAVE-04](../test-plan.md#tp-save-04--play-continues-and-later-moves-are-saved).
-2. Corrupt `savegame.json` (device: `adb shell run-as com.catharticcolours.game`, then edit the file under `files/`), restart the app, resume: the board is one move earlier, and a `savegame.bad.*.json` file exists. Covered by [TP-SAVE-10](../test-plan.md#tp-save-10--a-broken-newest-save-resumes-one-move-earlier).
+2. Corrupt `savegame.json` (device: the save is in `/sdcard/Android/data/com.catharticcolours.game/files/`; `adb pull` it, edit it, `adb push` it back), restart the app, resume: the board is one move earlier, and a `savegame.bad.*.json` file exists. Covered by [TP-SAVE-10](../test-plan.md#tp-save-10--a-broken-newest-save-resumes-one-move-earlier).
 3. Finish a game: no save files remain, and the menu shows no Resume. Covered by [TP-SAVE-11](../test-plan.md#tp-save-11--backups-belong-to-one-game).
 
 Folded into the comprehensive test plan (Save/Resume) in CC-042.3.
@@ -125,3 +126,5 @@ Folded into the comprehensive test plan (Save/Resume) in CC-042.3.
 - 2026-11-20: Planned and approved by Ronan (no-stops workflow)
 - 2026-11-20: CC-042.1 and CC-042.2 implemented and pushed; feature test plan folded into test-plan.md (CC-042.3)
 - 2026-11-20: PR #91 opened; development APK built (version code 82, 17:59 in a fresh worktree, 0 errors). Version code 82 is below the CC-041 APK's 88, so installing over that build needs an uninstall or `adb install -r -d` (version codes are CC-039's work)
+- 2026-11-21: Merged `develop` for CC-039's version codes. Development APK `CatharticColours-0.0.1-8106-dev.apk` (9:04, 0 errors) installed over the CC-041 build (code 73) with a plain `adb install -r`.
+- 2026-11-21: **D2 cost measured** on a Galaxy S23 (SM-S911B), 60 moves of a new Standard 6x6 game (2 to 32 blocks), main thread, per save: gather 0.06 ms median; write (JSON, temp file, rotation) 2.77 ms median, 3.53 ms p95, 5.77 ms max; total 2.84 ms median, 3.60 ms p95, 5.84 ms max. That is about a sixth of a 60 fps frame, once per move. No pre-CC-042 baseline was measured. Ronan's own device save was backed up before the run and restored byte for byte afterwards.

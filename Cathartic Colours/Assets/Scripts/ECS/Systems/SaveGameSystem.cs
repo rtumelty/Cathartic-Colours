@@ -46,9 +46,19 @@ namespace ECS.Systems
         {
             try
             {
+#if DEVELOPMENT_BUILD && !UNITY_EDITOR
+                // Development device builds log the per-move save cost, so it can be read with adb logcat (CC-042).
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var saveData = CreateSaveData(ref state);
+                double gatherMs = stopwatch.Elapsed.TotalMilliseconds;
+                SaveGameManager.WriteSave(saveData);
+                double totalMs = stopwatch.Elapsed.TotalMilliseconds;
+                Debug.Log($"SaveTiming move={saveData.moveCount} blocks={saveData.blocks.Length} gatherMs={gatherMs:F3} writeMs={totalMs - gatherMs:F3} totalMs={totalMs:F3}");
+#else
                 // Written to a temp file and moved into place, so a crash mid-write can't truncate the save (CC-031).
                 // The two saves before it are kept as backups for a fallback load (CC-042).
                 SaveGameManager.WriteSave(CreateSaveData(ref state));
+#endif
             }
             catch (System.Exception e)
             {
