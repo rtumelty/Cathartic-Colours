@@ -4,6 +4,7 @@
 //    (real pointer events on the named controls: start-button, gamemode-dropdown, width-slider, ...).
 //  - Moves go through Input System test devices (InputTestFixture): a virtual keyboard, gamepad and touchscreen, so a
 //    move takes the same path as a player's, through GameInputHandler and SwipeDetector.
+//  - Known boards are written as a save file and resumed through the menu's real Resume button (ResumeWith).
 //  - Readouts come from the ECS world (board in test-plan notation, score, move count, game over) and the HUD labels.
 //
 // Runtime APIs only, no UnityEditor calls, so the same tests can run in an Android player (CC-047). See
@@ -24,6 +25,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using ECS.Components;
+using NUnit.Framework;
+using SaveSystem;
 using Simulation;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -378,6 +381,67 @@ namespace TestSupport
             yield return WaitUntil(() => toggle.value == value, $"'{name}' to read {value}");
         }
 
+        // ---------------------------------------------------------------- known boards
+
+        /// <summary>
+        /// Starts a game from a known board through the real resume path: writes a save file for the board (see
+        /// <see cref="WriteSave"/>), opens the main menu, clicks resume-game-button and waits for the gameplay scene.
+        /// The board's size comes from the board text. The game then waits for input with the given move count and score.
+        /// <paramref name="seed"/> sets the random generator, so spawns are repeatable; with
+        /// <paramref name="spawnNextColour"/> off, moves don't depend on it.
+        /// </summary>
+        public IEnumerator ResumeWith(string board, GameMode mode, uint seed = 1, bool spawnNextColour = false, int moveCount = 0, int score = 0)
+        {
+            WriteSave(board, mode, seed, spawnNextColour, moveCount, score);
+            yield return OpenMenu();
+            yield return WaitUntil(() => IsShown("resume-game-button"), "the Resume button to show");
+            yield return Click("resume-game-button");
+            yield return WaitForGameplay();
+        }
+
+        /// <summary>
+        /// Writes a save file for a known board to the redirected save path, without opening any scene. Use it for cases
+        /// that start from the main menu themselves. "?" tokens are for expected boards only and throw here.
+        /// </summary>
+        public void WriteSave(string board, GameMode mode, uint seed = 1, bool spawnNextColour = false, int moveCount = 0, int score = 0)
+        {
+            var tokens = BoardNotation.Tokens(board);
+            int width = tokens.GetLength(0), height = tokens.GetLength(1);
+            var blocks = new List<SavedBlock>();
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                {
+                    if (tokens[x, y] == "?")
+                        throw new ArgumentException($"'?' at ({x},{y}) only belongs in an expected board, not in a board to start from.", nameof(board));
+                    var cell = BoardNotation.ParseCell(tokens[x, y]);
+                    if (cell.IsEmpty)
+                        continue;
+                    blocks.Add(new SavedBlock
+                    {
+                        color = cell.Color,
+                        size = cell.Size,
+                        gridX = x,
+                        gridY = y,
+                        isNextColorIndicator = cell.IsIndicator
+                    });
+                }
+
+            SaveGameManager.WriteSave(new SaveGameData
+            {
+                gameMode = mode,
+                gridWidth = width,
+                gridHeight = height,
+                spawnNextColourSystem = spawnNextColour,
+                colorProfileName = null,
+                waitingForInput = true,
+                gameOver = false,
+                moveCount = moveCount,
+                randomState = new Unity.Mathematics.Random(seed).state,
+                totalScore = score,
+                blocks = blocks.ToArray()
+            });
+        }
+
         // ---------------------------------------------------------------- moves
 
         /// <summary>
@@ -417,11 +481,78 @@ namespace TestSupport
             }
         }
 
+        /// <summary>
+        /// One move with a touch swipe on the virtual touchscreen, through SwipeDetector: touch down at the screen
+        /// centre, two frames, lift <paramref name="distance"/> pixels away. The game ignores swipes under 50 pixels, so a
+        /// short distance is a swipe that makes no move.
+        /// </summary>
+        public IEnumerator Swipe(Direction direction, float distance = 200f)
+        {
+            // queueEventOnly: the events are processed by the player loop's input update, as on a device.
+            var start = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            input.BeginTouch(1, start, queueEventOnly: true, screen: Touchscreen);
+            yield return null;
+            yield return null;
+            input.EndTouch(1, start + distance * Vector(direction), queueEventOnly: true, screen: Touchscreen);
+            yield return WaitForStep();
+            yield return null;
+            yield return null;
+        }
+
+        /// <summary>One move with a gamepad d-pad button: press, wait for the board to handle it, release.</summary>
+        public IEnumerator GamepadDpad(Direction direction)
+        {
+            yield return Press(DpadButton(direction));
+        }
+
+        /// <summary>
+        /// One move with the gamepad's left stick: push it fully in the direction, wait for the board to handle it, keep
+        /// it there for <paramref name="holdSeconds"/> (a held stick must still make only one move), then let go.
+        /// </summary>
+        public IEnumerator GamepadStick(Direction direction, float holdSeconds = 0)
+        {
+            yield return Hold(
+                () => input.Set(Gamepad.leftStick, Vector(direction), queueEventOnly: true),
+                () => input.Set(Gamepad.leftStick, Vector2.zero, queueEventOnly: true),
+                holdSeconds);
+        }
+
+        /// <summary>The unit vector of a direction in screen and stick space, where up is +y.</summary>
+        static Vector2 Vector(Direction d)
+        {
+            switch (d)
+            {
+                case Direction.Up: return Vector2.up;
+                case Direction.Down: return Vector2.down;
+                case Direction.Left: return Vector2.left;
+                default: return Vector2.right;
+            }
+        }
+
+        ButtonControl DpadButton(Direction d)
+        {
+            switch (d)
+            {
+                case Direction.Up: return Gamepad.dpad.up;
+                case Direction.Down: return Gamepad.dpad.down;
+                case Direction.Left: return Gamepad.dpad.left;
+                default: return Gamepad.dpad.right;
+            }
+        }
+
         IEnumerator Press(ButtonControl button)
         {
-            input.Press(button);
+            yield return Hold(() => input.Press(button), () => input.Release(button), 0);
+        }
+
+        /// <summary>The shared move step: apply the input, wait until the board has handled it, hold, release, settle.</summary>
+        IEnumerator Hold(Action apply, Action release, float holdSeconds)
+        {
+            apply();
             yield return WaitForStep();
-            input.Release(button);
+            if (holdSeconds > 0)
+                yield return new WaitForSeconds(holdSeconds);
+            release();
             yield return null;
             yield return null;
         }
@@ -456,6 +587,29 @@ namespace TestSupport
             }
             return BoardNotation.Format(cells);
         }
+
+        /// <summary>
+        /// Fails the test when the board differs from <paramref name="expected"/> (test-plan notation, "?" allowed),
+        /// naming the first differing cell and both boards.
+        /// </summary>
+        public void AssertBoard(string expected, string message = null)
+        {
+            string difference = BoardNotation.Compare(expected, Board());
+            if (difference != null)
+                Assert.Fail((string.IsNullOrEmpty(message) ? "" : message + ": ") + "Board differs: " + difference);
+        }
+
+        /// <summary>The move counter label, for example "Moves: 5".</summary>
+        public string MovesText => Text("move-count").Trim();
+
+        /// <summary>The score label, for example "Score: 30".</summary>
+        public string ScoreText => Text("score-label").Trim();
+
+        /// <summary>The status label (the game's one-line message under the header).</summary>
+        public string StatusText => Text("status-label").Trim();
+
+        /// <summary>True while the game over panel is displayed.</summary>
+        public bool IsGameOverPanelShown => IsShown("game-over-panel");
 
         public int MoveCount => PlayModeTestSupport.GetSingleton<GameStateComponent>().MoveCount;
         public int Score => PlayModeTestSupport.GetSingleton<ScoreComponent>().TotalScore;

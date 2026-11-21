@@ -93,8 +93,8 @@ Then:
 - a merge raises its merge audio event.
 
 **Definition of Done:**
-- [ ] Self-tests pass; full EditMode and PlayMode pass
-- [ ] test-automation page written
+- [x] Self-tests pass; full EditMode and PlayMode pass
+- [x] test-automation page written
 
 ### CC-046.3 ([#100](https://github.com/rtumelty/Cathartic-Colours/issues/100)) — Automate the test-plan cases
 **Risk:** Medium · **Worker:** Sonnet · **Review:** primary

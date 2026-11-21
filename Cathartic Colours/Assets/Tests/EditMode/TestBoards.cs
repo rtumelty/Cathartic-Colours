@@ -2,15 +2,15 @@
 // Written from docs/wiki/systems/merge-rules.md and the CC-006.2 API contract, without reading the
 // simulation implementation.
 //
-// Board notation (as in the wiki worked examples): cells separated by spaces, rows separated by '|',
+// Board notation (shared with the PlayMode driver through TestSupport.BoardNotation; as in the wiki worked examples): cells separated by spaces, rows separated by '|',
 // the FIRST row listed is the TOP row (highest y), so x grows to the right and y grows upwards.
 //   "."  empty cell
 //   "i"  the white next-colour indicator (Block.Indicator)
 //   "Rs" colour letter (R G B Y M C W) + size letter (s m l)
 //   "?"  (expected boards only) a freshly resolved indicator: Small Red/Green/Blue, not an indicator
 using System.Collections.Generic;
-using System.Text;
 using NUnit.Framework;
+using TestSupport;
 using Unity.Collections;
 using Unity.Mathematics;
 
@@ -50,71 +50,25 @@ namespace Simulation.Tests
             }
         }
 
-        public static char ColorLetter(BlockColor color)
+        public static char ColorLetter(BlockColor color) => BoardNotation.ColorLetter(color);
+
+        public static char SizeLetter(BlockSize size) => BoardNotation.SizeLetter(size);
+
+        static NotationCell ToCell(Block b)
         {
-            switch (color)
-            {
-                case BlockColor.Red: return 'R';
-                case BlockColor.Green: return 'G';
-                case BlockColor.Yellow: return 'Y';
-                case BlockColor.Blue: return 'B';
-                case BlockColor.Magenta: return 'M';
-                case BlockColor.Cyan: return 'C';
-                case BlockColor.White: return 'W';
-                default: return '?';
-            }
+            if (b.IsEmpty) return NotationCell.Empty;
+            if (b.IsIndicator) return NotationCell.Indicator;
+            return NotationCell.Of(b.Color, b.Size);
         }
 
-        public static char SizeLetter(BlockSize size)
-        {
-            switch (size)
-            {
-                case BlockSize.Small: return 's';
-                case BlockSize.Medium: return 'm';
-                case BlockSize.Large: return 'l';
-                default: return '?';
-            }
-        }
-
-        static BlockColor ParseColor(char c)
-        {
-            switch (c)
-            {
-                case 'R': return BlockColor.Red;
-                case 'G': return BlockColor.Green;
-                case 'Y': return BlockColor.Yellow;
-                case 'B': return BlockColor.Blue;
-                case 'M': return BlockColor.Magenta;
-                case 'C': return BlockColor.Cyan;
-                case 'W': return BlockColor.White;
-                default: throw new System.ArgumentException("Unknown colour letter '" + c + "'");
-            }
-        }
-
-        static BlockSize ParseSize(char c)
-        {
-            switch (c)
-            {
-                case 's': return BlockSize.Small;
-                case 'm': return BlockSize.Medium;
-                case 'l': return BlockSize.Large;
-                default: throw new System.ArgumentException("Unknown size letter '" + c + "'");
-            }
-        }
-
-        public static string FormatBlock(Block b)
-        {
-            if (b.IsEmpty) return ".";
-            if (b.IsIndicator) return "i";
-            return "" + ColorLetter(b.Color) + SizeLetter(b.Size);
-        }
+        public static string FormatBlock(Block b) => BoardNotation.FormatCell(ToCell(b));
 
         public static Block ParseBlock(string token)
         {
-            if (token == ".") return Block.Empty;
-            if (token == "i") return Block.Indicator;
-            if (token.Length != 2) throw new System.ArgumentException("Bad block token '" + token + "'");
-            return Block.Of(ParseColor(token[0]), ParseSize(token[1]));
+            var cell = BoardNotation.ParseCell(token);
+            if (cell.IsEmpty) return Block.Empty;
+            if (cell.IsIndicator) return Block.Indicator;
+            return Block.Of(cell.Color, cell.Size);
         }
 
         public static string Describe(Block b)
@@ -125,50 +79,23 @@ namespace Simulation.Tests
         /// <summary>Parses the notation above into a new board (caller disposes).</summary>
         public static BoardState Parse(string text, Allocator allocator = Allocator.Persistent)
         {
-            var rows = text.Split('|');
-            int height = rows.Length;
-            int width = -1;
-            var parsed = new string[height][];
-            for (int r = 0; r < height; r++)
-            {
-                parsed[r] = rows[r].Trim().Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-                if (width < 0) width = parsed[r].Length;
-                else if (width != parsed[r].Length)
-                    throw new System.ArgumentException("Ragged board: " + text);
-            }
-
+            var tokens = BoardNotation.Tokens(text);
+            int width = tokens.GetLength(0), height = tokens.GetLength(1);
             var board = new BoardState(width, height, allocator);
-            for (int r = 0; r < height; r++)
-            {
-                int y = height - 1 - r;
+            for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
-                    board[x, y] = ParseBlock(parsed[r][x]);
-            }
+                    board[x, y] = ParseBlock(tokens[x, y]);
             return board;
         }
 
         /// <summary>Formats a board in the notation above (top row first).</summary>
         public static string Format(in BoardState board)
         {
-            var sb = new StringBuilder();
-            for (int y = board.Height - 1; y >= 0; y--)
-            {
-                if (y != board.Height - 1) sb.Append('|');
-                for (int x = 0; x < board.Width; x++)
-                {
-                    if (x > 0) sb.Append(' ');
-                    sb.Append(FormatBlock(board[x, y]));
-                }
-            }
-            return sb.ToString();
+            var copy = board; // an 'in' parameter can't be captured by the lambda
+            return BoardNotation.Format(copy.Width, copy.Height, (x, y) => ToCell(copy[x, y]));
         }
 
-        public static bool IsResolvedPrimary(Block b)
-        {
-            return !b.IsIndicator
-                   && b.Size == BlockSize.Small
-                   && (b.Color == BlockColor.Red || b.Color == BlockColor.Green || b.Color == BlockColor.Blue);
-        }
+        public static bool IsResolvedPrimary(Block b) => BoardNotation.IsResolvedPrimary(ToCell(b));
 
         /// <summary>Asserts the board equals the expected notation ("?" = any resolved primary Small block).</summary>
         public static void AssertBoard(string expected, in BoardState actual, string message = null)

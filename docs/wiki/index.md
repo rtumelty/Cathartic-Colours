@@ -43,6 +43,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [Audio and FMOD](systems/audio-fmod.md): audio event entities, the five FMOD events, FMOD for Unity settings, the saved FMOD Studio 2.04 project layout, platforms and encodings, and rebuilding the banks with `tools/build-fmod-banks.ps1`.
 - [Input](systems/input.md): Input System setup, keyboard and swipe paths, `MoveDirectionComponent` lifecycle.
 - [UI layout](systems/ui-layout.md): UXML/USS assets, every queried element name checked against the UXML, panels, UI events, `LayoutObserver` and camera fit.
+- [Test automation](systems/test-automation.md): the `GameDriver` that plays the real menus and input for PlayMode tests (CC-046), how to write a case, every driver call, the board notation, what can't be automated and the editor-only parts.
 - [Presentation](systems/presentation.md): `GameRenderer`, `Block`, jelly wobble, score particles, and the ECS state each reads and writes.
 
 ## Testing
