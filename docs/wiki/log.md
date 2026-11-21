@@ -160,3 +160,5 @@ Append-only. Entry prefix: `## [YYYY-MM-DD] <op> | <id or page> | <summary>`
 ## [2026-11-20] implement | CC-042.3 | Feature test plan folded into test-plan.md (TP-SAVE-02/04/10/11, run order note); PR opened; development APK build at the PR
 ## [2026-11-21] implement | CC-042 | Merged develop (CC-039 version codes); dev builds log SaveTiming per save; device build 8106; save cost on SM-S911B: 2.84 ms median, 3.60 ms p95 per move; device save path in TP-SAVE-10 corrected
 ## [2026-11-21] approve | CC-042 | PR #91 squash-merged into develop as 7880b5e, identical to the branch tip; #70 and sub-issues #87-#89 Done; removed from roadmap.md
+## [2026-11-21] approve | CC-008 | Planned and approved by Ronan with no approval stops; #20 Approved; sub-issues #92-#95 created; feature page and ADR-005 committed on feature/CC-008-rules-framework
+## [2026-11-21] decision | ADR-005 | Game modes as composable rule families: generic merge rules, enum-picked spawn, scoring, end, grid-change and timer rules in GameRules

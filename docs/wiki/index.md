@@ -17,6 +17,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [CC-043 Faster Android development builds](features/CC-043-android-build-times.md) — where Android build time goes (Unity traces), Defender exclusions, development and release baselines, experiments, and the chosen development settings (Symbol Table symbols, script debugging off, a Debuggable profile). Issue [#76](https://github.com/rtumelty/Cathartic-Colours/issues/76).
 - [CC-039 Android version codes that never go backwards](features/CC-039-version-codes.md) — version code = develop's commit count × 100 + commits ahead, so develop builds always install over feature-branch builds; -PrintVersionCode. Issue [#68](https://github.com/rtumelty/Cathartic-Colours/issues/68).
 - [CC-042 Rotating save files and reporting bad saves](features/CC-042-rotating-saves.md) — three rotating save files with fallback to the newest valid one, rejection reasons, a SaveRejected event and capped bad files. Issue [#70](https://github.com/rtumelty/Cathartic-Colours/issues/70). The page is on `feature/CC-042-rotating-saves`.
+- [CC-008 Game mode rules framework](features/CC-008-rules-framework.md) — modes built from swappable rule families (merge, spawn, scoring, end, grid change, timer) with today's three modes unchanged, proven by recorded seeded games. Issue [#20](https://github.com/rtumelty/Cathartic-Colours/issues/20). The page is on `feature/CC-008-rules-framework`.
 - [CC-034 Move roadmap tracking to GitHub Issues and Projects](features/CC-034-github-issues.md) — issues and a Project board for item tracking; the wiki keeps the knowledge pages. Issue [#46](https://github.com/rtumelty/Cathartic-Colours/issues/46).
 
 ## Decisions
@@ -26,6 +27,7 @@ Catalogue of every wiki page. Read this first; update it on every change.
 - [ADR-002 Track roadmap items in GitHub Issues and a Project board](decisions/ADR-002-issue-tracking.md) — hybrid tracking: issues, sub-issues and board for status and fields; the wiki keeps knowledge. Status: Accepted.
 - [ADR-003 FMOD for Unity as an embedded UPM package](decisions/ADR-003-fmod-embedded-package.md) — FMOD 2.04 lives in `Packages/com.fmod.fmod-for-unity.v204/` (committed vendor code), settings in `Assets/Resources/FMOD/`. Status: Accepted.
 - [ADR-004 Game code in Core and Presentation assemblies](decisions/ADR-004-core-presentation-assemblies.md) — data, ECS and saves in `CatharticColours.Core`; scene objects, UI and input in `CatharticColours.Presentation`, which references Core and never the reverse. Status: Accepted.
+- [ADR-005 Game modes as composable rule families](decisions/ADR-005-composable-rule-families.md) — merge rules stay generic structs; spawn, scoring, end, grid-change and timer rules are structs picked per family by enum and combined in an unmanaged `GameRules`. Status: Accepted.
 
 ## Systems
 - [System page format](systems/README.md) — how system pages describe current behaviour, cite sources and link known issues.
