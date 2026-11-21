@@ -513,7 +513,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 
 ## Save/Resume (SAVE)
 
-Pass setup: start on the main menu with no Resume button (the state after TP-OVER-06). Use the Standard 6x6 preset. TP-SAVE-06 needs a build running on a device.
+Pass setup: start on the main menu with no Resume button (the state after TP-OVER-06). Use the Standard 6x6 preset. TP-SAVE-06 needs a build running on a device. TP-SAVE-10 and TP-SAVE-11 need access to the save folder (editor, or `adb` on a device); run them last.
 
 ### TP-SAVE-01 — Resume button appears after a move
 
@@ -590,9 +590,9 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Field | Content |
 |---|---|
 | Id | `TP-SAVE-08` |
-| Preconditions | Running in the Unity editor. A saved game exists (make one move, then stop Play mode). Know the save folder: `Application.persistentDataPath` (on Windows `%USERPROFILE%\AppData\LocalLow\<company>\<product>`) |
+| Preconditions | Running in the Unity editor. A saved game exists from a new game with exactly one move (so there is no backup to fall back to), then stop Play mode. Know the save folder: `Application.persistentDataPath` (on Windows `%USERPROFILE%\AppData\LocalLow\<company>\<product>`) |
 | Steps | 1. Open `savegame.json` in a text editor and change `"version": "1.0"` to `"version": "99.0"`; save. 2. Enter Play mode on the main menu. 3. Look at the menu and the Console. 4. Look in the save folder. |
-| Expected | No Resume button. The Console shows one warning that the save is unusable (unknown version "99.0") and was moved. The folder has `savegame.bad.json` (with your edit) and no `savegame.json`. Repeat with a file cut off half-way: same result. |
+| Expected | No Resume button. The Console shows one warning, `Save rejected: reason=UnknownVersion file=savegame.json detail=99.0 movedTo=savegame.bad.<timestamp>.json`. The folder has that `savegame.bad.<timestamp>.json` file (with your edit) and no `savegame.json`. Repeat with a file cut off half-way: same result. |
 | Roadmap id | CC-031 |
 
 ### TP-SAVE-09 — Saving leaves no temporary file
@@ -602,8 +602,28 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Id | `TP-SAVE-09` |
 | Preconditions | A game in progress (any device or the editor) |
 | Steps | 1. Make several moves. 2. Look in the save folder (editor: as in TP-SAVE-08). |
-| Expected | Only `savegame.json` is there (no `savegame.json.tmp`), and Resume restores the last move as in TP-SAVE-02. |
-| Roadmap id | CC-031 |
+| Expected | `savegame.json`, `savegame.1.json` and `savegame.2.json` are there (the last three moves; only `savegame.json` after a new game's first move), and no `savegame.json.tmp`. Resume restores the last move as in TP-SAVE-02. |
+| Roadmap id | CC-031, CC-042 |
+
+### TP-SAVE-10 — A broken newest save resumes one move earlier
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-10` |
+| Preconditions | Editor or device. A game in progress with at least 3 moves; note Moves, Score and the board before the last move and after it. Know the save folder (editor: as in TP-SAVE-08; device: `/sdcard/Android/data/com.catharticcolours.game/files/`, read and written with `adb pull` and `adb push`) |
+| Steps | 1. Return to the main menu and quit (editor: stop Play mode). 2. Replace the contents of `savegame.json` with `broken`. 3. Launch again (editor: enter Play mode) and look at the menu. 4. Tap Resume. 5. Look in the save folder. |
+| Expected | Step 3: the Resume button shows. Step 4: the game resumes with the Moves, Score and board from before the last move. No message is shown. Step 5: a `savegame.bad.<timestamp>.json` file holds `broken`, and `savegame.json` holds the earlier move. The Console (editor) shows one warning, `Save rejected: reason=Unreadable file=savegame.json detail=<parser message> movedTo=savegame.bad.<timestamp>.json`. |
+| Roadmap id | CC-042 |
+
+### TP-SAVE-11 — Backups belong to one game
+
+| Field | Content |
+|---|---|
+| Id | `TP-SAVE-11` |
+| Preconditions | A game in progress with at least 3 moves (the save folder has `savegame.json`, `.1` and `.2`) |
+| Steps | 1. Tap Main Menu, then Start (a new game), and make one move. 2. Look in the save folder. 3. Play the new game to game over. 4. Look in the save folder and at the main menu. |
+| Expected | Step 2: only `savegame.json` (the new game's first move); no `.1` or `.2` from the old game. Step 4: no `savegame.json`, `.1`, `.2` or `.tmp` remains (`savegame.bad.<timestamp>.json` files from earlier tests may stay, at most three), and the menu shows no Resume. |
+| Roadmap id | CC-042 |
 
 ## Audio (AUDIO)
 

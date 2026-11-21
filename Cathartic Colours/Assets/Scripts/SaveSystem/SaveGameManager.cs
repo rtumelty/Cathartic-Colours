@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using System.IO;
 using Data;
@@ -9,6 +11,40 @@ using Unity.Mathematics;
 
 namespace SaveSystem
 {
+    /// <summary>Why a save file was rejected on load (CC-042.2).</summary>
+    public enum SaveRejectReason
+    {
+        /// <summary>The file could not be read or parsed.</summary>
+        Unreadable,
+        /// <summary>The file parsed to nothing.</summary>
+        Empty,
+        /// <summary>The save's version is not in the readable versions.</summary>
+        UnknownVersion,
+        /// <summary>The grid width or height is smaller than 1.</summary>
+        InvalidGrid
+    }
+
+    /// <summary>One rejected save file, passed to <see cref="SaveGameManager.SaveRejected"/> (CC-042.2).</summary>
+    public readonly struct SaveRejection
+    {
+        /// <summary>Why the file was rejected.</summary>
+        public SaveRejectReason Reason { get; }
+        /// <summary>The rejected slot's file name, for example savegame.1.json.</summary>
+        public string FileName { get; }
+        /// <summary>The detail for the reason: the exception message, the version ("99.0") or the grid size ("0x4").</summary>
+        public string Detail { get; }
+        /// <summary>The full path the file was moved to, or null if the move failed.</summary>
+        public string SetAsidePath { get; }
+
+        public SaveRejection(SaveRejectReason reason, string fileName, string detail, string setAsidePath)
+        {
+            Reason = reason;
+            FileName = fileName;
+            Detail = detail;
+            SetAsidePath = setAsidePath;
+        }
+    }
+
     public static class SaveGameManager
     {
         /// <summary>The save format this build writes and the formats it can read. A save with any other version is
@@ -21,6 +57,9 @@ namespace SaveSystem
         /// <summary>Test-only: when set, the save file lives at this path instead of persistentDataPath. Null = default.</summary>
         internal static string SaveFilePathOverride { get; set; }
 
+        /// <summary>Test-only: when true, <see cref="WriteSave"/> takes the path used where File.Replace is not supported.</summary>
+        internal static bool SimulateNoFileReplace { get; set; }
+
         /// <summary>The save file path. The single owner of the path: SaveGameSystem uses it too.</summary>
         internal static string SaveFilePath => SaveFilePathOverride ?? Path.Combine(Application.persistentDataPath, "savegame.json");
 
@@ -28,20 +67,45 @@ namespace SaveSystem
         /// a truncated save.</summary>
         internal static string TempFilePath => SaveFilePath + ".tmp";
 
-        /// <summary>Where an unusable save (unreadable, or from an unknown version) is moved, so it stops offering Resume
-        /// but is kept for inspection. Replaced by the next unusable save.</summary>
-        internal static string BadFilePath => Path.Combine(Path.GetDirectoryName(SaveFilePath) ?? "", "savegame.bad.json");
+        /// <summary>How many earlier saves are kept beside the newest one (CC-042): savegame.1.json is the move before
+        /// the newest, savegame.2.json the move before that.</summary>
+        internal const int BackupCount = 2;
 
-        /// <summary>True when there is a save that can be resumed. An unusable file is moved aside here, so the main menu
-        /// shows Resume only for a save that will load.</summary>
+        /// <summary>The save files, newest first: slot 0 is <see cref="SaveFilePath"/>, then the backups
+        /// (savegame.1.json, savegame.2.json), all in the save's folder.</summary>
+        internal static string SaveSlotPath(int slot)
+        {
+            string path = SaveFilePath;
+            if (slot == 0) return path;
+            string name = $"{Path.GetFileNameWithoutExtension(path)}.{slot}{Path.GetExtension(path)}";
+            return Path.Combine(Path.GetDirectoryName(path) ?? "", name);
+        }
+
+        /// <summary>Raised once for each save file rejected during <see cref="HasSaveGame"/> or <see cref="LoadSaveGame"/>,
+        /// synchronously on the calling (main) thread, after the file was set aside and the warning logged. The hook for
+        /// analytics and crash reporting (CC-015). Nothing subscribes yet. A subscriber that throws is logged and ignored.</summary>
+        public static event Action<SaveRejection> SaveRejected;
+
+        /// <summary>An unusable save is moved to savegame.bad.&lt;UTC timestamp&gt;.json in the save's folder, so it stops
+        /// offering Resume but is kept for inspection. The newest <see cref="KeptBadFiles"/> are kept.</summary>
+        const string BadFileTimestampFormat = "yyyyMMdd'T'HHmmssfff'Z'";
+        static readonly Regex BadFileNamePattern = new Regex(@"^savegame\.bad\.\d{8}T\d{9}Z\.json$");
+
+        /// <summary>How many set-aside bad files are kept; older ones are deleted when a new one is added.</summary>
+        internal const int KeptBadFiles = 3;
+
+        /// <summary>True when there is a save that can be resumed: the newest save, or else the newest backup that passes
+        /// the checks (CC-042). Unusable files are moved aside here, so the main menu shows Resume only for a save that
+        /// will load.</summary>
         public static bool HasSaveGame()
         {
             return TryReadSave(out _);
         }
 
+        /// <summary>Loads the newest usable save, falling back to the backups (CC-042). Null when none is usable.</summary>
         public static SaveGameData LoadSaveGame()
         {
-            if (!File.Exists(SaveFilePath))
+            if (!AnySaveSlotExists())
             {
                 Debug.LogWarning("No save game file found");
                 return null;
@@ -50,7 +114,12 @@ namespace SaveSystem
             return TryReadSave(out var saveData) ? saveData : null;
         }
 
-        /// <summary>Writes the save atomically: the JSON goes to a temp file, which then replaces the real one.</summary>
+        /// <summary>
+        /// Writes the save atomically and keeps the two saves before it (CC-042). The JSON goes to a temp file. Then
+        /// savegame.2.json is dropped, savegame.1.json becomes .2, and the temp file replaces savegame.json, whose old
+        /// content becomes .1 in the same call. A crash at any step leaves at least one complete earlier save.
+        /// The first save of a game (move 1) drops the earlier files instead, so a fallback never loads another game.
+        /// </summary>
         internal static void WriteSave(SaveGameData saveData)
         {
             string savePath = SaveFilePath;
@@ -63,81 +132,236 @@ namespace SaveSystem
             saveData.version = CurrentVersion;
             File.WriteAllText(tempPath, JsonUtility.ToJson(saveData, true));
 
+            // Saves happen only after a move, so move 1 is a new game's first save: the files on disk belong to an
+            // earlier game and are not kept as its backups (CC-042, decision D5).
+            bool firstSaveOfGame = saveData.moveCount <= 1;
+
+            // Oldest first, so each move has a free target: .2 is dropped, then .1 moves to .2.
+            for (int slot = BackupCount; slot >= 1; slot--)
+            {
+                string path = SaveSlotPath(slot);
+                if (!File.Exists(path)) continue;
+                if (slot == BackupCount || firstSaveOfGame)
+                    File.Delete(path);
+                else
+                    File.Move(path, SaveSlotPath(slot + 1));
+            }
+
+            string newestBackup = firstSaveOfGame ? null : SaveSlotPath(1);
+
             if (File.Exists(savePath))
             {
                 try
                 {
-                    File.Replace(tempPath, savePath, null);
+                    if (SimulateNoFileReplace)
+                        throw new PlatformNotSupportedException();
+                    File.Replace(tempPath, savePath, newestBackup);
                     return;
                 }
                 catch (PlatformNotSupportedException)
                 {
-                    // Fall through: delete and move. A crash between the two leaves no save, never a truncated one.
+                    // Fall through: the same steps as two moves. A crash between them leaves the old save as .1.
                 }
-                File.Delete(savePath);
+                if (newestBackup != null)
+                    File.Move(savePath, newestBackup);
+                else
+                    File.Delete(savePath);
             }
             File.Move(tempPath, savePath);
         }
 
+        /// <summary>Deletes the save, its backups and any leftover temp file. SaveGameSystem calls it when the game
+        /// ends. Set-aside bad files are kept.</summary>
         public static void DeleteSaveGame()
         {
-            if (File.Exists(SaveFilePath))
-                File.Delete(SaveFilePath);
+            for (int slot = 0; slot <= BackupCount; slot++)
+            {
+                string path = SaveSlotPath(slot);
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
             if (File.Exists(TempFilePath))
                 File.Delete(TempFilePath);
         }
 
-        /// <summary>Reads and checks the save. Returns false when there is none, or when it is unusable, in which case
-        /// the file is moved to <see cref="BadFilePath"/> and a warning is logged.</summary>
-        static bool TryReadSave(out SaveGameData saveData)
+        static bool AnySaveSlotExists()
         {
-            saveData = null;
-            if (!File.Exists(SaveFilePath))
-                return false;
-
-            string problem;
-            try
-            {
-                saveData = JsonUtility.FromJson<SaveGameData>(File.ReadAllText(SaveFilePath));
-                problem = Validate(saveData);
-            }
-            catch (Exception e)
-            {
-                problem = $"unreadable ({e.Message})";
-            }
-
-            if (problem == null)
-                return true;
-
-            saveData = null;
-            SetAside(problem);
+            for (int slot = 0; slot <= BackupCount; slot++)
+                if (File.Exists(SaveSlotPath(slot)))
+                    return true;
             return false;
         }
 
-        /// <summary>Null when the save can be resumed, otherwise what is wrong with it.</summary>
-        static string Validate(SaveGameData saveData)
+        /// <summary>
+        /// Reads the save files newest first and returns the first that passes the checks. Each unusable file on the
+        /// way is moved aside with a warning. When a backup is used, the files are renumbered so it becomes
+        /// savegame.json and the next save rotates normally (CC-042). False when no file is usable.
+        /// </summary>
+        static bool TryReadSave(out SaveGameData saveData)
         {
-            if (saveData == null)
-                return "empty";
-            if (Array.IndexOf(ReadableVersions, saveData.version) < 0)
-                return $"unknown version \"{saveData.version}\"";
-            if (saveData.gridWidth < 1 || saveData.gridHeight < 1)
-                return $"invalid grid size {saveData.gridWidth}x{saveData.gridHeight}";
-            return null;
+            for (int slot = 0; slot <= BackupCount; slot++)
+            {
+                string path = SaveSlotPath(slot);
+                if (!File.Exists(path))
+                    continue;
+
+                if (TryReadFile(path, out saveData))
+                {
+                    if (slot > 0)
+                        PromoteSlot(slot);
+                    return true;
+                }
+            }
+
+            saveData = null;
+            return false;
         }
 
-        static void SetAside(string problem)
+        /// <summary>Reads and checks one save file. An unusable file is set aside (see <see cref="SetAside"/>) and false
+        /// is returned.</summary>
+        static bool TryReadFile(string path, out SaveGameData saveData)
         {
+            SaveRejectReason? reason;
+            string detail;
             try
             {
-                if (File.Exists(BadFilePath))
-                    File.Delete(BadFilePath);
-                File.Move(SaveFilePath, BadFilePath);
-                Debug.LogWarning($"Save game is unusable ({problem}); moved to {BadFilePath}");
+                saveData = JsonUtility.FromJson<SaveGameData>(File.ReadAllText(path));
+                reason = Validate(saveData, out detail);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Save game is unusable ({problem}) and could not be moved aside: {e.Message}");
+                saveData = null;
+                reason = SaveRejectReason.Unreadable;
+                detail = e.Message;
+            }
+
+            if (reason == null)
+                return true;
+
+            saveData = null;
+            SetAside(path, reason.Value, detail);
+            return false;
+        }
+
+        /// <summary>Renumbers the files so <paramref name="slot"/> becomes savegame.json and the older ones follow it.
+        /// The newer slots were all rejected, so a file still in one (it could not be moved aside) is dropped.</summary>
+        static void PromoteSlot(int slot)
+        {
+            try
+            {
+                for (int from = slot; from <= BackupCount; from++)
+                {
+                    string source = SaveSlotPath(from);
+                    string target = SaveSlotPath(from - slot);
+                    if (File.Exists(target))
+                        File.Delete(target);
+                    if (File.Exists(source))
+                        File.Move(source, target);
+                }
+            }
+            catch (Exception e)
+            {
+                // The usable file stays in a slot the next load reads, so it is found again then.
+                Debug.LogError($"Could not renumber the save files after a fallback: {e.Message}");
+            }
+        }
+
+        /// <summary>Null when the save can be resumed, otherwise why not (with the detail for the reason).</summary>
+        static SaveRejectReason? Validate(SaveGameData saveData, out string detail)
+        {
+            detail = "";
+            if (saveData == null)
+                return SaveRejectReason.Empty;
+            if (Array.IndexOf(ReadableVersions, saveData.version) < 0)
+            {
+                detail = saveData.version;
+                return SaveRejectReason.UnknownVersion;
+            }
+            if (saveData.gridWidth < 1 || saveData.gridHeight < 1)
+            {
+                detail = $"{saveData.gridWidth}x{saveData.gridHeight}";
+                return SaveRejectReason.InvalidGrid;
+            }
+            return null;
+        }
+
+        /// <summary>The one warning logged for a rejected file.</summary>
+        internal static string FormatRejection(SaveRejection r)
+        {
+            string movedTo = r.SetAsidePath != null ? Path.GetFileName(r.SetAsidePath) : "none";
+            return $"Save rejected: reason={r.Reason} file={r.FileName} detail={r.Detail} movedTo={movedTo}";
+        }
+
+        /// <summary>Moves a rejected file to a timestamped bad file, trims the old bad files, logs one warning and raises
+        /// <see cref="SaveRejected"/>. None of it may stop the load.</summary>
+        static void SetAside(string path, SaveRejectReason reason, string detail)
+        {
+            string setAsidePath = null;
+            Exception moveError = null;
+            try
+            {
+                string target = NewBadFilePath();
+                File.Move(path, target);
+                setAsidePath = target;
+            }
+            catch (Exception e)
+            {
+                moveError = e;
+            }
+
+            var rejection = new SaveRejection(reason, Path.GetFileName(path), detail, setAsidePath);
+            Debug.LogWarning(FormatRejection(rejection));
+            if (moveError != null)
+                Debug.LogError($"Could not move the rejected save aside: {moveError.Message}");
+            else
+                TrimBadFiles();
+
+            var handlers = SaveRejected;
+            if (handlers == null) return;
+            foreach (Delegate handler in handlers.GetInvocationList())
+            {
+                try
+                {
+                    ((Action<SaveRejection>)handler)(rejection);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+            }
+        }
+
+        /// <summary>A bad-file path in the save's folder named for the current UTC time. If the name is taken, 1 ms is
+        /// added until it is free, so names stay unique and in time order.</summary>
+        static string NewBadFilePath()
+        {
+            string folder = Path.GetDirectoryName(SaveFilePath) ?? "";
+            DateTime time = DateTime.UtcNow;
+            string target;
+            while (File.Exists(target = Path.Combine(folder,
+                       "savegame.bad." + time.ToString(BadFileTimestampFormat, CultureInfo.InvariantCulture) + ".json")))
+                time = time.AddMilliseconds(1);
+            return target;
+        }
+
+        /// <summary>Deletes all but the newest <see cref="KeptBadFiles"/> timestamped bad files. A legacy
+        /// savegame.bad.json does not match the pattern and is left alone. A failure is logged and ignored.</summary>
+        static void TrimBadFiles()
+        {
+            try
+            {
+                string folder = Path.GetDirectoryName(SaveFilePath) ?? "";
+                var bad = new List<string>();
+                foreach (string file in Directory.GetFiles(folder))
+                    if (BadFileNamePattern.IsMatch(Path.GetFileName(file)))
+                        bad.Add(file);
+                bad.Sort((x, y) => string.CompareOrdinal(Path.GetFileName(x), Path.GetFileName(y)));
+                for (int i = 0; i < bad.Count - KeptBadFiles; i++)
+                    File.Delete(bad[i]);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Could not trim the old bad save files: {e.Message}");
             }
         }
 
