@@ -105,8 +105,8 @@ Then:
 **Tests:** the cases themselves. The whole PlayMode suite must stay under about 10 minutes.
 
 **Definition of Done:**
-- [ ] Every case in the D6 areas automated, or marked manual with its reason
-- [ ] Bugs found filed as issues (`gh`), linked from the skipped tests
+- [x] Every case in the D6 areas automated, or marked manual with its reason
+- [x] Bugs found filed as issues (`gh`), linked from the skipped tests (none found)
 
 ### CC-046.4 ([#101](https://github.com/rtumelty/Cathartic-Colours/issues/101)) — Runner script, agent guide, wrap-up and PR
 **Risk:** Low · **Worker:** Haiku · **Review:** primary
@@ -165,6 +165,12 @@ Both are behind `Application.isEditor`. A device uses its real screen and the en
 - **Tests derive from `PlaythroughTest`** (CC-046.1, implementation detail). The UI Test Framework's event helpers are internal and only set up by its fixture, so the driver takes the fixture rather than creating its own simulator.
 - **`Screenshot` and `AudioEvents` arrived in CC-046.1**, because the spike needed them for questions 3 and 4. CC-046.2 still adds known boards, `Swipe`, `Gamepad` and the self-tests.
 - **Core's `AssemblyInfo.cs` gains `InternalsVisibleTo("CatharticColours.TestSupport")`**, so the moved `PlayModeTestSupport` can still set `SaveGameManager.SaveFilePathOverride`. This grants access only and adds no game hook; the PlayMode test assembly already had the same grant.
+- **CC-046.3 notes:**
+  - No case's expected result disagreed with the game, so no bug issues were filed.
+  - The TP-MENU-04 wording now states that the dropdown and sliders update to the preset (it said "record what you see").
+  - After game over the modal covers the footer, so SAVE-11 returns to the menu with the panel's own Main Menu button.
+  - The OVER-07 "different cells over many moves" part is left to the extended-play regression tests (STD-11, CM-07, ACM-08).
+  - The full PlayMode suite is 96 tests in about 95 s.
 - **Gap fillers in the test-support assembly:** `PanelClock`, `PngWriter` and `AudioEventRecorderSystem`. Each is named in ADR-006 with its reason.
 
 ## Feature test plan

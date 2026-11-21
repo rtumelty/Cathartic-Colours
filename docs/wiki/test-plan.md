@@ -19,6 +19,7 @@ Each case has an id and these fields:
 | Preconditions | State the tester must start from |
 | Steps | Numbered actions |
 | Expected | The observable result that means pass |
+| Automated | The PlayMode test that runs the case (class and test name), or `manual — <reason>`. `tools/run-playthrough.ps1` will run the automated cases (CC-046.4). A case marked "(skipped: bug, see test)" has a test that is skipped until its bug is fixed |
 | Roadmap id | The roadmap item the case covers, or `—` for existing behaviour |
 
 **Area codes:** `MENU` Main menu · `STD` Standard mode · `CM` Color Merge mode · `ACM` Advanced Color Merge mode · `HUD` Gameplay HUD · `OVER` Game over · `SAVE` Save/Resume · `AUDIO` Audio · `DROID` Android build · `TOOL` Editor and tooling · `TRACK` Project tracking (GitHub)
@@ -31,6 +32,7 @@ Each case has an id and these fields:
 | Preconditions | <state before the test> |
 | Steps | 1. <action> 2. <action> |
 | Expected | <observable result> |
+| Automated | <test name, or `manual — <reason>`> |
 | Roadmap id | — |
 
 ---
@@ -49,6 +51,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | Fresh launch, no save file |
 | Steps | 1. Look at the main menu without touching anything. |
 | Expected | The menu shows a preset dropdown, a game mode dropdown with a mode description, a width slider and a height slider with value labels, and a Start button. Mode is Standard and both sliders read 6. There is no Resume button. |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_01_MenuShowsItsControlsWithStandardAndSixBySixByDefault` |
 | Roadmap id | — |
 
 ### TP-MENU-02 — Mode dropdown and description
@@ -59,6 +62,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | Main menu showing |
 | Steps | 1. Open the game mode dropdown. 2. Select each entry in turn. |
 | Expected | The dropdown lists "Standard", "Color Merge" and "Advanced Color Merge". The description label shows text for the selected mode and the text changes when the mode changes. |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_02_ModeDropdownListsThreeModesAndTheDescriptionFollowsTheMode` |
 | Roadmap id | — |
 
 ### TP-MENU-03 — Size sliders range and labels
@@ -69,6 +73,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | Main menu showing |
 | Steps | 1. Drag the width slider fully left, then fully right. 2. Do the same for the height slider. 3. Set width to 5 and height to 7. |
 | Expected | Each slider ranges from 4 to 10. The value label next to each slider shows the slider's current value. The two sliders are independent. After step 3 the labels read 5 and 7. |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_03_SizeSlidersRangeFourToTenWithLabelsAndAreIndependent` |
 | Roadmap id | — |
 
 ### TP-MENU-04 — Presets set mode and size
@@ -78,7 +83,8 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Id | `TP-MENU-04` |
 | Preconditions | Main menu showing |
 | Steps | 1. Open the preset dropdown. 2. Select the Color Merge 4x4 preset. 3. Select the Advanced Color Merge 6x6 preset. 4. Select the Standard 6x6 preset. 5. Set the sliders back to 5 and 7. |
-| Expected | The dropdown offers "Custom" plus the three presets. After each preset the mode and the grid size are the preset's (Color Merge 4x4, Advanced Color Merge 6x6, Standard 6x6). Whether the mode dropdown and sliders visibly update to the preset values is not confirmed in the wiki: record what you see. |
+| Expected | The dropdown offers "Custom" plus the three presets. After each preset the mode and the grid size are the preset's (Color Merge 4x4, Advanced Color Merge 6x6, Standard 6x6), and the mode dropdown, the sliders and their value labels update to show them (confirmed by the CC-046 test). |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_04_PresetsSetModeAndSizeAndTheControlsFollow` |
 | Roadmap id | — |
 
 ### TP-MENU-05 — Start loads a board of the chosen size
@@ -89,6 +95,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | Main menu showing, mode Standard, width 5 and height 7 |
 | Steps | 1. Tap Start. 2. Count the columns and rows of the board. 3. Find the white block. |
 | Expected | The gameplay scene loads with a board of 5 columns and 7 rows. The score label reads "Score: 0" and the move label "Moves: 0". One white block is on the board at (2, 3), the cell at half the width and half the height, rounded down. |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_05_StartLoadsABoardOfTheChosenSizeWithTheWhiteBlockInTheMiddle` |
 | Roadmap id | — |
 
 ### TP-MENU-06 — Footer Main Menu keeps the settings
@@ -99,6 +106,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | The game from TP-MENU-05 is running and no move has been made |
 | Steps | 1. Tap the Main Menu button in the footer. 2. Look at the dropdowns and sliders. |
 | Expected | The main menu loads. The mode and sliders still show Standard, width 5, height 7 (the last runtime settings are kept). There is no Resume button, because no move was made. |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_06_FooterMainMenuKeepsTheSettingsAndOffersNoResumeWithoutAMove` |
 | Roadmap id | — |
 
 ### TP-MENU-07 — Next colour indicator toggle
@@ -109,6 +117,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | Main menu open (after TP-MENU-06) |
 | Steps | 1. Choose the Standard 6x6 preset and look at the "Next colour indicator" toggle. 2. Untick it and tap Start. 3. Make three moves. 4. Return to the menu with the footer Main Menu button and tick the toggle again. |
 | Expected | Step 1: the toggle is ticked (the preset enables it). Step 3: the first move turns the starting white block into a colour and no new white block ever appears. Step 4: the toggle is unticked when you return, then ticked after you tick it. |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_07_NextColourIndicatorToggleOffMeansNoNewWhiteBlock` |
 | Roadmap id | CC-027, CC-008 (re-run for CC-008: with the toggle off, the starting indicator resolves on the first move and no new block spawns) |
 
 ### TP-MENU-08 — Resuming a game does not change the menu settings
@@ -119,6 +128,7 @@ Pass setup: fresh launch on the main menu with no save file (delete `savegame.js
 | Preconditions | A saved game exists in Color Merge 4x4 (start the Color Merge 4x4 preset, make one move, return to the menu) |
 | Steps | 1. On the menu, choose Standard and set width 5, height 7. 2. Tap Resume. 3. Check the resumed game is Color Merge 4x4. 4. Tap the footer Main Menu button. 5. Look at the mode and sliders. 6. Tap Start. |
 | Expected | Step 5: the menu still shows Standard, 5 x 7 (not the resumed game's settings). Step 6: a new Standard 5 x 7 game starts. |
+| Automated | `PlayModeTests.MenuCases.TP_MENU_08_ResumingAGameDoesNotChangeTheMenuSettings` |
 | Roadmap id | CC-027 |
 
 ## Standard mode (STD)
@@ -133,6 +143,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | New Standard 6x6 game, no moves made. One white block at (3, 3) |
 | Steps | 1. Press the left arrow key once. |
 | Expected | The white block stays in its cell and becomes a Red, Green or Blue Small block. A new white block appears in a different, previously empty cell (always, while any cell is empty; CC-021). Moves reads 1, Score reads 0. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_01_FirstMoveConvertsTheWhiteBlock` |
 | Roadmap id | CC-021 (fixed in CC-006) |
 
 ### TP-STD-02 — One cell per move, all four directions
@@ -143,6 +154,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | After TP-STD-01; a coloured block has an empty cell next to it in the direction you press |
 | Steps | 1. Press an arrow key towards an empty neighbouring cell of a coloured block. 2. Repeat with the other three arrow keys, then with W, A, S and D. |
 | Expected | Each coloured block moves exactly one cell per key press, never all the way to the wall. Up/Down/Left/Right arrows and W/A/S/D move blocks up/down/left/right on screen respectively. The block that was white before the press changes colour but does not move on that press. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_02_ABlockMovesOneCellPerPressInAllFourDirectionsWithArrowsAndWasd` |
 | Roadmap id | — |
 
 ### TP-STD-03 — Walls and the white block stop movement
@@ -153,6 +165,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | A game in progress with a coloured block on the board |
 | Steps | 1. Press one direction repeatedly until a coloured block is against the wall. 2. Press the same direction again and note the Moves label. 3. Set up a coloured block with the white block directly ahead of it in its line, and press towards the white block. |
 | Expected | A block at the wall does not move or leave the board. The move still counts: Moves increases by 1 on the extra press. A block next to the white block does not move into it and does not merge with it. The white block stays in its cell and turns into a coloured block on that move, as on every move. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_03_WallsAndTheWhiteBlockStopMovement` |
 | Roadmap id | — |
 
 ### TP-STD-04 — Small pair merges to Medium
@@ -163,6 +176,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Two Small blocks of the same colour in one row or column, with the front one against a wall or a block that cannot merge with it |
 | Steps | 1. Note the Score. 2. Press once towards the front block (for example `[. . Rs Rs]` pressing right). |
 | Expected | The moving block disappears. The block it moved into becomes a Medium block (visibly larger) of the same colour: `[. . . Rm]`. Score increases by 10 and Moves by 1. Particles in that colour appear at the merge cell. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_04_SmallPairMergesToMedium` |
 | Roadmap id | — |
 
 ### TP-STD-05 — Blocks that must not merge
@@ -173,6 +187,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Two adjacent blocks in a line pressed against a wall that differ in colour (for example Rs next to Bs) or in size (a Small next to a Medium of the same colour) |
 | Steps | 1. Note the Score. 2. Press towards the wall, along the line of the pair. |
 | Expected | Neither block merges or changes. Score does not change. Moves increases by 1. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_05_BlocksThatMustNotMergeStayAsTheyAre` |
 | Roadmap id | — |
 
 ### TP-STD-06 — Only one merge per block in a move
@@ -183,6 +198,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Three same-colour Small blocks in a row with the front one against a wall, with no other block in that row, for example `[. Rs Rs Rs]` |
 | Steps | 1. Note the Score. 2. Press once towards the wall. |
 | Expected | Only one merge happens: `[. . Rs Rm]`. The middle block merges into the front block and the back block moves up one cell. Score increases by 10 once. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_06_OnlyOneMergePerBlockInAMove` |
 | Roadmap id | — |
 
 ### TP-STD-07 — Medium pair and Large pair
@@ -193,6 +209,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Extended play. Two same-colour Medium blocks, front one against a wall; later two same-colour Large blocks, front one against a wall |
 | Steps | 1. Press towards the Medium pair. 2. Later, press towards the Large pair. |
 | Expected | Step 1: `[. . Rm Rm]` becomes `[. . . Rl]`, Score +50. Step 2: `[. . Rl Rl]` becomes `[. . . .]`, both blocks disappear, Score +100. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_07_MediumPairMakesLargeAndLargePairClears` |
 | Roadmap id | — |
 
 ### TP-STD-08 — Swipe on a touch device
@@ -203,6 +220,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Game in progress on a touch device, or in the editor using the mouse (left-button drag works as a swipe since CC-030). A coloured block has an empty neighbouring cell |
 | Steps | 1. Swipe a long distance (at least 50 pixels) in each of the four directions. 2. Make a short touch drag of about 10 pixels. |
 | Expected | Each long swipe makes the same move as the matching arrow key and Moves increases by 1. The short drag makes no move and Moves does not change. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_08_SwipesMoveLikeArrowKeysAndAShortDragDoesNot` |
 | Roadmap id | CC-030 |
 
 ### TP-STD-09 — Gamepad moves blocks
@@ -213,6 +231,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Game in progress; a gamepad is connected |
 | Steps | 1. Push the left stick in each direction, hold it for a second, then let it return to the centre. 2. Press each D-pad direction. |
 | Expected | Each push or press moves blocks one cell in that direction and Moves increases by exactly 1; holding the stick does not repeat the move. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_09_GamepadStickAndDpadMoveOneCellPerPush` |
 | Roadmap id | CC-030 |
 
 ### TP-STD-10 — All eight keys move, with no Console errors (editor)
@@ -223,6 +242,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Running in the Unity editor (Play mode), Console cleared, Standard game in progress |
 | Steps | 1. Press the up, down, left and right arrows, then W, S, A and D, letting each move finish. 2. Look at the Console. |
 | Expected | Each key moves blocks one cell in its direction. The Console shows no `InvalidOperationException` (the up arrow used to throw one on every press) and no "Game saved to" or "Save game loaded from" lines. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_10_AllEightKeysMoveWithNoConsoleErrors` |
 | Roadmap id | CC-037, CC-038 |
 
 ### TP-STD-11 — Regression after the rules framework
@@ -233,6 +253,7 @@ Pass setup: start on the main menu, choose the Standard 6x6 preset and tap Start
 | Preconditions | Extended play. Start a new Standard 6x6 game from the menu (preset Standard 6x6, Start) and make no move yet |
 | Steps | 1. Make a move and check the board, repeating until a few merges of different tiers have happened (a Small pair to Medium, then a Medium pair to Large; see TP-STD-04 and TP-STD-07). 2. After every move, check the white indicator. 3. Play to game over if it is reached (see TP-OVER-02). |
 | Expected | Merges, results and points match the Standard rules on [merge rules](systems/merge-rules.md): a Small pair gives Medium (+10), a Medium pair gives Large (+50) and a Large pair clears (+100). After every move a new white indicator appears in an empty cell, and on the next move it resolves to a Small Red, Green or Blue block. Game over shows only when the board is full with no merge possible. Mark a tier "not reached" if it does not arise. |
+| Automated | `PlayModeTests.StandardCases.TP_STD_11_RegressionExtendedPlayFollowsTheStandardRules` |
 | Roadmap id | CC-008 |
 
 ## Color Merge mode (CM)
@@ -247,6 +268,7 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Preconditions | New Color Merge 4x4 game, no moves made |
 | Steps | 1. Count the cells. 2. Find the white block. 3. Press any direction once. |
 | Expected | The board is 4 by 4. The white block is at (2, 2). After the move it is a Red, Green or Blue block, a new white block appears in an empty cell, and Moves reads 1. |
+| Automated | `PlayModeTests.ColorMergeCases.TP_CM_01_FourByFourBoardWhiteBlockAtTwoTwoAndFirstMove` |
 | Roadmap id | — |
 
 ### TP-CM-02 — Two different primaries make a secondary
@@ -257,6 +279,7 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Preconditions | Two Small blocks of different primary colours adjacent in a line, front one against a wall or a block that cannot merge with it |
 | Steps | 1. Note the Score. 2. Press along the line towards the front block (for example `[Rs Gs . .]` pressing left). |
 | Expected | The moving block disappears and the block it moved into takes the combined colour: Red+Green gives Yellow, Red+Blue gives Magenta, Green+Blue gives Cyan (`[Ys . . .]`). Score +10. Try at least two of the three pairs. |
+| Automated | `PlayModeTests.ColorMergeCases.TP_CM_02_TwoDifferentPrimariesMakeASecondary` |
 | Roadmap id | — |
 
 ### TP-CM-03 — Equal colours do not merge
@@ -267,6 +290,7 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Preconditions | Two same-colour primaries adjacent in a line against a wall (`[Rs Rs . .]`) |
 | Steps | 1. Note the Score. 2. Press towards the wall. |
 | Expected | Nothing merges and the blocks stay as they are. Score does not change. Moves increases by 1. |
+| Automated | `PlayModeTests.ColorMergeCases.TP_CM_03_EqualColoursDoNotMerge` |
 | Roadmap id | — |
 
 ### TP-CM-04 — Secondary plus its missing primary clears both
@@ -277,6 +301,7 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Preconditions | A secondary block adjacent to the primary it lacks (Yellow and Blue, Magenta and Green, or Cyan and Red), front one against a wall or unmergeable block |
 | Steps | 1. Note the Score. 2. Press along the line towards the front block (for example `[Ys Bs . .]` pressing left). |
 | Expected | Both blocks disappear. Score +100. The particles at the merge cell are white. |
+| Automated | `PlayModeTests.ColorMergeCases.TP_CM_04_SecondaryPlusItsMissingPrimaryClearsBoth` |
 | Roadmap id | — |
 
 ### TP-CM-05 — Pairs that do not merge
@@ -287,6 +312,7 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Preconditions | Either two different secondaries adjacent (for example Yellow and Magenta), or a secondary next to a primary it already contains (for example Yellow and Red), against a wall |
 | Steps | 1. Note the Score. 2. Press towards the wall along the line. |
 | Expected | Nothing merges. Score does not change. |
+| Automated | `PlayModeTests.ColorMergeCases.TP_CM_05_PairsThatDoNotMergeStayAsTheyAre` |
 | Roadmap id | — |
 
 ### TP-CM-06 — White block never merges
@@ -297,6 +323,7 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Preconditions | A coloured block with the white block directly ahead in its line |
 | Steps | 1. Press towards the white block. |
 | Expected | The coloured block does not move into or merge with the white block, and Score does not change. The white block then becomes a coloured block on that same move (resolved by the move), and a new white block appears elsewhere. |
+| Automated | `PlayModeTests.ColorMergeCases.TP_CM_06_WhiteBlockNeverMerges` |
 | Roadmap id | — |
 
 ### TP-CM-07 — Regression after the rules framework
@@ -307,6 +334,7 @@ Pass setup: return to the main menu with the footer Main Menu button, choose the
 | Preconditions | Extended play. Start a new Color Merge 4x4 game from the menu (preset Color Merge 4x4, Start) and make no move yet |
 | Steps | 1. Make moves until two different primaries have made a secondary and a secondary has cleared with its missing primary (see TP-CM-02 and TP-CM-04). 2. After every move, check the white indicator. 3. Play to game over if it is reached (see TP-OVER-02). |
 | Expected | Merges, results and points match the Color Merge rules on [merge rules](systems/merge-rules.md): two different primaries make a secondary (+10), a secondary with its missing primary clears both (+100), and equal colours or other pairs do not merge. After every move a new white indicator appears in an empty cell, and on the next move it resolves to a Small Red, Green or Blue block. Game over shows only when the board is full with no merge possible. |
+| Automated | `PlayModeTests.ColorMergeCases.TP_CM_07_RegressionExtendedPlayFollowsTheColorMergeRules` |
 | Roadmap id | CC-008 |
 
 ## Advanced Color Merge mode (ACM)
@@ -321,6 +349,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | New Advanced Color Merge 6x6 game, no moves made |
 | Steps | 1. Press any direction once. |
 | Expected | The white block at (3, 3) becomes a Small Red, Green or Blue block and a new white block appears. Moves reads 1. |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_01_SixBySixBoardAndFirstMove` |
 | Roadmap id | — |
 
 ### TP-ACM-02 — Small pair of one colour grows to Medium
@@ -331,6 +360,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | Two Small blocks of the same primary colour adjacent in a line, front one against a wall or unmergeable block |
 | Steps | 1. Note the Score. 2. Press towards the front block (`[. . Rs Rs]` pressing right). |
 | Expected | `[. . . Rm]`: one block disappears and the other becomes a larger Medium block of the same colour. Score +10. |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_02_SmallPairOfOneColourGrowsToMedium` |
 | Roadmap id | — |
 
 ### TP-ACM-03 — Small blocks that do not merge
@@ -341,6 +371,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | Against a wall: two Small blocks of different colours (`[. . Rs Gs]`), or a Small next to a Medium (`[. . Rs Rm]`) |
 | Steps | 1. Note the Score. 2. Press towards the wall. |
 | Expected | Nothing merges and Score does not change. (These are current rules; the dead ends are under review in CC-026.) |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_03_SmallBlocksThatDoNotMergeStayAsTheyAre` |
 | Roadmap id | — |
 
 ### TP-ACM-04 — Two different Medium primaries make a Large secondary
@@ -351,6 +382,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | Two Medium blocks of different primary colours adjacent in a line, front one against a wall or unmergeable block |
 | Steps | 1. Note the Score. 2. Press towards the front block (`[. . Rm Bm]` pressing right). |
 | Expected | `[. . . Ml]`: one block disappears and the other becomes a Large Magenta block (Red+Blue). Red+Green gives Yellow and Green+Blue gives Cyan the same way. Score +50. |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_04_TwoDifferentMediumPrimariesMakeALargeSecondary` |
 | Roadmap id | — |
 
 ### TP-ACM-05 — Same-colour Medium blocks do not merge
@@ -361,6 +393,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | Two Medium blocks of the same colour adjacent in a line against a wall (`[. . Rm Rm]`) |
 | Steps | 1. Note the Score. 2. Press towards the wall. |
 | Expected | Nothing merges and Score does not change. (Current rule; under review in CC-026.) |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_05_SameColourMediumBlocksDoNotMerge` |
 | Roadmap id | — |
 
 ### TP-ACM-06 — Large secondary plus its missing Medium primary makes White
@@ -371,6 +404,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | A Large secondary block adjacent to a Medium block of the primary it lacks (Yellow with Blue, Magenta with Green, Cyan with Red), in either order |
 | Steps | 1. Note the Score. 2. Press along the line so one is blocked by the wall or the other block (`[. . Gm Ml]` pressing right, or `[. . Ml Gm]` pressing right). |
 | Expected | One block disappears and the other becomes a Large White block (`[. . . Wl]`). Score +100. |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_06_LargeSecondaryPlusItsMissingMediumPrimaryMakesWhite` |
 | Roadmap id | — |
 
 ### TP-ACM-07 — Two Large White blocks clear
@@ -381,6 +415,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | Two Large White blocks adjacent in a line, front one against a wall or unmergeable block |
 | Steps | 1. Note the Score. 2. Press towards the front block (`[. . Wl Wl]` pressing right). |
 | Expected | Both blocks disappear and Score +200. White particles are visible at the merge cell. |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_07_TwoLargeWhiteBlocksClear` |
 | Roadmap id | CC-032 |
 
 ### TP-ACM-08 — Regression after the rules framework
@@ -391,6 +426,7 @@ Pass setup: return to the main menu, choose the Advanced Color Merge 6x6 preset 
 | Preconditions | Extended play. Start a new Advanced Color Merge 6x6 game from the menu (preset Advanced Color Merge 6x6, Start) and make no move yet |
 | Steps | 1. Make moves until several merges of different tiers have happened (Small pair to Medium, two Medium primaries to Large, a Large secondary with its missing Medium primary to Large White; see TP-ACM-02, TP-ACM-04 and TP-ACM-06). 2. After every move, check the white indicator. 3. Play to game over if it is reached (see TP-OVER-02). |
 | Expected | Merges, results and points match the Advanced Color Merge rules on [merge rules](systems/merge-rules.md): a Small pair gives Medium (+10), two Medium primaries give Large (+50), a Large secondary with its missing Medium primary gives Large White (+100), and two Large White blocks clear (+200). After every move a new white indicator appears in an empty cell, and on the next move it resolves to a Small Red, Green or Blue block. Game over shows only when the board is full with no merge possible. Mark a tier "not reached" if it does not arise. |
+| Automated | `PlayModeTests.AdvancedColorMergeCases.TP_ACM_08_RegressionExtendedPlayFollowsTheAdvancedColorMergeRules` |
 | Roadmap id | CC-008 |
 
 ## Gameplay HUD (HUD)
@@ -405,6 +441,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Preconditions | New Standard 6x6 game, no moves made |
 | Steps | 1. Read the header and footer. |
 | Expected | The header shows the title, "Moves: 0", "Score: 0" and the status line "Your turn...". The footer shows an instruction line describing the mode, the text "Swipe / Arrow Keys / WASD to Move" and a Main Menu button. |
+| Automated | `PlayModeTests.HudCases.TP_HUD_01_HeaderAndFooterShowTheirContentAtStart` |
 | Roadmap id | — |
 
 ### TP-HUD-02 — Board fits between header and footer
@@ -415,6 +452,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Preconditions | New game just loaded (wait about a second for the layout to settle) |
 | Steps | 1. Look at the full board. 2. Check that every edge row and column is visible. |
 | Expected | The whole board is visible and centred in the free area between header and footer, with a margin around it. No row or column is hidden behind the header or footer. |
+| Automated | manual — board framing depends on the real screen size; the editor lays the UI out in a render texture, so only a device run (CC-047) shows it |
 | Roadmap id | — |
 
 ### TP-HUD-03 — Status label shows whose turn it is
@@ -425,6 +463,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Preconditions | Game waiting for input |
 | Steps | 1. Look for a status line in the HUD. |
 | Expected | A status line reading "Your turn..." is visible in the header, under the score, while the game waits for input. It reads "Grid Full!" when the game is over. |
+| Automated | `PlayModeTests.HudCases.TP_HUD_03_StatusLabelShowsYourTurnWhileWaitingAndGridFullAtGameOver` |
 | Roadmap id | CC-028 |
 
 ### TP-HUD-04 — Move counter
@@ -435,6 +474,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Preconditions | New game, "Moves: 0" |
 | Steps | 1. Press an arrow key. 2. Press the same direction repeatedly until nothing on the board can move. 3. Press once more. |
 | Expected | Moves reads 1 after step 1 and rises by exactly 1 per key press, including presses where no block moves. |
+| Automated | `PlayModeTests.HudCases.TP_HUD_04_MoveCounterRisesByOnePerPressEvenWhenNothingMoves` |
 | Roadmap id | — |
 
 ### TP-HUD-05 — Score label shows the running total
@@ -445,6 +485,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Preconditions | Game in progress, score 0 |
 | Steps | 1. Play until two merges have happened (see TP-STD-04). 2. Compare the score after each. |
 | Expected | Score stays unchanged on moves with no merge. Each Small-pair merge adds 10 and the label shows the running total (for example 10, then 20), not the last gain. |
+| Automated | `PlayModeTests.HudCases.TP_HUD_05_ScoreLabelShowsTheRunningTotal` |
 | Roadmap id | — |
 
 ### TP-HUD-06 — Move and merge feedback
@@ -455,6 +496,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Preconditions | Game in progress with blocks on the board |
 | Steps | 1. Press a direction and watch the blocks. 2. Cause a merge and watch the merge cell. |
 | Expected | Blocks wobble for about 0.6 seconds after each accepted move. A merge emits particles at the merge cell in the colour of the merge result (for a Standard Large-pair clear, the pair's colour). Blocks jump to their new cell without sliding. |
+| Automated | manual — wobble, particles and animation timing are visual |
 | Roadmap id | — |
 
 ### TP-HUD-07 — Grid cells use the profile's grid colour
@@ -465,6 +507,7 @@ Pass setup: return to the main menu, choose the Standard 6x6 preset, tap Start a
 | Preconditions | New game just loaded |
 | Steps | 1. Look at the empty grid cells. |
 | Expected | The empty cells are a light grey (the default colour profile's grid colour, 0.66), slightly lighter than before CC-029 (0.59), and all cells look the same. |
+| Automated | `PlayModeTests.HudCases.TP_HUD_07_GridCellsUseTheProfilesGridColour` |
 | Roadmap id | CC-029 |
 
 ## Game over (OVER)
@@ -479,6 +522,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Preconditions | Standard 4x4 game, played as in TP-OVER-01 while the board fills up. Repeat every time a move leaves exactly one empty cell |
 | Steps | 1. Make a move that slides or merges so that exactly one cell is empty just before the new white block is placed (in practice: the board has one empty cell before the move, and your move merges nothing; sliding never changes the number of empty cells). 2. Check the board after that move. 3. If the board is now full but a merge is still possible, make a move that merges nothing (for example, towards a wall the blocks are already against) and check the board. |
 | Expected | Step 2: the new white block appears in the one free cell, every time (before CC-021 it sometimes failed to appear). When two or more cells are free after a move, the white block is in one of them, and over many moves it appears in different cells (not always the same one). Step 3: the board stays full, the white block on it turns coloured and no new white block appears (there is no free cell); the move still counts (Moves rises by 1) and play continues while a merge is possible. Mark "not reached" if the board never has exactly one free cell after a move. |
+| Automated | `PlayModeTests.GameOverCases.TP_OVER_07_AFreeCellAlwaysGetsTheNewWhiteBlock` |
 | Roadmap id | CC-021 (fixed in CC-006) |
 
 ### TP-OVER-01 — Full board with a merge available keeps playing
@@ -489,6 +533,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Preconditions | Standard 4x4 game; play until all 16 cells are occupied (the white block counts as occupied; the board usually becomes full when a new white block takes the last free cell, see TP-OVER-07) |
 | Steps | 1. When the board becomes full, check whether two same-colour, same-size blocks touch. 2. If so, press along them to merge. |
 | Expected | While the board is full but at least one adjacent pair can merge, the game-over panel does not appear and the move that merges is accepted. If the board fills with no mergeable pair the game ends instead: continue with TP-OVER-02. |
+| Automated | `PlayModeTests.GameOverCases.TP_OVER_01_FullBoardWithAMergeAvailableKeepsPlaying` |
 | Roadmap id | — |
 
 ### TP-OVER-02 — Game over appears when full and no merge exists
@@ -499,6 +544,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Preconditions | Continuing from TP-OVER-01; keep pressing directions until the board is full and no adjacent pair can merge |
 | Steps | 1. Make the move that fills the last cell with no merge available. |
 | Expected | A full-screen game-over panel appears over the board with a Restart button and a Main Menu button. Score and Moves keep their final values. |
+| Automated | `PlayModeTests.GameOverCases.TP_OVER_02_GameOverAppearsWhenFullAndNoMergeExists` |
 | Roadmap id | — |
 
 ### TP-OVER-03 — Moves, sound and Moves counter are unchanged after game over
@@ -509,6 +555,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Preconditions | Game-over panel showing ("Grid Full!"), sound audible |
 | Steps | 1. Note Score, Moves and the board. 2. Press the up, down, left and right arrow keys, then W, A, S and D, one at a time. 3. Swipe in all four directions if on a touch device. |
 | Expected | No move sound or any other sound plays. The board, Score and Moves do not change (Moves does not rise). The panel stays up. |
+| Automated | `PlayModeTests.GameOverCases.TP_OVER_03_NothingChangesAfterGameOverWhateverIsPressed` |
 | Roadmap id | CC-023 (fixed in CC-006) |
 
 ### TP-OVER-04 — Restart starts a fresh game
@@ -519,6 +566,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Preconditions | Game-over panel showing |
 | Steps | 1. Tap Restart once. |
 | Expected | The panel disappears. The board is empty apart from one white block at (2, 2). Score reads 0 and Moves reads 0. The game accepts moves again. One click restarts once. |
+| Automated | `PlayModeTests.GameOverCases.TP_OVER_04_RestartStartsAFreshGame` |
 | Roadmap id | CC-028 |
 
 ### TP-OVER-05 — Restart does not duplicate grid cells (editor only)
@@ -529,6 +577,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Preconditions | Running in the Unity editor (Play mode). The Standard 4x4 game from TP-OVER-02 was the first game since the gameplay scene loaded, and Restart was clicked once in TP-OVER-04. On a device build, mark this case "not applicable" |
 | Steps | 1. In the Hierarchy, expand the object that carries `GameRenderer` (the GameManager prefab instance). 2. Type `Cell_` in the Hierarchy search box and count the results. |
 | Expected | Exactly 16 `Cell_<x>_<y>` objects (one per cell of the 4x4 board). |
+| Automated | `PlayModeTests.GameOverCases.TP_OVER_05_RestartDoesNotDuplicateGridCells` |
 | Roadmap id | CC-029 |
 
 ### TP-OVER-06 — No resume offered after a finished game
@@ -539,6 +588,7 @@ Pass setup: from the main menu choose Standard mode, width 4 and height 4 (a sma
 | Preconditions | The game restarted in TP-OVER-04 (and checked in TP-OVER-05), no move made since |
 | Steps | 1. Tap the footer Main Menu button. 2. Look at the main menu. |
 | Expected | The main menu shows no Resume button, because the save file is deleted when the game ends and no move has been made since. |
+| Automated | `PlayModeTests.GameOverCases.TP_OVER_06_NoResumeIsOfferedAfterAFinishedGame` |
 | Roadmap id | — |
 
 ## Save/Resume (SAVE)
@@ -553,6 +603,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Main menu with no Resume button |
 | Steps | 1. Choose Standard 6x6 and tap Start. 2. Make one move. 3. Tap the footer Main Menu button. |
 | Expected | The main menu now shows a Resume button. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_01_ResumeButtonAppearsAfterAMove` |
 | Roadmap id | — |
 
 ### TP-SAVE-02 — Resume restores the saved game
@@ -563,6 +614,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Resume button showing; first start a new game, make several moves until you have a score above 0, and write down the Moves, Score and the position, colour and size of every coloured block, then tap Main Menu |
 | Steps | 1. On the menu select the Color Merge 4x4 preset. 2. Tap Resume. |
 | Expected | The saved game loads as a Standard 6x6 game, not as Color Merge 4x4. Moves and Score equal the noted values and every coloured block is in its noted position with its colour and size. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_02_ResumeRestoresTheSavedGame` |
 | Roadmap id | — |
 
 ### TP-SAVE-03 — White block is unchanged after resume
@@ -573,6 +625,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | The game resumed in TP-SAVE-02; you noted the white block's cell before leaving |
 | Steps | 1. Without pressing any key, compare the white block's cell and colour with the noted values. |
 | Expected | The white block is in the same cell as before leaving, is still white, and no additional white block appeared. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_03_WhiteBlockIsUnchangedAfterResume` |
 | Roadmap id | CC-022 (fixed in CC-006) |
 
 ### TP-SAVE-07 — Nothing changes after resume until the first move
@@ -583,6 +636,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | The game resumed in TP-SAVE-02; you noted Moves, Score and the board before leaving |
 | Steps | 1. Without pressing any key, wait 5 seconds and compare Moves, Score, every block and the white block with the noted values. 2. Make one move. |
 | Expected | Step 1: everything matches the noted values and no sound plays. Step 2: Moves rises by exactly 1, the white block turns into a coloured block (it does not move), and one new white block appears. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_07_NothingChangesAfterResumeUntilTheFirstMove` |
 | Roadmap id | CC-022 (fixed in CC-006) |
 
 ### TP-SAVE-04 — Play continues and later moves are saved
@@ -593,6 +647,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Resumed game from TP-SAVE-02 |
 | Steps | 1. Make two moves and note Moves, Score and the board. 2. Tap Main Menu. 3. Tap Resume. |
 | Expected | Moves continues from the resumed count (it rises by 1 per move). The second resume shows the state after the two further moves, not the earlier save. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_04_PlayContinuesAndLaterMovesAreSaved` |
 | Roadmap id | — |
 
 ### TP-SAVE-05 — A new game keeps the old save until its first move
@@ -603,6 +658,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Main menu with a Resume button |
 | Steps | 1. Tap Start (a new game). 2. Without moving, tap Main Menu. 3. Tap Resume and note the board. 4. Tap Main Menu, tap Start, make one move, tap Main Menu, tap Resume. |
 | Expected | Step 3 shows the old saved game from TP-SAVE-04. In step 4 the Resume button loads the new game's state (Moves 1) instead of the old one. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_05_ANewGameKeepsTheOldSaveUntilItsFirstMove` |
 | Roadmap id | — |
 
 ### TP-SAVE-06 — Force-closing the app keeps the last move
@@ -613,6 +669,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Build installed on a device; game in progress with at least 3 moves made |
 | Steps | 1. Note Moves and Score. 2. Make one more move and note the new values. 3. Force-close the app from the system app switcher. 4. Relaunch and tap Resume. |
 | Expected | The Resume button shows. The game loads with the Moves and Score from after the last completed move in step 2. |
+| Automated | manual — force-closing the app needs a device (CC-047) |
 | Roadmap id | — |
 
 ### TP-SAVE-08 — An unusable save is set aside (editor)
@@ -623,6 +680,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Running in the Unity editor. A saved game exists from a new game with exactly one move (so there is no backup to fall back to), then stop Play mode. Know the save folder: `Application.persistentDataPath` (on Windows `%USERPROFILE%\AppData\LocalLow\<company>\<product>`) |
 | Steps | 1. Open `savegame.json` in a text editor and change `"version": "1.0"` to `"version": "99.0"`; save. 2. Enter Play mode on the main menu. 3. Look at the menu and the Console. 4. Look in the save folder. |
 | Expected | No Resume button. The Console shows one warning, `Save rejected: reason=UnknownVersion file=savegame.json detail=99.0 movedTo=savegame.bad.<timestamp>.json`. The folder has that `savegame.bad.<timestamp>.json` file (with your edit) and no `savegame.json`. Repeat with a file cut off half-way: same result. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_08_AnUnusableSaveIsSetAside` |
 | Roadmap id | CC-031 |
 
 ### TP-SAVE-09 — Saving leaves no temporary file
@@ -633,6 +691,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | A game in progress (any device or the editor) |
 | Steps | 1. Make several moves. 2. Look in the save folder (editor: as in TP-SAVE-08). |
 | Expected | `savegame.json`, `savegame.1.json` and `savegame.2.json` are there (the last three moves; only `savegame.json` after a new game's first move), and no `savegame.json.tmp`. Resume restores the last move as in TP-SAVE-02. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_09_SavingLeavesNoTemporaryFile` |
 | Roadmap id | CC-031, CC-042 |
 
 ### TP-SAVE-12 — Resume a game saved by the previous build
@@ -643,6 +702,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Device with the develop build from before CC-008 (any develop build from before the CC-008 PR) and a game in progress with at least 3 moves. Note Moves, Score, the board, the mode and the next-colour indicator toggle, then tap Main Menu. Have the CC-008 APK ready |
 | Steps | 1. Run `adb devices` and check the phone is listed as `device`. 2. Run `adb install -r <CC-008 apk>` over the old build (keeps the save data). 3. Launch the app and tap Resume. 4. Compare with the noted values. 5. Make one move. 6. Make two more moves, tap Main Menu, then tap Resume. |
 | Expected | `adb` prints `Success`. Step 3: the game loads in the noted mode with the noted toggle, and Moves, Score and every block (colour, size and cell) and the white indicator match the noted values. Step 5: the white indicator resolves to a Small Red, Green or Blue block and, with the toggle on, a new white indicator appears in an empty cell; Moves rises by exactly 1. Step 6: play continues, Moves rises by 1 per move, and the second Resume shows the state after those moves. |
+| Automated | manual — needs the previous develop build installed on a device (CC-047) |
 | Roadmap id | CC-008 |
 
 ### TP-SAVE-10 — A broken newest save resumes one move earlier
@@ -653,6 +713,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | Editor or device. A game in progress with at least 3 moves; note Moves, Score and the board before the last move and after it. Know the save folder (editor: as in TP-SAVE-08; device: `/sdcard/Android/data/com.catharticcolours.game/files/`, read and written with `adb pull` and `adb push`) |
 | Steps | 1. Return to the main menu and quit (editor: stop Play mode). 2. Replace the contents of `savegame.json` with `broken`. 3. Launch again (editor: enter Play mode) and look at the menu. 4. Tap Resume. 5. Look in the save folder. |
 | Expected | Step 3: the Resume button shows. Step 4: the game resumes with the Moves, Score and board from before the last move. No message is shown. Step 5: a `savegame.bad.<timestamp>.json` file holds `broken`, and `savegame.json` holds the earlier move. The Console (editor) shows one warning, `Save rejected: reason=Unreadable file=savegame.json detail=<parser message> movedTo=savegame.bad.<timestamp>.json`. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_10_ABrokenNewestSaveResumesOneMoveEarlier` |
 | Roadmap id | CC-042 |
 
 ### TP-SAVE-11 — Backups belong to one game
@@ -663,6 +724,7 @@ Pass setup: start on the main menu with no Resume button (the state after TP-OVE
 | Preconditions | A game in progress with at least 3 moves (the save folder has `savegame.json`, `.1` and `.2`) |
 | Steps | 1. Tap Main Menu, then Start (a new game), and make one move. 2. Look in the save folder. 3. Play the new game to game over. 4. Look in the save folder and at the main menu. |
 | Expected | Step 2: only `savegame.json` (the new game's first move); no `.1` or `.2` from the old game. Step 4: no `savegame.json`, `.1`, `.2` or `.tmp` remains (`savegame.bad.<timestamp>.json` files from earlier tests may stay, at most three), and the menu shows no Resume. |
+| Automated | `PlayModeTests.SaveCases.TP_SAVE_11_BackupsBelongToOneGame` |
 | Roadmap id | CC-042 |
 
 ## Audio (AUDIO)
@@ -677,6 +739,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Preconditions | New game, sound audible |
 | Steps | 1. Press an arrow key once. 2. Repeat four more times. |
 | Expected | A move sound plays on each key press, at the moment of the press (the merge sound for a move also plays with that move, not later). |
+| Automated | `PlayModeTests.AudioCases.TP_AUDIO_01_MoveSoundOnEachMove` |
 | Roadmap id | — |
 
 ### TP-AUDIO-02 — Merge sound follows the moving block's size
@@ -687,6 +750,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Preconditions | Game in progress; extended play for Medium and Large merges |
 | Steps | 1. Merge two Small blocks (see TP-STD-04). 2. Later merge two Medium blocks (TP-STD-07). 3. Later clear two Large blocks (TP-STD-07). |
 | Expected | A merge sound plays in each merge. The sound is picked by the size of the moving block, not the block produced: the small merge sound for Small + Small, the medium merge sound for Medium + Medium (although a Large block results), the large merge sound for Large + Large. If the three sounds are distinct to the ear, the tester can tell them apart. |
+| Automated | `PlayModeTests.AudioCases.TP_AUDIO_02_MergeSoundFollowsTheMovingBlocksSize` |
 | Roadmap id | — |
 
 ### TP-AUDIO-03 — Game-over sound
@@ -697,6 +761,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Preconditions | Game in progress on a 4x4 board, played until the board is full with no merge available |
 | Steps | 1. Make the move that ends the game. 2. Listen. |
 | Expected | The game-over sound plays once when the game-over panel appears and does not repeat. |
+| Automated | `PlayModeTests.AudioCases.TP_AUDIO_03_GameOverSoundPlaysOnceAndDoesNotRepeat` |
 | Roadmap id | — |
 
 ### TP-AUDIO-04 — No move sound for a rejected move
@@ -707,6 +772,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Preconditions | Game-over panel showing |
 | Steps | 1. Press an arrow key. 2. Press it again. |
 | Expected | No sound plays, because moves are ignored after game over. |
+| Automated | `PlayModeTests.AudioCases.TP_AUDIO_04_NoSoundForARejectedMoveAfterGameOver` |
 | Roadmap id | CC-023 (fixed in CC-006) |
 
 ### TP-AUDIO-06 — Editor plays all five events after a clean checkout
@@ -717,6 +783,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Preconditions | A fresh clone of the repo; FMOD Studio not installed or not needed; Unity 6000.6.9f1; sound audible |
 | Steps | 1. Open the Unity project and open the Console. 2. Play from the main menu scene and start a game. 3. Make moves, including a small, medium and large merge if they arise. 4. Play until game over. |
 | Expected | The move sound, each merge sound reached and the game-over sound all play. The Console shows no FMOD errors and no "Event not found" warnings. |
+| Automated | `PlayModeTests.AudioCases.TP_AUDIO_06_AllFiveEventsAreRaisedWithNoErrorOrMissingEvent` |
 | Roadmap id | CC-003 |
 
 ### TP-AUDIO-05 — FMOD project contains the five game events
@@ -727,6 +794,7 @@ Pass setup: start on the main menu, choose the Standard 4x4 settings (custom wid
 | Preconditions | A fresh clone of the repo; FMOD Studio 2.04 installed |
 | Steps | 1. Open `Cathartic Colours - FMOD/Cathartic Colours - FMOD.fspro` in FMOD Studio. 2. Open the Events browser. 3. Open the platforms list (Project, Platforms). |
 | Expected | No migration prompt appears. Both the Desktop and Mobile platforms are present. The Events browser lists the five events `Block_Move`, `Block_Merge_Small`, `Block_Merge_Medium`, `Block_Merge_Large` and `GameOver`, assigned to the Master bank. |
+| Automated | manual — FMOD Studio check with no game running |
 | Roadmap id | CC-003 |
 
 ## Android build (DROID)
@@ -741,6 +809,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | Sandbox on the branch under test, editor closed |
 | Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1`. 2. Note the `APK:` path printed at the end. 3. Run `aapt dump badging <apk>` from the Android SDK's `build-tools` folder. |
 | Expected | Exit code 0 and the APK path is printed. The file is in `Cathartic Colours/Builds/Android/`. `aapt` shows package `com.catharticcolours.game` and `versionCode` equal to the code that `-PrintVersionCode` shows (`base × 100 + ahead`, see TP-DROID-07). `git status` shows no modified files after the build. |
+| Automated | manual — runs the Android build script and inspects the APK; a build step, not gameplay |
 | Roadmap id | CC-004, CC-002, CC-040 |
 
 ### TP-DROID-02 — Failed build exits non-zero
@@ -751,6 +820,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | Editor closed |
 | Steps | 1. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 -SkipVersionCode`. 2. Check the exit code and the log (its path is printed by the script). |
 | Expected | Exit code 2. The log contains "Missing required argument -versionCode". No APK is written. |
+| Automated | manual — checks the build script's exit code and log; a build step, not gameplay |
 | Roadmap id | CC-004 |
 
 ### TP-DROID-03 — Install over an older build
@@ -761,6 +831,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | An older APK installed on the phone with a saved game in progress; a newer APK from TP-DROID-01 |
 | Steps | 1. Run `adb devices` and check the phone is listed as `device`. 2. Run `adb install -r <newer apk>`. 3. Launch the app and tap Resume. |
 | Expected | `adb` prints `Success`. The app keeps its saved game: Resume loads it with the same Moves and Score. |
+| Automated | manual — needs a phone with USB debugging (CC-047) |
 | Roadmap id | CC-004 |
 
 ### TP-DROID-04 — Launch and play on the phone
@@ -771,6 +842,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | The newer build installed (TP-DROID-03), sound audible |
 | Steps | 1. Launch the app from the phone's launcher. 2. Start a Standard game, play a few swipe moves, then go back to the menu. 3. Repeat in Color Merge and Advanced Color Merge. 4. Resume a game. |
 | Expected | The app starts without waiting for a debugger. Swipes move blocks, merge sounds play, each mode plays, and Resume restores the saved game. Report any difference from the editor. |
+| Automated | manual — needs a phone: touch feel, audible sound and device behaviour (CC-047) |
 | Roadmap id | CC-004, CC-002, CC-043 |
 
 ### TP-DROID-05 — Rebuild times
@@ -781,6 +853,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | TP-DROID-01 just built the development profile on this commit (warm `Library/`), editor closed |
 | Steps | 1. Run `tools\build-android.ps1` again with no changes and note `Elapsed`. 2. Change one string literal in a C# script (for example a log message), run it again, note `Elapsed`, then revert the change. 3. Open `Cathartic Colours/Library/Bee/buildreport.json` in `ui.perfetto.dev` and find `Building Gradle project`. |
 | Expected | The unchanged rebuild takes about 1 minute, and the one-line change about 2 minutes (well under 5). The trace opens and shows the build steps. If a run is much slower, check the log's `PostProcess task ... took` lines ([Reading a slow build](systems/build-android.md#reading-a-slow-build)). |
+| Automated | manual — times Android builds |
 | Roadmap id | CC-043 |
 
 ### TP-DROID-06 — Build the other profiles
@@ -791,6 +864,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | Editor closed. Allow about 30 minutes per step: each profile switch recompiles all C++. |
 | Steps | 1. Run `tools\build-android.ps1 -Profile Debuggable`. 2. Install the APK and attach Rider or Visual Studio to the app on the phone (Unity debugger, Android player). 3. Optionally run `tools\build-android.ps1 -Profile Release`. 4. Run `tools\build-android.ps1` (the default profile) to switch back. 5. Check `git status`. |
 | Expected | Step 1 writes `...-dev.apk` and the debugger can attach. Step 3 writes `...-release.aab`. Step 4 writes `...-dev.apk` again. No step changes tracked files. |
+| Automated | manual — builds and debugs the other Android profiles on a phone |
 | Roadmap id | CC-043 |
 
 ### TP-DROID-07 — Print the version code
@@ -801,6 +875,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | A feature branch with at least one commit ahead of `develop`, and a clean checkout of `develop` (e.g. a temporary worktree). No build needed |
 | Steps | 1. On the feature branch, run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 -PrintVersionCode`. 2. Run the same command in the `develop` checkout. 3. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-android.ps1 -PrintVersionCode -VersionCode 5` on the branch. |
 | Expected | Steps 1 and 2 exit 0 and print three lines: `Develop base`, `Commits ahead of develop` and `Version code`. No Unity starts. `develop` shows ahead 0 and a code equal to its base × 100. The branch's code is between `develop`'s code and `develop`'s code + 100. Step 3 prints `Version code: 5` as the override, and git is not used. |
+| Automated | manual — checks a PowerShell script's output on git branches; not gameplay |
 | Roadmap id | CC-039 |
 
 ### TP-DROID-08 — Develop build installs over a feature-branch build
@@ -811,6 +886,7 @@ Pass setup: a clean checkout of the branch under test in the agent sandbox, the 
 | Preconditions | A feature-branch APK installed on the phone with a saved game in progress (built before the branch merged). A `develop` APK built after that branch merged, with a higher code. The phone is connected (see TP-DROID-03) |
 | Steps | 1. Run `adb devices` and check the phone is listed as `device`. 2. Run `adb install -r <develop apk>`. 3. Launch the app and tap Resume. |
 | Expected | `adb` prints `Success`, with no `INSTALL_FAILED_VERSION_DOWNGRADE` and no uninstall. Resume loads the saved game with the same Moves and Score. |
+| Automated | manual — needs a phone and two builds (CC-047) |
 | Roadmap id | CC-039 |
 
 ## Editor and tooling (TOOL)
@@ -825,6 +901,7 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Preconditions | Editor closed |
 | Steps | 1. Run the EditMode `-runTests` command from project `CLAUDE.md` §4. 2. Run the same command with `-testPlatform PlayMode`. 3. Open each results XML and check the `<test-run>` result. |
 | Expected | Each run exits with code 0 and writes its results XML, with no failed cases. The EditMode XML reports the Simulation (CC-006), Core and Build.Editor test cases, all passed. The PlayMode XML reports the two `CatharticColours.PlayMode.Tests` smoke tests (gameplay scene move, main menu start), both passed. Neither run creates, changes or deletes the player's real `savegame.json`. |
+| Automated | manual — runs the test suites themselves; the playthrough runner (CC-046.4) covers the PlayMode run |
 | Roadmap id | CC-033, CC-006, CC-002 |
 
 ### TP-TOOL-01 — Project opens on 6000.6.9f1 without errors
@@ -835,6 +912,7 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Preconditions | Editor closed |
 | Steps | 1. Open the project from Unity Hub with 6000.6.9f1. 2. Wait for the import to finish. 3. Check the Console. |
 | Expected | No upgrade or version prompt. The Console has no compile errors, no missing-script warnings (open the main menu and gameplay scenes) and no "below the supported minimum" warnings about `.meta` files. (A first import of a fresh checkout may log two "Host type is not matching any asset type" errors from the URP package; they don't come back on the next open.) |
+| Automated | manual — opens the project in Unity Hub and reads the editor Console |
 | Roadmap id | CC-033, CC-002 |
 
 ### TP-TOOL-03 — Only the kept packages are installed
@@ -845,6 +923,7 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Preconditions | Project open (after TP-TOOL-01) |
 | Steps | 1. Open **Window → Package Management → Package Manager**. 2. Select **In Project**. |
 | Expected | The direct packages are Entities, Input System, In-App Purchasing, Universal RP, Test Framework, JetBrains Rider Editor and the embedded FMOD for Unity 2.04, matching the Kept table in the CC-033 feature page. Other entries are their dependencies (uGUI and 2D Physics come back this way, through In-App Purchasing). Collab, Visual Scripting, Timeline, the AI and multiplayer packages and the other removed packages are not listed. |
+| Automated | manual — reads the editor's Package Manager window |
 | Roadmap id | CC-033 |
 
 ### TP-TOOL-04 — Bank build script rebuilds identical banks
@@ -855,6 +934,7 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Preconditions | FMOD Studio 2.04.00 installed and closed; a fresh clone of the branch under test |
 | Steps | 1. From the repo root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-fmod-banks.ps1`. 2. Run `git status`. |
 | Expected | The script exits with code 0 and lists the Desktop and Mobile banks as written. `git status` is clean (only the ignored `.cache/` is new), so the rebuilt banks are unchanged. |
+| Automated | manual — needs FMOD Studio installed and compares rebuilt banks with git |
 | Roadmap id | CC-003 |
 
 ### TP-TOOL-05 — Play mode does not change the block material
@@ -865,6 +945,7 @@ Pass setup: Unity Hub with editor **6000.6.9f1** installed, a clean checkout of 
 | Preconditions | Editor open on a clean working tree |
 | Steps | 1. Play a game of several moves in the editor and stop Play mode. 2. Run `git status`. |
 | Expected | `Assets/Materials/BlockMaterial.mat` is not modified (the jelly wobble writes to a runtime copy since CC-032). The Console shows no CS0414 warning after a recompile. |
+| Automated | manual — needs the editor open and git status after a play session |
 | Roadmap id | CC-032 |
 
 ## Project tracking (TRACK)
@@ -879,6 +960,7 @@ Pass setup: signed in to GitHub as a repo admin, with the [project board](https:
 | Preconditions | Board view open |
 | Steps | 1. Open the **Board** view. 2. Compare a few items with what you know of them (for example CC-001, CC-006, CC-033). |
 | Expected | Columns are Backlog, Planning, Approved, In progress, In review, Done. Every `CC-nnn` item is in the right column. CC-001 (#3) and its four sub-issues are in Done and closed. |
+| Automated | manual — checks the GitHub project board, not the game |
 | Roadmap id | CC-034 |
 
 ### TP-TRACK-02 — Item issue has fields, sub-issues and working links
@@ -889,6 +971,7 @@ Pass setup: signed in to GitHub as a repo admin, with the [project board](https:
 | Preconditions | — |
 | Steps | 1. Open issue #12 (CC-006). 2. Follow its feature page link. 3. Follow the `Depends on` links. |
 | Expected | Labels `type:chore`, `severity:high`, `size:L`. Six sub-issues CC-006.1 to CC-006.6, with Risk and Worker in their bodies. The feature page opens once the CC-006 branch is merged (before that it shows 404). `Depends on` opens #46 (CC-034) and #45 (CC-033). |
+| Automated | manual — checks GitHub issues and links, not the game |
 | Roadmap id | CC-034 |
 
 ### TP-TRACK-03 — Closing an issue moves it to Done
@@ -899,6 +982,7 @@ Pass setup: signed in to GitHub as a repo admin, with the [project board](https:
 | Preconditions | — |
 | Steps | 1. Create a scratch issue and add it to the board with Status Backlog. 2. Close it. 3. Check the board. 4. Delete the scratch issue. |
 | Expected | After closing, the item moves to Done without any manual edit ("Item closed" workflow). |
+| Automated | manual — checks a GitHub workflow, not the game |
 | Roadmap id | CC-034 |
 
 ### TP-TRACK-04 — Merging a PR with `Closes #n` moves the item to Done
@@ -909,6 +993,7 @@ Pass setup: signed in to GitHub as a repo admin, with the [project board](https:
 | Preconditions | A PR whose body says `Closes #<issue>` for an item on the board (for example the CC-034 PR and #46) |
 | Steps | 1. Merge the PR. 2. Check the issue and the board. |
 | Expected | The issue is closed and its board item is in Done ("Pull request merged" / "Item closed" workflows). |
+| Automated | manual — checks a GitHub workflow on a merged PR, not the game |
 | Roadmap id | CC-034 |
 
 ## Regression passes

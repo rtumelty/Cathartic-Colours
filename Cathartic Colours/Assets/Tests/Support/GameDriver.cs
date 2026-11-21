@@ -162,6 +162,33 @@ namespace TestSupport
             }
         }
 
+        /// <summary>Waits until the main menu is the active scene (after a button loaded it), then attaches to its panel.</summary>
+        public IEnumerator WaitForMenu()
+        {
+            yield return WaitUntil(() => SceneName == PlayModeTestSupport.MainMenuScene, "the main menu to load");
+            yield return AttachToScene(PlayModeTestSupport.MainMenuScene);
+        }
+
+        /// <summary>Taps the footer Main Menu button of the gameplay scene and waits for the menu.</summary>
+        public IEnumerator ReturnToMenu()
+        {
+            yield return Click("footer-main-menu-button");
+            yield return WaitForMenu();
+        }
+
+        /// <summary>The file names in the redirected save folder (savegame.json, savegame.1.json, savegame.bad.*.json, ...), sorted.</summary>
+        public string[] SaveFiles()
+        {
+            var names = new List<string>();
+            foreach (var path in Directory.GetFiles(saveFolder))
+                names.Add(Path.GetFileName(path));
+            names.Sort(string.CompareOrdinal);
+            return names.ToArray();
+        }
+
+        /// <summary>The full path of a file in the redirected save folder.</summary>
+        public string SavePath(string fileName) => Path.Combine(saveFolder, fileName);
+
         IEnumerator AttachToScene(string sceneName)
         {
             UIDocument found = null;

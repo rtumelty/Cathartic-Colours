@@ -163,6 +163,54 @@ namespace TestSupport
             return sb.ToString();
         }
 
+        /// <summary>
+        /// A board of the given size with only the listed cells filled, each given as (x, y, token) with y = 0 the bottom
+        /// row, for example <c>Build(5, 7, (2, 3, "i"))</c>. Everything else is empty.
+        /// </summary>
+        public static string Build(int width, int height, params (int x, int y, string token)[] cells)
+        {
+            var tokens = new string[width, height];
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    tokens[x, y] = ".";
+            foreach (var (x, y, token) in cells)
+                tokens[x, y] = token;
+            var sb = new StringBuilder();
+            for (int y = height - 1; y >= 0; y--)
+            {
+                if (y != height - 1) sb.Append('|');
+                for (int x = 0; x < width; x++)
+                {
+                    if (x > 0) sb.Append(' ');
+                    sb.Append(tokens[x, y]);
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>A board whose bottom row is <paramref name="row"/> (the test plan's one-row examples, "[. . Rs Rs]") and whose other rows are empty. The width is the row's.</summary>
+        public static string BottomRow(string row, int height = 4)
+        {
+            int width = row.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length;
+            var sb = new StringBuilder();
+            string empty = Build(width, 1);
+            for (int i = 0; i < height - 1; i++)
+                sb.Append(empty).Append('|');
+            return sb.Append(row.Trim()).ToString();
+        }
+
+        /// <summary>How many cells of a board hold the token ("i", "." or "Rs").</summary>
+        public static int Count(string board, string token)
+        {
+            int count = 0;
+            foreach (var t in Tokens(board))
+                if (t == token) count++;
+            return count;
+        }
+
+        /// <summary>The token at (x, y) of a board, y = 0 the bottom row.</summary>
+        public static string TokenAt(string board, int x, int y) => Tokens(board)[x, y];
+
         /// <summary>True for a freshly resolved indicator: a Small Red, Green or Blue block that is not an indicator.</summary>
         public static bool IsResolvedPrimary(NotationCell cell)
         {

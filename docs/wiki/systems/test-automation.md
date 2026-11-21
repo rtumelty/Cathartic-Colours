@@ -15,7 +15,10 @@ All paths are relative to the Unity project folder (`Cathartic Colours/`).
 | `Assets/Tests/Support/AudioEventRecorderSystem.cs` | Test-only ECS system that records audio event paths |
 | `Assets/Tests/Support/PanelClock.cs`, `PngWriter.cs` | Gap fillers named in ADR-006 (UI clock, PNG file writer) |
 | `Assets/Tests/Support/CatharticColours.TestSupport.asmdef` | The test-support assembly. Referenced by the PlayMode tests and the EditMode `CatharticColours.Simulation.Tests` |
+| `Assets/Tests/Support/ExtendedPlay.cs` | Extended play for the regression cases: plays up to N moves and checks the rules after every move |
 | `Assets/Tests/PlayMode/DriverSelfTests.cs` | Tests of the driver itself, on boards with known results |
+| `Assets/Tests/PlayMode/Cases/<Area>Cases.cs` | The test-plan cases (CC-046.3): one file per area (`MenuCases`, `StandardCases`, `ColorMergeCases`, `AdvancedColorMergeCases`, `HudCases`, `GameOverCases`, `SaveCases`, `AudioCases`), one test per case |
+| `Assets/Tests/PlayMode/Cases/CaseChecks.cs` | Checks the case files share: the merge case, the first-move case and the game-over boards |
 | `Assets/Tests/PlayMode/SmokeTests.cs`, `ToolSpikeTests.cs` | The first tests built on the driver |
 
 ## How it works
@@ -32,11 +35,11 @@ The game has no test hooks. A test sees only what a player could do, plus read-o
 Derive from `PlaythroughTest`, use `[UnityTest]` and drive the game through `Driver`:
 
 ```csharp
-[Category("CC046")]
-public class MyCase : PlaythroughTest
+[Category("TP_STD")]
+public class StandardCases : PlaythroughTest
 {
-    [UnityTest, Category("TP_STD_04"), Category("STD")]
-    public IEnumerator SmallPairMergesToMedium()
+    [UnityTest, Category("TP_STD_04")]
+    public IEnumerator TP_STD_04_SmallPairMergesToMedium()
     {
         yield return Driver.ResumeWith(". . . .|. . . .|. . Rs Rs|. . . .", GameMode.Standard);
         yield return Driver.Move(Direction.Right);
@@ -47,7 +50,9 @@ public class MyCase : PlaythroughTest
 ```
 
 - **Setup and teardown are automatic.** Before each test the driver redirects saves to a temp folder (the real save is never read or written), resets `GameManager` to a first launch and creates the virtual devices. After each test it unloads the scenes and restores everything.
-- **Categories:** one per test-plan case, with the id's dashes turned into underscores (`TP-STD-04` becomes `TP_STD_04`), because NUnit rejects `-` in category names. Add the area as a second category (`STD`, `HUD`, and so on).
+- **Categories:** one per test-plan case, with the id's dashes turned into underscores (`TP-STD-04` becomes `TP_STD_04`), because NUnit rejects `-` in category names. The class carries the area's category (`TP_STD`, `TP_HUD`, and so on), so `-testCategory TP_STD` runs an area.
+- **One test per test-plan case, named after it** (`TP_STD_04_SmallPairMergesToMedium`). The test plan's `Automated` row for each case names its test. A case that stays manual has `manual — <reason>` there instead and no test. A case whose expected result the game doesn't meet keeps its assertion and is marked `[Ignore("<issue id>: <reason>")]`, so the run stays green and the bug is visible.
+- **Known boards and exact results.** Merge cases start from a board with `ResumeWith` (spawning off) and compare the whole board after the move. Cases that are about spawning start a new game from the menu. Extended play (`ExtendedPlay.Run`) covers "play until it happens" cases by checking the rules after every move instead of waiting for a board.
 - **A move that is rejected makes no change.** Check `Driver.MoveCount` to tell an accepted move from a rejected one.
 - **Any error logged during a test fails it** (Unity's default).
 - Start from a known board with `ResumeWith`, not from a random game. Turn spawning off (the default) when the test needs an exact board.
@@ -74,6 +79,9 @@ public class MyCase : PlaythroughTest
 | `Find<T>(name)`, `Text(name)`, `IsShown(name)`, `Root`, `DescribeTree(...)` | Read the UI: find an element, read its text, check it is displayed, dump the element tree |
 | `WaitForGameplay()` | Waits for the gameplay scene and its game state, then attaches to its panel |
 | `SceneName`, `Simulate` | The active scene's name, and the UI simulator for steps with no helper |
+| `WaitForMenu()` | Waits until a button has loaded the main menu, then attaches to its panel |
+| `ReturnToMenu()` | Taps the gameplay scene's footer Main Menu button and waits for the menu |
+| `SaveFiles()`, `SavePath(name)` | The file names in the temp save folder (backups, `.tmp`, `savegame.bad.*.json`), and a full path in it, for the save cases |
 
 **Known boards**
 | Call | What it does |
@@ -123,6 +131,16 @@ The same notation is used by the manual [test plan](../test-plan.md), the driver
 | `i` | The white next-colour indicator |
 | `Rs` | A colour letter (`R G B Y M C W`) and a size letter (`s m l`) |
 | `?` | In an expected board only: a freshly resolved indicator, a Small Red, Green or Blue block |
+
+`BoardNotation` also builds and reads boards in tests:
+
+| Call | What it does |
+|---|---|
+| `Build(width, height, (x, y, token), ...)` | A board with only the listed cells filled, `y = 0` the bottom row |
+| `BottomRow(row, height)` | The test plan's one-row example as a board: the row at the bottom, the other rows empty |
+| `Count(board, token)`, `TokenAt(board, x, y)` | How many cells hold a token, and the token in one cell |
+
+`ExtendedPlay.Run(driver, mode, maxMoves, report)` plays a new game with a shuffled cycle of directions (a fixed order seed) and, after every move, checks that the move was counted, the indicator resolved in place, one new indicator appeared whenever a cell is empty, the score rose by a multiple of 10, and the game is over exactly when the board is full with no merge possible. The report (`Summary()`) lists the score deltas and the blocks seen, so a test can print which tiers were reached.
 
 Remember that a block moves one cell per move and merges only when the cell ahead is occupied when it is processed ([merge-rules](merge-rules.md)).
 
