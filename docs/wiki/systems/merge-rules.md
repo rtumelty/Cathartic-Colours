@@ -142,6 +142,14 @@ Source: `Assets/Scripts/Simulation/BoardSimulation.cs` (`IsGameOver`, `HasEmptyC
 - Mode selection, tier points and spawn toggle come from `GameConfiguration`: [configuration.md](configuration.md).
 - Merge events drive particles and score display; audio events drive FMOD one-shots; the save system stores blocks, score and random state. See [save-system.md](save-system.md), [audio-fmod.md](audio-fmod.md) and [presentation.md](presentation.md).
 
+## Recorded games (CC-008.1)
+- `Assets/Tests/EditMode/RecordedGames/recorded-games.txt` pins today's step behaviour: 3 modes x spawn on/off x 50 seeds = 300 seeded random games on a 6x6 board (up to 300 moves each). Each game's start board and, every move, the step result, the whole board, the random state and every event are folded into one 64-bit FNV-1a hash.
+- `RecordedGamesTests` replays the games and compares move counts and hashes. A changed hash means behaviour changed: that needs a deliberate decision, newly recorded hashes and a note on the feature page. Pure refactors must leave every hash as it is.
+- Code: `RecordedGames.cs` (all steps go through one seam method, `StepOnce`) and `RecordedGamesTests.cs`.
+- With spawning off, the one starting indicator resolves on the first move and nothing else appears, so those games always run the full 300 moves. They still pin sliding, merging and scoring.
+- To re-record, run the explicit test by name with `CC_RECORD_GAMES=1` set (close the editor first). Without the variable the recorder is skipped, so a class-wide test run can't overwrite the hashes by accident. In PowerShell:
+  `$env:CC_RECORD_GAMES = '1'; & "C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe" -batchmode -projectPath "Cathartic Colours" -runTests -testPlatform EditMode -testFilter "Simulation.Tests.RecordedGamesTests.Record_WritesRecordedGamesFile" -testResults "TestResults\record.xml" -logFile -; Remove-Item Env:CC_RECORD_GAMES`
+
 ## Known issues
 - `IMergeRules` covers merge rules only; spawn policy, end conditions, scoring and move mechanics are fixed in `BoardSimulation`. [CC-008](https://github.com/rtumelty/Cathartic-Colours/issues/20)
 - The spawn colour is chosen only on the next move. [CC-007](https://github.com/rtumelty/Cathartic-Colours/issues/19)
